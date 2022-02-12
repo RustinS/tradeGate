@@ -2,7 +2,7 @@ import ccxt
 import json
 
 
-class tradeGate():
+class TradeGate():
     def __init__(self, configAddress):
         configFile = open(configAddress)
         config = json.load(configFile)
