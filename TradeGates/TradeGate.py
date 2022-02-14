@@ -22,10 +22,7 @@ class TradeGate():
         # self.markets = self.exchange.loadMarkets()
 
     def getBalance(self, coin=''):
-        if coin != '':
-            return self.exchange.fetchBalance({'coin': coin})
-        else:
-            return self.exchange.fetchBalance()
+        return self.exchange.fetchBalance(coin)
 
 if __name__ == '__main__':
     config = {}

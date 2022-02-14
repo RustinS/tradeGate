@@ -11,4 +11,13 @@ class BinanceExchange():
             else:
                 self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
 
-        print(self.client.coin_info())
+    def fetchBalance(self, coin=''):
+        balances = self.client.account()['balances']
+
+        if coin == '':
+            return balances
+        else:
+            for balance in balances:
+                if balance['asset'] == coin:
+                    return balance
+        return None
