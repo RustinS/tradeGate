@@ -14,7 +14,7 @@ class BinanceExchange():
     def fetchBalance(self, asset=''):
         try:
             balances = self.client.account()['balances']
-        except:
+        except Exception:
             return None
 
         if asset == '':
@@ -24,3 +24,9 @@ class BinanceExchange():
                 if balance['asset'] == asset:
                     return balance
         return None
+
+    def SymbolTradeHistory(self, symbol):
+        try:
+            return self.client.my_trades(symbol)
+        except Exception:
+            return None

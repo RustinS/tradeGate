@@ -20,7 +20,8 @@ class TradeGate():
     def getBalance(self, asset=''):
         return self.exchange.fetchBalance(asset)
 
-    # def getSymbolTradeHistory(self, symbol):
+    def getSymbolTradeHistory(self, symbol):
+        return self.exchange.SymbolTradeHistory(symbol)
 
 
     @staticmethod
