@@ -1,19 +1,36 @@
 import ccxt
 import json
+from Exchanges.BinanceExchange import BinanceExchange
 
 
 class TradeGate():
-    def __init__(self, configAddress):
-        configFile = open(configAddress)
-        config = json.load(configFile)
-        self.apiKey = config['key']
-        self.apiSecret = config['secret']
-        self.apiPassphrase = config['passphrase']
+    def __init__(self, configDict, spot=False, sandbox=False, threeCred=False):
+        self.apiKey = configDict['credentials']['test']['spot']['key'] if spot else configDict['credentials']['test']['futures']['key']
+        self.apiSecret = configDict['credentials']['test']['spot']['secret'] if spot else configDict['credentials']['test']['futures']['secret']
+
+        self.exchange = BinanceExchange(configDict['credentials']['test'], 'SPOT', True)
+
+        # if threeCred:
+        #     self.apiPassphrase = configDict['spot']['passphrase'] if spot else configDict['futures']['passphrase']
+        #     self.exchange.password = self.apiPassphrase
+
+        # if sandbox:
+        #     self.exchange.set_sandbox_mode(True)
         
-        self.exchange = ccxt.kucoin({
-            'apiKey': self.apiKey,
-            'secret': self.apiSecret,
-            'password': self.apiPassphrase,
-        })
+        # print(self.exchange.urls)
         
-        self.markets = self.exchange.loadMarkets()
+        # self.markets = self.exchange.loadMarkets()
+
+    def getBalance(self, coin=''):
+        if coin != '':
+            return self.exchange.fetchBalance({'coin': coin})
+        else:
+            return self.exchange.fetchBalance()
+
+if __name__ == '__main__':
+    config = {}
+    with open('./config.json') as f:
+        config = json.load(f)
+
+    gate = TradeGate(config['Binance'], sandbox=True)
+    # print(gate.getBalance())
