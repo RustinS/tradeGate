@@ -1,33 +1,30 @@
 import ccxt
 import json
-from Exchanges.BinanceExchange import BinanceExchange
+from Exchanges import BinanceExchange
 
 
 class TradeGate():
-    def __init__(self, configDict, spot=False, sandbox=False, threeCred=False):
-        self.apiKey = configDict['credentials']['test']['spot']['key'] if spot else configDict['credentials']['test']['futures']['key']
-        self.apiSecret = configDict['credentials']['test']['spot']['secret'] if spot else configDict['credentials']['test']['futures']['secret']
+    def __init__(self, configDict, exchangeName, spot=False, sandbox=False):
+        exchangeClass = self.getCorrectExchange(exchangeName)
+        if sandbox:
+            self.apiKey = configDict['credentials']['test']['spot']['key']
+            self.apiSecret = configDict['credentials']['test']['spot']['secret']
 
-        self.exchange = BinanceExchange(configDict['credentials']['test'], 'SPOT', True)
+            self.exchange = exchangeClass(configDict['credentials']['test'], type='SPOT', sandbox=True)
+        else:
+            self.apiKey = configDict['credentials']['main']['spot']['key']
+            self.apiSecret = configDict['credentials']['main']['spot']['secret']
 
-        # if threeCred:
-        #     self.apiPassphrase = configDict['spot']['passphrase'] if spot else configDict['futures']['passphrase']
-        #     self.exchange.password = self.apiPassphrase
+            self.exchange = exchangeClass(configDict['credentials']['test'], type='SPOT', sandbox=False)
 
-        # if sandbox:
-        #     self.exchange.set_sandbox_mode(True)
-        
-        # print(self.exchange.urls)
-        
-        # self.markets = self.exchange.loadMarkets()
+    def getBalance(self, asset=''):
+        return self.exchange.fetchBalance(asset)
 
-    def getBalance(self, coin=''):
-        return self.exchange.fetchBalance(coin)
+    # def getSymbolTradeHistory(self, symbol):
 
-if __name__ == '__main__':
-    config = {}
-    with open('./config.json') as f:
-        config = json.load(f)
 
-    gate = TradeGate(config['Binance'], sandbox=True)
-    # print(gate.getBalance())
+    @staticmethod
+    def getCorrectExchange(exchangeName):
+        if exchangeName == 'Binance':
+            return BinanceExchange.BinanceExchange
+
