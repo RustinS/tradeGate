@@ -31,7 +31,7 @@ class TradeGate():
             return BinanceExchange.BinanceExchange
 
     def createAndTestOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None):
-        currOrder = DataHelpers.OrderData(symbol, side, orderType)
+        currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
 
         if not quantity is None:
             currOrder.setQuantity(quantity)

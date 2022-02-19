@@ -1,3 +1,4 @@
+from re import L
 from binance.spot import Spot
 from Utils import DataHelpers
 import logging
@@ -36,6 +37,18 @@ class BinanceExchange():
 
     @staticmethod
     def isOrderDataValid(order : DataHelpers.OrderData):
+        if order.orderType not in ['LIMIT', 'MARKET', 'STOP_LOSS', 'STOP_LOSS_LIMIT', 'TAKE_PROFIT', 'TAKE_PROFIT_LIMIT', 'LIMIT_MAKER']:
+            return False
+
+        if order.side not in ['BUY', 'SELL']:
+            return False
+        
+        if order.newOrderRespType not in ['ACK', 'RESULT', 'FULL']:
+            return False
+        
+        if order.timeInForce not in ['GTC', 'IOC', 'FOK']:
+            return False
+            
         if order.orderType == 'LIMIT':
             if not (order.timeInForce is None or order.quantity is None or order.price is None):
                 return True
