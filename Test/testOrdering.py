@@ -21,6 +21,14 @@ class BinanceOrderingTest(unittest.TestCase):
         except Exception as e:
             self.fail('Problem in order data')
 
+    def testNewTestOrderBadOrderType(self):
+        try:
+            res = self.tradeGate.createAndTestOrder('BTCUSDT', 'SELL', 'LINIT', timeInForce='GTC', quantity=0.002, price=49500)
+        except Exception as e:
+            return
+        
+        self.fail('Problem in validating order data')
+
     def testNewOrder(self):
         try:
             verifiedOrder = self.tradeGate.createAndTestOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
@@ -31,6 +39,16 @@ class BinanceOrderingTest(unittest.TestCase):
             self.tradeGate.makeOrder(verifiedOrder)
         except Exception as e:
             self.fail('Problem in making order: {}'.format(str(e)))
+
+    def testGetOrders(self):
+        # self.log.info('\nOrders: {}'.format(self.tradeGate.getSymbolOrders('BTCUSDT')))
+        self.assertIsNotNone(self.tradeGate.getSymbolOrders('BTCUSDT'), 'Problem in getting list of all orders')
+
+    def testGetOpenOrders(self):
+        # self.log.info('\nOrders: {}'.format(self.tradeGate.getSymbolOrders('BTCUSDT')))
+        self.assertIsNotNone(self.tradeGate.getOpenOrders(), 'Problem in getting list of open orders without symbol.')
+        self.assertIsNotNone(self.tradeGate.getOpenOrders('BTCUSDT'), 'Problem in getting list of open orders with symbol.')
+
 
 if __name__ == '__main__':
     unittest.main()

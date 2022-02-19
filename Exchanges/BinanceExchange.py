@@ -43,10 +43,10 @@ class BinanceExchange():
         if order.side not in ['BUY', 'SELL']:
             return False
         
-        if order.newOrderRespType not in ['ACK', 'RESULT', 'FULL']:
+        if order.newOrderRespType not in [None, 'ACK', 'RESULT', 'FULL']:
             return False
         
-        if order.timeInForce not in ['GTC', 'IOC', 'FOK']:
+        if order.timeInForce not in [None, 'GTC', 'IOC', 'FOK']:
             return False
             
         if order.orderType == 'LIMIT':
@@ -147,3 +147,15 @@ class BinanceExchange():
                     error.status_code, error.error_code, error.error_message
                 )
             )
+
+    def getSymbolOrders(self, symbol):
+        try:
+            return self.client.get_orders(symbol)
+        except Exception:
+            return None
+
+    def getOpenOrders(self, symbol=None):
+        try:
+            return self.client.get_open_orders(symbol)
+        except Exception:
+            return None

@@ -63,6 +63,10 @@ class TradeGate():
 
     def makeOrder(self, orderData):
         return self.exchange.makeOrder(orderData)
+
+    def getSymbolOrders(self, symbol):
+        return self.exchange.getSymbolOrders(symbol)
+
+    def getOpenOrders(self, symbol=None):
+        return self.exchange.getOpenOrders(symbol)
         
-
-
