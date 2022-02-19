@@ -1,7 +1,7 @@
 import ccxt
 import json
-import time
 from Exchanges import BinanceExchange
+from Utils import DataHelpers
 
 
 class TradeGate():
@@ -30,50 +30,25 @@ class TradeGate():
         if exchangeName == 'Binance':
             return BinanceExchange.BinanceExchange
 
-class order():
-    def __init__(self, symbol, side, orderType):
-        self.symbol = symbol
-        self.side = side
-        self.orderType = orderType
+    def createOrder(self, symbol, side, orderType, quantity, price, timeInForce='GTC', stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None):
+        currOrder = DataHelpers.OrderData(symbol, side, orderType)
+        currOrder.setQuantity(quantity)
+        currOrder.setPrice(price)
+        currOrder.setTimeInForce(timeInForce)
 
-        self.timeInForce = None
-        self.quantity = None
-        self.quoteOrderQty = None
-        self.price = None
-        self.newClientOrderId = None
-        self.stopPrice = None
-        self.icebergQty = None
-        self.newOrderRespType = None
-        self.recvWindow = None
+        if not stopPrice is None:
+            currOrder.setStopPrice(stopPrice)
 
-    def setTimeInForce(self, timeInForce):
-        self.timeInForce = timeInForce
+        if not icebergQty is None:
+            currOrder.setIcebergQty(icebergQty)
 
-    def setQuantity(self, quantity):
-        self.quantity = quantity
+        if not newOrderRespType is None:
+            currOrder.setNewOrderRespType(newOrderRespType)
+        
+        if not recvWindow is None:
+            currOrder.setRecvWindow(recvWindow)
 
-    def setQuoteOrderQty(self, quoteOrderQty):
-        self.quoteOrderQty = quoteOrderQty
-    
-    def setPrice(self, price):
-        self.price = price
-    
-    def setNewClientOrderId(self, newClientOrderId):
-        self.newClientOrderId = newClientOrderId
+        if not self.exchange.isOrderDataValid(currOrder):
+            return
 
-    def setStopPrice(self, stopPrice):
-        self.stopPrice = stopPrice
 
-    def setIcebergQty(self, icebergQty):
-        self.icebergQty = icebergQty
-    
-    def setNewOrderRespType(self, newOrderRespType):
-        self.newOrderRespType = newOrderRespType
-
-    def setRecvWindow(self, recvWindow):
-        self.recvWindow = recvWindow
-    
-    def setTimeStamp(self):
-        self.timeStamp = time.time()
-
-    
