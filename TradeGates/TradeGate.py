@@ -30,11 +30,17 @@ class TradeGate():
         if exchangeName == 'Binance':
             return BinanceExchange.BinanceExchange
 
-    def createAndTestOrder(self, symbol, side, orderType, quantity, price, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None):
+    def createAndTestOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None):
         currOrder = DataHelpers.OrderData(symbol, side, orderType)
-        currOrder.setQuantity(quantity)
-        currOrder.setPrice(price)
-        currOrder.setTimeInForce(timeInForce)
+
+        if not quantity is None:
+            currOrder.setQuantity(quantity)
+
+        if not price is None:
+            currOrder.setPrice(price)
+
+        if not timeInForce is None:
+            currOrder.setTimeInForce(timeInForce)
 
         if not stopPrice is None:
             currOrder.setStopPrice(stopPrice)
@@ -52,5 +58,11 @@ class TradeGate():
             raise Exception('Incomplete data provided.')
 
         self.exchange.testOrder(currOrder)
+
+        return currOrder
+
+    def makeOrder(self, orderData):
+        return self.exchange.makeOrder(orderData)
+        
 
 

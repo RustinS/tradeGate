@@ -113,6 +113,21 @@ class BinanceExchange():
         try:
             response = self.client.new_order_test(**params)
             logging.info(response)
+            return response
+        except ClientError as error:
+            logging.error(
+                "Found error. status: {}, error code: {}, error message: {}".format(
+                    error.status_code, error.error_code, error.error_message
+                )
+            )
+
+    def makeOrder(self, orderData):
+        params = self.getAsDict(orderData)
+
+        try:
+            response = self.client.new_order(**params)
+            logging.info(response)
+            return response
         except ClientError as error:
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(
