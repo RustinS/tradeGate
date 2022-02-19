@@ -1,5 +1,7 @@
 from binance.spot import Spot
 from Utils import DataHelpers
+import logging
+from binance.error import ClientError
 
 class BinanceExchange():
     def __init__(self, credentials, type='SPOT', sandbox=False):
@@ -64,5 +66,56 @@ class BinanceExchange():
         
         return False
 
-    def createOrder(self, params):
-        pass
+    @staticmethod
+    def getAsDict(self):
+        if self.timestamp is None:
+            raise Exception('Timestamp must be set')
+
+        params = {}
+        params['symbol'] = self.symbol
+        params['side'] = self.side
+        params['type'] = self.orderType
+        params['timestamp'] = self.timestamp
+
+        if not self.timeInForce is None:
+            params['timeInForce'] = self.timeInForce
+
+        if not self.quantity is None:
+            params['quantity'] = self.quantity
+        
+        if not self.quoteOrderQty is None:
+            params['quoteOrderQty'] = self.quoteOrderQty
+
+        if not self.price is None:
+            params['price'] = self.price
+        
+        if not self.newClientOrderId is None:
+            params['newClientOrderId'] = self.newClientOrderId
+        
+        if not self.stopPrice is None:
+            params['stopPrice'] = self.stopPrice
+        
+        if not self.icebergQty is None:
+            params['icebergQty'] = self.icebergQty
+        
+        if not self.newClientOrderId is None:
+            params['newOrderRespType'] = self.newOrderRespType
+        
+        if not self.recvWindow is None:
+            params['recvWindow'] = self.recvWindow
+
+        return params
+
+    def testOrder(self, orderData):
+        orderData.setTimestamp()
+        params = self.getAsDict(orderData)
+
+        try:
+            response = self.client.new_order_test(**params)
+            logging.info(response)
+        except ClientError as error:
+            logging.error(
+                "Found error. status: {}, error code: {}, error message: {}".format(
+                    error.status_code, error.error_code, error.error_message
+                )
+            )

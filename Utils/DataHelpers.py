@@ -16,6 +16,7 @@ class OrderData():
         self.icebergQty = None
         self.newOrderRespType = None
         self.recvWindow = None
+        self.timestamp = None
 
     def setTimeInForce(self, timeInForce):
         self.timeInForce = timeInForce
@@ -44,5 +45,6 @@ class OrderData():
     def setRecvWindow(self, recvWindow):
         self.recvWindow = recvWindow
     
-    def setTimeStamp(self):
-        self.timeStamp = time.time()
+    def setTimestamp(self):
+        self.timestamp = time.time()
+        
