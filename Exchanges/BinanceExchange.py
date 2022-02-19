@@ -159,3 +159,22 @@ class BinanceExchange():
             return self.client.get_open_orders(symbol)
         except Exception:
             return None
+
+    def cancelAllSymbolOpenOrders(self, symbol):
+        try:
+            return self.client.cancel_open_orders(symbol)
+        except Exception:
+            return None
+
+    def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
+        try:
+            if not orderId is None:
+                return self.client.cancel_order(symbol, orderId=orderId)
+            elif not localOrderId is None:
+                return self.client.cancel)order(symbol, origClientOrderId=localOrderId)
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+        except Exception:
+            return None
+        
+        
