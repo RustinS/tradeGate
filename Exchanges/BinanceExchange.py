@@ -231,5 +231,8 @@ class BinanceExchange():
         except Exception:
             return None
 
-    def getAllFuturesOrders(self, symbol):
+    def getSymbolFuturesOrders(self, symbol):
         return self.futuresClient.get_all_orders(symbol=symbol)
+
+    def getFuturesBalance(self):
+        return self.futuresClient.get_balance()
