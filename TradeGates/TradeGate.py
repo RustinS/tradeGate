@@ -30,7 +30,8 @@ class TradeGate():
         if exchangeName == 'Binance':
             return BinanceExchange.BinanceExchange
 
-    def createAndTestOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None):
+    def createAndTestOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                            newClientOrderId=None):
         currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
 
         if not quantity is None:
@@ -54,10 +55,65 @@ class TradeGate():
         if not recvWindow is None:
             currOrder.setRecvWindow(recvWindow)
 
+        if not newClientOrderId is None:
+            currOrder.setNewClientOrderId(newClientOrderId)
+
         if not self.exchange.isOrderDataValid(currOrder):
             raise Exception('Incomplete data provided.')
 
         self.exchange.testOrder(currOrder)
+
+        return currOrder
+
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None, reduceOnly=None, price=None, newClientOrderId=None,
+                                    stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None, workingType=None, priceProtect=None, newOrderRespType=None,
+                                    recvWindow=None):
+        currOrder = DataHelpers.FuturesOrderData(symbol.upper(), side.upper(), orderType.upper())
+
+        if not positionSide is None:
+            currOrder.setPositionSide(positionSide)
+        
+        if not timeInForce is None:
+            currOrder.setTimeInForce(timeInForce)
+
+        if not quantity is None:
+            currOrder.setQuantity(quantity)
+
+        if not reduceOnly is None:
+            currOrder.setReduceOnly(reduceOnly)
+
+        if not price is None:
+            currOrder.setPrice(price)
+
+        if not newClientOrderId is None:
+            currOrder.setNewClientOrderId(newClientOrderId)
+
+        if not stopPrice is None:
+            currOrder.setStopPrice(stopPrice)
+
+        if not closePosition is None:
+            currOrder.setClosePosition(closePosition)
+
+        if not activationPrice is None:
+            currOrder.setActivationPrice(activationPrice)
+
+        if not callbackRate is None:
+            currOrder.setCallbackRate(callbackRate)
+
+        if not workingType is None:
+            currOrder.setWorkingType(workingType)
+
+        if not priceProtect is None:
+            currOrder.setPriceProtect(priceProtect)
+
+        if not newOrderRespType is None:
+            currOrder.setNewOrderRespType(newOrderRespType)
+        
+        if not recvWindow is None:
+            currOrder.setRecvWindow(recvWindow)
+
+        if not self.exchange.isFuturesOrderDataValid(currOrder):
+            raise Exception('Incomplete data provided.')
 
         return currOrder
 
