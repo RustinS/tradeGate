@@ -48,7 +48,7 @@ class OrderData():
     def setTimestamp(self):
         self.timestamp = time.time()
         
-class futureOrderData():
+class futuresOrderData():
     def __init__(self, symbol, side, orderType):
         self.symbol = symbol
         self.side = side

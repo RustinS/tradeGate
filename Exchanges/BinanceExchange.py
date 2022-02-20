@@ -84,7 +84,66 @@ class BinanceExchange():
         return False
 
     @staticmethod
-    def getAsDict(self):
+    def isFuturesOrderDataValid(order : DataHelpers.futuresOrderData):
+        if order.side not in ['BUY', 'SELL']:
+            return False
+
+        if order.orderType not in ['LIMIT', 'MARKET', 'STOP', 'STOP_MARKET', 'TAKE_PROFIT', 'TAKE_PROFIT_MARKET', 'TRAILING_STOP_MARKET']:
+            return False
+
+        if order.positionSide not in [None, 'BOTH', 'LONG', 'SHORT']:
+            return False
+
+        if order.timeInForce not in [None, 'GTC', 'IOC', 'FOK', 'GTX']:
+            return False
+
+        if order.workingType not in [None, 'MARK_PRICE', 'CONTRACT_PRICE']:
+            return False
+        
+        if order.newOrderRespType not in [None, 'ACK', 'RESULT']:
+            return False
+
+        if order.closePosition not in [True, False]:
+            return False
+
+        if not (0.1 <= order.callbackRate <= 5):
+            return False
+
+        if order.priceProtect not in [True, False]:
+            return False
+
+        if order.closePosition == True and order.quantity is not None:
+            return False
+
+        if order.reduceOnly not in [True, False]:
+            return False
+
+        if order.closePosition == True and order.reduceOnly is True:
+            return False
+
+
+        if order.orderType == 'LIMIT':
+            if not (order.timeInForce is None or order.quantity is None or order.price is None):
+                return True
+
+        elif order.orderType == 'MARKET':
+            if order.quantity is not None:
+                return True
+
+        elif order.orderType in ['STOP', 'TAKE_PROFIT']:
+            if not (order.quantity is None or order.price is None or order.stopPrice is None):
+                return True
+
+        elif order.orderType in ['STOP_MARKET', 'TAKE_PROFIT_MARKET']:
+            if order.stopPrice is not None:
+                return True
+
+        elif order.orderType == 'TRAILING_STOP_MARKET':
+            if order.callbackRate is not None:
+                return True
+
+    @staticmethod
+    def getOrderAsDict(self):
         if self.timestamp is None:
             raise Exception('Timestamp must be set')
 
@@ -125,7 +184,7 @@ class BinanceExchange():
 
     def testOrder(self, orderData):
         orderData.setTimestamp()
-        params = self.getAsDict(orderData)
+        params = self.getOrderAsDict(orderData)
 
         try:
             response = self.client.new_order_test(**params)
@@ -139,7 +198,7 @@ class BinanceExchange():
             )
 
     def makeOrder(self, orderData):
-        params = self.getAsDict(orderData)
+        params = self.getOrderAsDict(orderData)
 
         try:
             response = self.client.new_order(**params)
@@ -236,3 +295,5 @@ class BinanceExchange():
 
     def getFuturesBalance(self):
         return self.futuresClient.get_balance()
+
+    def makeFuturesOrder(self, futuresOrderData):
