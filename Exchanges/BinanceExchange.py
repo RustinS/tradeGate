@@ -4,6 +4,7 @@ from Utils import DataHelpers
 import logging
 from binance.error import ClientError
 from binance_f import RequestClient
+from binance_f.model.constant import *
 
 class BinanceExchange():
     def __init__(self, credentials, type='SPOT', sandbox=False):
@@ -352,4 +353,15 @@ class BinanceExchange():
         return self.futuresClient.get_balance()
 
     def makeFuturesOrder(self, futuresOrderData):
-        pass
+        params = self.getOrderAsDict(futuresOrderData)
+
+        try:
+            response = self.futuresClient.post_order(**params)
+            logging.info(response)
+            return response
+        except ClientError as error:
+            logging.error(
+                "Found error. status: {}, error code: {}, error message: {}".format(
+                    error.status_code, error.error_code, error.error_message
+                )
+            )
