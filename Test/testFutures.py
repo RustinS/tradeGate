@@ -14,9 +14,13 @@ class BinanceAccountInfoTest(unittest.TestCase):
         logging.basicConfig(level=loglevel)
         self.log = logging.getLogger(__name__)
 
-    def testAveragePrice(self):
-        # self.log.info('\BTCUSDT Future Orders: {}'.format(self.tradeGate.getAllFuturesOrders('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getAllFuturesOrders('BTCUSDT'))
+    def testSymbollFuturesOrders(self):
+        # self.log.info('\BTCUSDT Futures Orders: {}'.format(self.tradeGate.getAllFuturesOrders('BTCUSDT')))
+        self.assertIsNotNone(self.tradeGate.getSymbolFuturesOrders('BTCUSDT'))
+
+    def testFuturesBalance(self):
+        # self.log.info('\BTCUSDT Futures Balance: {}'.format(self.tradeGate.getFuturesBalance()))
+        self.assertIsNotNone(self.tradeGate.getFuturesBalance())
         
 
 
