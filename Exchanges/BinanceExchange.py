@@ -3,6 +3,7 @@ from binance.spot import Spot
 from Utils import DataHelpers
 import logging
 from binance.error import ClientError
+from binance_f import RequestClient
 
 class BinanceExchange():
     def __init__(self, credentials, type='SPOT', sandbox=False):
@@ -12,6 +13,7 @@ class BinanceExchange():
         if type == 'SPOT':
             if sandbox:
                 self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'], base_url='https://testnet.binance.vision')
+                self.futuresClient = RequestClient(api_key=credentials['futures']['key'], secret_key=credentials['futures']['secret'], url='https://testnet.binancefuture.com')
             else:
                 self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
 
@@ -228,3 +230,6 @@ class BinanceExchange():
             return self.client.ticker_24hr(symbol)
         except Exception:
             return None
+
+    def getAllFuturesOrders(self, symbol):
+        return self.futuresClient.get_all_orders(symbol=symbol)

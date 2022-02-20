@@ -87,3 +87,6 @@ class TradeGate():
 
     def getExchangeTime(self):
         return self.exchange.getExchangeTime()
+
+    def getAllFuturesOrders(self, symbol):
+        return self.exchange.getAllFuturesOrders(symbol)
