@@ -352,3 +352,4 @@ class BinanceExchange():
         return self.futuresClient.get_balance()
 
     def makeFuturesOrder(self, futuresOrderData):
+        pass
