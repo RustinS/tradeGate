@@ -84,3 +84,6 @@ class TradeGate():
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
         return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit)
+
+    def getExchangeTime(self):
+        return self.exchange.getExchangeTime()

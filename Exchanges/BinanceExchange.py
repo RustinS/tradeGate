@@ -15,6 +15,8 @@ class BinanceExchange():
             else:
                 self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
 
+        self.timeIntervlas = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
+
     def fetchBalance(self, asset=''):
         try:
             balances = self.client.account()['balances']
@@ -208,7 +210,21 @@ class BinanceExchange():
             return None
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
+        if not interval in self.timeIntervlas:
+            raise Exception('Time interval is not valid.')
         try:
             return self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
+        except Exception:
+            return None
+
+    def getExchangeTime(self):
+        try:
+            return self.client.time()
+        except Exception:
+            return None
+
+    def getSymbol24hTicker(self, symbol):
+        try:
+            return self.client.ticker_24hr(symbol)
         except Exception:
             return None
