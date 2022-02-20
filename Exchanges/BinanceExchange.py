@@ -143,42 +143,97 @@ class BinanceExchange():
                 return True
 
     @staticmethod
-    def getOrderAsDict(self):
-        if self.timestamp is None:
+    def getOrderAsDict(order : DataHelpers.OrderData):
+        if order.timestamp is None:
             raise Exception('Timestamp must be set')
 
         params = {}
-        params['symbol'] = self.symbol
-        params['side'] = self.side
-        params['type'] = self.orderType
-        params['timestamp'] = self.timestamp
+        params['symbol'] = order.symbol
+        params['side'] = order.side
+        params['type'] = order.orderType
+        params['timestamp'] = order.timestamp
 
-        if not self.timeInForce is None:
-            params['timeInForce'] = self.timeInForce
+        if not order.timeInForce is None:
+            params['timeInForce'] = order.timeInForce
 
-        if not self.quantity is None:
-            params['quantity'] = self.quantity
+        if not order.quantity is None:
+            params['quantity'] = order.quantity
         
-        if not self.quoteOrderQty is None:
-            params['quoteOrderQty'] = self.quoteOrderQty
+        if not order.quoteOrderQty is None:
+            params['quoteOrderQty'] = order.quoteOrderQty
 
-        if not self.price is None:
-            params['price'] = self.price
+        if not order.price is None:
+            params['price'] = order.price
         
-        if not self.newClientOrderId is None:
-            params['newClientOrderId'] = self.newClientOrderId
+        if not order.newOrderRespType is None:
+            params['newOrderRespType'] = order.newOrderRespType
         
-        if not self.stopPrice is None:
-            params['stopPrice'] = self.stopPrice
+        if not order.stopPrice is None:
+            params['stopPrice'] = order.stopPrice
         
-        if not self.icebergQty is None:
-            params['icebergQty'] = self.icebergQty
+        if not order.icebergQty is None:
+            params['icebergQty'] = order.icebergQty
         
-        if not self.newClientOrderId is None:
-            params['newOrderRespType'] = self.newOrderRespType
+        if not order.newClientOrderId is None:
+            params['newOrderRespType'] = order.newOrderRespType
         
-        if not self.recvWindow is None:
-            params['recvWindow'] = self.recvWindow
+        if not order.recvWindow is None:
+            params['recvWindow'] = order.recvWindow
+
+        return params
+
+    @staticmethod
+    def getFuturesOrderAsDict(order : DataHelpers.futuresOrderData):
+        if order.timestamp is None:
+            raise Exception('Timestamp must be set')
+
+        params = {}
+        params['symbol'] = order.symbol
+        params['side'] = order.side
+        params['type'] = order.orderType
+        params['timestamp'] = order.timestamp
+
+        if not order.positionSide is None:
+            params['positionSide'] = order.positionSide
+
+        if not order.timeInForce is None:
+            params['timeInForce'] = order.timeInForce
+
+        if not order.quantity is None:
+            params['quantity'] = order.quantity
+        
+        if not order.reduceOnly is None:
+            params['reduceOnly'] = order.reduceOnly
+
+        if not order.price is None:
+            params['price'] = order.price
+        
+        if not order.newClientOrderId is None:
+            params['newClientOrderId'] = order.newClientOrderId
+        
+        if not order.stopPrice is None:
+            params['stopPrice'] = order.stopPrice
+        
+        if not order.closePosition is None:
+            params['closePosition'] = order.closePosition
+        
+        if not order.activationPrice is None:
+            params['activationPrice'] = order.activationPrice
+        
+        if not order.callbackRate is None:
+            params['callbackRate'] = order.callbackRate
+
+        if not order.workingType is None:
+            params['workingType'] = order.workingType
+
+        if not order.priceProtect is None:
+            params['priceProtect'] = order.priceProtect
+
+        if not order.newOrderRespType is None:
+            params['newOrderRespType'] = order.newOrderRespType
+
+        if not order.recvWindow is None:
+            params['recvWindow'] = order.recvWindow
 
         return params
 
