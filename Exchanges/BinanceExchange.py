@@ -171,10 +171,44 @@ class BinanceExchange():
             if not orderId is None:
                 return self.client.cancel_order(symbol, orderId=orderId)
             elif not localOrderId is None:
-                return self.client.cancel)order(symbol, origClientOrderId=localOrderId)
+                return self.client.cancel_order(symbol, origClientOrderId=localOrderId)
             else:
                 raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         except Exception:
             return None
         
-        
+    def getTradingFees(self):
+        try:
+            return self.client.trade_fee()
+        except Exception:
+            return None
+
+    def getSymbolAveragePrice(self, symbol):
+        try:
+            return self.client.avg_price(symbol)
+        except Exception:
+            return None
+
+    def getSymbolLatestTrades(self, symbol, limit=None):
+        try:
+            if not limit is None:
+                if limit > 1000: limit = 1000
+                elif limit < 1: limit = 1
+
+                return self.client.trades(symbol, limit)
+            else:
+                return self.client.trades(symbol)
+        except Exception:
+            return None
+
+    def getSymbolTickerPrice(self, symbol):
+        try:
+            return self.client.ticker_price(symbol)['price']
+        except Exception:
+            return None
+
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
+        try:
+            return self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
+        except Exception:
+            return None

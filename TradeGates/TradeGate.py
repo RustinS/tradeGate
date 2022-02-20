@@ -69,4 +69,18 @@ class TradeGate():
 
     def getOpenOrders(self, symbol=None):
         return self.exchange.getOpenOrders(symbol)
+
+    def getTradingFees(self):
+        return self.exchange.getTradingFees()
+
+    def getSymbolAveragePrice(self, symbol):
+        return self.exchange.getSymbolAveragePrice(symbol)
         
+    def getSymbolLatestTrades(self, symbol, limit=None):
+        return self.exchange.getSymbolLatestTrades(symbol, limit)
+
+    def getSymbolTickerPrice(self, symbol):
+        return self.exchange.getSymbolTickerPrice(symbol)
+
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
+        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit)
