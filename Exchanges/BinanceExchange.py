@@ -369,7 +369,7 @@ class BinanceExchange():
     def cancelAllSymbolFuturesOpenOrders(self, symbol):
         return self.futuresClient.cancel_all_orders(symbol=symbol)
 
-    def cancelSymbolFuturesOrder(self, symbol, orderId=None, localOrderId=None):
+    def cancelFuturesOrder(self, symbol, orderId=None, localOrderId=None):
         if not orderId is None:
             return self.futuresClient.cancel_order(symbol, orderId=orderId)
         elif not localOrderId is None:
