@@ -163,3 +163,15 @@ class TradeGate():
 
     def cancelAllSymbolFuturesOpenOrders(self, symbol):
         return self.exchange.cancelAllSymbolFuturesOpenOrders(symbol)
+
+    def cancelSymbolFuturesOrder(self, symbol, orderId=None, localOrderId=None):
+        return self.exchange.cancelSymbolFuturesOrder(symbol, orderId, localOrderId)
+
+    def getAllFuturesOpenOrders(self, symbol=None):
+        return self.exchange.getAllFuturesOpenOrders(symbol)
+
+    def getFuturesOrder(self, symbol, orderId=None, localOrderId=None):
+        return self.exchange.getFuturesOrder(symbol, orderId, localOrderId)
+
+    def cancellAllSymbolFuturesOrders(self, symbol, countdownTime):
+        return self.exchange.cancellAllSymbolFuturesOrders(symbol, countdownTime)

@@ -369,7 +369,7 @@ class BinanceExchange():
     def cancelAllSymbolFuturesOpenOrders(self, symbol):
         return self.futuresClient.cancel_all_orders(symbol=symbol)
 
-    def cancelSymbolFuturesOpenOrder(self, symbol, orderId=None, localOrderId=None):
+    def cancelSymbolFuturesOrder(self, symbol, orderId=None, localOrderId=None):
         if not orderId is None:
             return self.futuresClient.cancel_order(symbol, orderId=orderId)
         elif not localOrderId is None:
@@ -387,3 +387,6 @@ class BinanceExchange():
             return self.futuresClient.get_order(symbol, origClientOrderId=localOrderId)
         else:
             raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+
+    def cancellAllSymbolFuturesOrders(self, symbol, countdownTime):
+        return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
