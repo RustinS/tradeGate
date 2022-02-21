@@ -5,6 +5,7 @@ import logging
 from binance.error import ClientError
 from binance_f import RequestClient
 from binance_f.model.constant import *
+import time
 
 class BinanceExchange():
     def __init__(self, credentials, type='SPOT', sandbox=False):
@@ -266,32 +267,26 @@ class BinanceExchange():
 
     def getSymbolOrders(self, symbol):
         try:
-            return self.client.get_orders(symbol)
+            return self.client.get_orders(symbol, timestamp=time.time())
         except Exception:
             return None
 
     def getOpenOrders(self, symbol=None):
         try:
-            return self.client.get_open_orders(symbol)
+            return self.client.get_open_orders(symbol, timestamp=time.time())
         except Exception:
             return None
 
     def cancelAllSymbolOpenOrders(self, symbol):
-        try:
-            return self.client.cancel_open_orders(symbol)
-        except Exception:
-            return None
+        return self.client.cancel_open_orders(symbol, timestamp=time.time())
 
     def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
-        try:
-            if not orderId is None:
-                return self.client.cancel_order(symbol, orderId=orderId)
-            elif not localOrderId is None:
-                return self.client.cancel_order(symbol, origClientOrderId=localOrderId)
-            else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
-        except Exception:
-            return None
+        if not orderId is None:
+            return self.client.cancel_order(symbol, orderId=orderId, timestamp=time.time())
+        elif not localOrderId is None:
+            return self.client.cancel_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
+        else:
+            raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         
     def getTradingFees(self):
         try:
@@ -362,3 +357,17 @@ class BinanceExchange():
                     error.status_code, error.error_code, error.error_message
                 )
             )
+
+    def cancelAllSymbolFuturesOpenOrders(self, symbol):
+        return self.futuresClient.cancel_all_orders(symbol=symbol)
+
+    def cancelSymbolFuturesOpenOrder(self, symbol, orderId=None, localOrderId=None):
+        try:
+            if not orderId is None:
+                return self.futuresClient.cancel_order(symbol, orderId=orderId)
+            elif not localOrderId is None:
+                return self.futuresClient.cancel_order(symbol, origClientOrderId=localOrderId)
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+        except Exception:
+            return None

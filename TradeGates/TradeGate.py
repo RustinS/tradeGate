@@ -73,6 +73,12 @@ class TradeGate():
     def getOpenOrders(self, symbol=None):
         return self.exchange.getOpenOrders(symbol)
 
+    def cancelAllSymbolOpenOrders(self, symbol):
+        return self.exchange.cancelAllSymbolOpenOrders(symbol)
+
+    def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
+        return self.exchange.cancelSymbolOpenOrder(symbol, orderId, localOrderId)
+
     def getTradingFees(self):
         return self.exchange.getTradingFees()
 
@@ -151,3 +157,6 @@ class TradeGate():
 
     def makeFuturesOrder(self, futuresOrderData):
         return self.exchange.makeFuturesOrder(futuresOrderData)
+
+    def cancelAllSymbolFuturesOpenOrders(self, symbol):
+        return self.exchange.cancelAllSymbolFuturesOpenOrders(symbol)

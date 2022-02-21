@@ -29,6 +29,10 @@ class BinanceAccountInfoTest(unittest.TestCase):
         self.log.info('\nFutures Order Result: {}'.format(result))
 
         self.assertIsNotNone(result, 'Problem in submiting futures order.')
+
+    def testCancelingAllFututresOpenOrders(self):
+        result = self.tradeGate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
+        self.assertIsNotNone(result, 'Problem in canceling all futures orders')
         
 
 
