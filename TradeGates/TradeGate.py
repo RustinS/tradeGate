@@ -73,6 +73,9 @@ class TradeGate():
     def getOpenOrders(self, symbol=None):
         return self.exchange.getOpenOrders(symbol)
 
+    def getOrder(self, symbol, orderId=None, localOrderId=None):
+        return self.exchange.getOrder(symbol, orderId, localOrderId)
+
     def cancelAllSymbolOpenOrders(self, symbol):
         return self.exchange.cancelAllSymbolOpenOrders(symbol)
 
