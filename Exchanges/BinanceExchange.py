@@ -422,3 +422,15 @@ class BinanceExchange():
             return self.client.trades(symbol)
         else:
             return self.clinet.trades(symbol, limit=limit)
+
+    def getFutureSymbolOrderBook(self, symbol, limit=None):
+        if limit is None:
+            return self.futuresClient.get_order_book(symbol=symbol)
+        else:
+            return self.futuresClient.get_order_book(symbol=symbol, limit=limit)
+
+    def getFutureSymbolRecentOrders(self, symbol, limit=None):
+        if limit is None:
+            return self.futuresClient.get_recent_trades_list(symbol=symbol)
+        else:
+            return self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit)

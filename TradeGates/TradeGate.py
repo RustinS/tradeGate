@@ -199,3 +199,9 @@ class TradeGate():
 
     def getSpotRecentSymbolTrades(self, symbol, limit=None):
         return self.exchange.getSpotRecentSymbolTrades(symbol, limit)
+
+    def getFutureSymbolOrderBook(self, symbol, limit=None):
+        return self.exchange.getFutureSymbolOrderBook(symbol, limit)
+
+    def getFutureSymbolRecentOrders(self, symbol, limit=None):
+        return self.exchange.getFutureSymbolRecentOrders(symbol, limit)
