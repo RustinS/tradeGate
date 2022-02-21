@@ -65,8 +65,5 @@ class BinanceFuturesTest(unittest.TestCase):
         result = self.tradeGate.cancelFuturesOrder(symbol='BTCUSDT', localOrderId=result.clientOrderId)
         self.assertEqual(result.status, 'CANCELED', 'Problem in canceling specified Open Orders')
 
-
-
-
 if __name__ == '__main__':
     unittest.main()

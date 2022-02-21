@@ -390,3 +390,35 @@ class BinanceExchange():
 
     def cancellAllSymbolFuturesOrders(self, symbol, countdownTime):
         return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
+
+    def changeInitialLeverage(self, symbol, leverage):
+        return self.futuresClient.change_initial_leverage(symbol=symbol, leverage=leverage)
+
+    def changeMarginType(self, symbol, marginType):
+        if marginType not in ['ISOLATED', 'CROSSED']:
+            raise Exception('Margin type specified is not acceptable')
+        
+        return self.futuresClient.change_margin_type(symbol=symbol, marginType=marginType)
+
+    def changePositionMargin(self, symbol, amount, marginType):
+        if marginType not in [1, 2]:
+            raise Exception('Bad type specified.')
+        self.futuresClient.change_position_margin(symbol=symbol, amount=amount, type=marginType)
+
+    def getPosition(self):
+        return self.futuresClient.get_position()
+
+    def spotBestBidAsks(self, symbol=None):
+        return self.client.book_ticker(symbol=symbol)
+
+    def getSpotSymbolOrderBook(self, symbol, limit=None):
+        if limit is None:
+            return self.client.depth(symbol)
+        else:
+            return self.clinet.depth(symbol, limit=limit)
+
+    def getSpotRecentSymbolTrades(self, symbol, limit=None):
+        if limit is None:
+            return self.client.trades(symbol)
+        else:
+            return self.clinet.trades(symbol, limit=limit)

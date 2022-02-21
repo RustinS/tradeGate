@@ -178,3 +178,24 @@ class TradeGate():
 
     def getAllOpenFuturesOrders(self, symbol=None):
         return self.exchange.getAllOpenFuturesOrders(symbol)
+
+    def changeInitialLeverage(self, symbol, leverage):
+        return self.exchange.changeInitialLeverage(symbol, leverage)
+
+    def changeMarginType(self, symbol, marginType):
+        return self.exchange.changeMarginType(symbol, marginType)
+
+    def changePositionMargin(self, symbol, amount, marginType):
+        return self.exchange.changePositionMargin(symbol, amount, marginType)
+
+    def getPosition(self):
+        return self.exchange.getPosition()
+
+    def spotBestBidAsks(self, symbol=None):
+        return self.exchange.spotBestBidAsks(symbol)
+
+    def getSpotSymbolOrderBook(self, symbol, limit=None):
+        return self.exchange.getSpotOrderBook(symbol, limit)
+
+    def getSpotRecentSymbolTrades(self, symbol, limit=None):
+        return self.exchange.getSpotRecentSymbolTrades(symbol, limit)
