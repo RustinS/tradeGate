@@ -68,7 +68,6 @@ class futuresOrderData():
         self.priceProtect = None
         self.newOrderRespType = None
         self.recvWindow = None
-        self.timestamp = None
 
     def setPositionSide(self, positionSide):
         self.positionSide = positionSide
@@ -111,6 +110,4 @@ class futuresOrderData():
 
     def setRecvWindow(self, recvWindow):
         self.recvWindow = recvWindow
-    
-    def setTimestamp(self):
-        self.timestamp = time.time()
+        

@@ -107,8 +107,9 @@ class BinanceExchange():
         if order.closePosition not in [True, False]:
             return False
 
-        if not (0.1 <= order.callbackRate <= 5):
-            return False
+        if not order.callbackRate is None:
+            if not (0.1 <= order.callbackRate <= 5):
+                return False
 
         if order.priceProtect not in [True, False]:
             return False
@@ -185,14 +186,10 @@ class BinanceExchange():
 
     @staticmethod
     def getFuturesOrderAsDict(order : DataHelpers.futuresOrderData):
-        if order.timestamp is None:
-            raise Exception('Timestamp must be set')
-
         params = {}
         params['symbol'] = order.symbol
         params['side'] = order.side
-        params['type'] = order.orderType
-        params['timestamp'] = order.timestamp
+        params['ordertype'] = order.orderType
 
         if not order.positionSide is None:
             params['positionSide'] = order.positionSide
@@ -353,7 +350,7 @@ class BinanceExchange():
         return self.futuresClient.get_balance()
 
     def makeFuturesOrder(self, futuresOrderData):
-        params = self.getOrderAsDict(futuresOrderData)
+        params = self.getFuturesOrderAsDict(futuresOrderData)
 
         try:
             response = self.futuresClient.post_order(**params)

@@ -24,7 +24,6 @@ class TradeGate():
     def getSymbolTradeHistory(self, symbol):
         return self.exchange.SymbolTradeHistory(symbol)
 
-
     @staticmethod
     def getCorrectExchange(exchangeName):
         if exchangeName == 'Binance':
@@ -65,10 +64,43 @@ class TradeGate():
 
         return currOrder
 
-    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None, reduceOnly=None, price=None, newClientOrderId=None,
-                                    stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None, workingType=None, priceProtect=None, newOrderRespType=None,
+    def makeOrder(self, orderData):
+        return self.exchange.makeOrder(orderData)
+
+    def getSymbolOrders(self, symbol):
+        return self.exchange.getSymbolOrders(symbol)
+
+    def getOpenOrders(self, symbol=None):
+        return self.exchange.getOpenOrders(symbol)
+
+    def getTradingFees(self):
+        return self.exchange.getTradingFees()
+
+    def getSymbolAveragePrice(self, symbol):
+        return self.exchange.getSymbolAveragePrice(symbol)
+        
+    def getSymbolLatestTrades(self, symbol, limit=None):
+        return self.exchange.getSymbolLatestTrades(symbol, limit)
+
+    def getSymbolTickerPrice(self, symbol):
+        return self.exchange.getSymbolTickerPrice(symbol)
+
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
+        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit)
+
+    def getExchangeTime(self):
+        return self.exchange.getExchangeTime()
+
+    def getSymbolFuturesOrders(self, symbol):
+        return self.exchange.getSymbolFuturesOrders(symbol)
+
+    def getFuturesBalance(self):
+        return self.exchange.getFuturesBalance()
+
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None, reduceOnly=False, price=None, newClientOrderId=None,
+                                    stopPrice=None, closePosition=False, activationPrice=None, callbackRate=None, workingType=None, priceProtect=False, newOrderRespType=None,
                                     recvWindow=None):
-        currOrder = DataHelpers.FuturesOrderData(symbol.upper(), side.upper(), orderType.upper())
+        currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
 
         if not positionSide is None:
             currOrder.setPositionSide(positionSide)
@@ -117,35 +149,5 @@ class TradeGate():
 
         return currOrder
 
-    def makeOrder(self, orderData):
-        return self.exchange.makeOrder(orderData)
-
-    def getSymbolOrders(self, symbol):
-        return self.exchange.getSymbolOrders(symbol)
-
-    def getOpenOrders(self, symbol=None):
-        return self.exchange.getOpenOrders(symbol)
-
-    def getTradingFees(self):
-        return self.exchange.getTradingFees()
-
-    def getSymbolAveragePrice(self, symbol):
-        return self.exchange.getSymbolAveragePrice(symbol)
-        
-    def getSymbolLatestTrades(self, symbol, limit=None):
-        return self.exchange.getSymbolLatestTrades(symbol, limit)
-
-    def getSymbolTickerPrice(self, symbol):
-        return self.exchange.getSymbolTickerPrice(symbol)
-
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
-        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit)
-
-    def getExchangeTime(self):
-        return self.exchange.getExchangeTime()
-
-    def getSymbolFuturesOrders(self, symbol):
-        return self.exchange.getSymbolFuturesOrders(symbol)
-
-    def getFuturesBalance(self):
-        return self.exchange.getFuturesBalance()
+    def makeFuturesOrder(self, futuresOrderData):
+        return self.exchange.makeFuturesOrder(futuresOrderData)
