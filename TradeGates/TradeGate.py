@@ -1,4 +1,3 @@
-import ccxt
 import json
 from Exchanges import BinanceExchange
 from Utils import DataHelpers

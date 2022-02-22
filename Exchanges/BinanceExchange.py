@@ -1,4 +1,3 @@
-from re import L
 from binance.spot import Spot
 from Utils import DataHelpers
 import logging
