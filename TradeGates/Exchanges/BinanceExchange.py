@@ -1,3 +1,4 @@
+from tracemalloc import start
 from binance.spot import Spot
 from Utils import DataHelpers
 import logging
@@ -325,13 +326,17 @@ class BinanceExchange():
         except Exception:
             return None
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None):
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False):
         if not interval in self.timeIntervlas:
             raise Exception('Time interval is not valid.')
-        try:
+
+        if futures:
+            if BLVTNAV:
+                return self.futuresClient.get_blvt_nav_candlestick_data(symbol=symbol, interval=interval, startTime=startTime, endTime=endTime, limit=limit)
+            else:
+                return self.futuresClient.get_candlestick_data(symbol=symbol, interval=interval, startTime=startTime, endTime=endTime, limit=limit)
+        else:
             return self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
-        except Exception:
-            return None
 
     def getExchangeTime(self):
         try:

@@ -33,7 +33,8 @@ class BinanceAccountInfoTest(unittest.TestCase):
     
     def testKlines(self):
         # self.log.info('\n"BTCUSDT" Ticker Price: {}'.format(self.tradeGate.getSymbolKlines('BTCUSDT', '1m', limit=10)))
-        self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '1m', limit=10))
+        self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10))
+        self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True))
 
     def testExchangeTime(self):
         self.assertIsNotNone(self.tradeGate.getExchangeTime())
