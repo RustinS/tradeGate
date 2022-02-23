@@ -193,14 +193,8 @@ class TradeGate():
     def spotBestBidAsks(self, symbol=None):
         return self.exchange.spotBestBidAsks(symbol)
 
-    def getSpotSymbolOrderBook(self, symbol, limit=None):
-        return self.exchange.getSpotOrderBook(symbol, limit)
+    def getSymbolOrderBook(self, symbol, limit=None, futures=False):
+        return self.exchange.getSymbolOrderBook(symbol, limit, futures=False)
 
-    def getSpotRecentSymbolTrades(self, symbol, limit=None):
-        return self.exchange.getSpotRecentSymbolTrades(symbol, limit)
-
-    def getFutureSymbolOrderBook(self, symbol, limit=None):
-        return self.exchange.getFutureSymbolOrderBook(symbol, limit)
-
-    def getFutureSymbolRecentOrders(self, symbol, limit=None):
-        return self.exchange.getFutureSymbolRecentOrders(symbol, limit)
+    def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
+        return self.exchange.getSymbolRecentTrades(symbol, limit, futures)

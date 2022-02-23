@@ -415,26 +415,28 @@ class BinanceExchange():
     def spotBestBidAsks(self, symbol=None):
         return self.client.book_ticker(symbol=symbol)
 
-    def getSpotSymbolOrderBook(self, symbol, limit=None):
-        if limit is None:
-            return self.client.depth(symbol)
+    def getSymbolOrderBook(self, symbol, limit=None, futures=False):
+        if not futures:
+            if limit is None:
+                return self.client.depth(symbol)
+            else:
+                return self.clinet.depth(symbol, limit=limit)
         else:
-            return self.clinet.depth(symbol, limit=limit)
+            if limit is None:
+                return self.futuresClient.get_order_book(symbol=symbol)
+            else:
+                return self.futuresClient.get_order_book(symbol=symbol, limit=limit)
 
-    def getSpotRecentSymbolTrades(self, symbol, limit=None):
-        if limit is None:
-            return self.client.trades(symbol)
+    def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
+        if not futures:
+            if limit is None:
+                return self.client.trades(symbol)
+            else:
+                return self.clinet.trades(symbol, limit=limit)
         else:
-            return self.clinet.trades(symbol, limit=limit)
+            if limit is None:
+                return self.futuresClient.get_recent_trades_list(symbol=symbol)
+            else:
+                return self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit)
 
-    def getFutureSymbolOrderBook(self, symbol, limit=None):
-        if limit is None:
-            return self.futuresClient.get_order_book(symbol=symbol)
-        else:
-            return self.futuresClient.get_order_book(symbol=symbol, limit=limit)
-
-    def getFutureSymbolRecentOrders(self, symbol, limit=None):
-        if limit is None:
-            return self.futuresClient.get_recent_trades_list(symbol=symbol)
-        else:
-            return self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit)
+        
