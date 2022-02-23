@@ -3,7 +3,7 @@
 [![Python version](https://img.shields.io/pypi/pyversions/TradeGate)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-:money_with_wings: An algorithmic trading library to use as a gateway to different exchanges
+An algorithmic trading library to use as a gateway to different exchanges.
 
 ## How to install
 Use this github repository and running ```python setup.py install```, or using pip:
