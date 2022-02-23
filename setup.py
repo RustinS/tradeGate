@@ -1,11 +1,21 @@
 import setuptools
+import os
+import sys
+import shutil
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+try:
+    shutil.rmtree('./build')
+    shutil.rmtree('./dist')
+except OSError as e:
+    print ("Error: %s - %s." % (e.filename, e.strerror))
+
+
 setuptools.setup(
     name="TradeGate",                     # This is the name of the package
-    version="0.0.5.6",
+    version="0.0.6",
     author="Rustin Soraki",                     # Full name of the author
     description="A Trading Gateway",
     long_description=long_description,      # Long description read from the the readme file

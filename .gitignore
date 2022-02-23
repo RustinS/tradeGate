@@ -132,3 +132,5 @@ config.json
 .vscode/
 
 .pypirc
+
+.DS_Store
