@@ -1,5 +1,5 @@
 # Trade Gate
-[![PyPI version](https://img.shields.io/pypi/v/TradeGate.svg)](https://pypi.python.org/pypi/TradeGate.svg)
+[![PyPI version](https://img.shields.io/pypi/v/TradeGate.svg)](https://pypi.python.org/pypi/TradeGate)
 [![Python version](https://img.shields.io/pypi/pyversions/TradeGate)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
