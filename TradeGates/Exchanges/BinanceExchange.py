@@ -1,3 +1,5 @@
+from datetime import datetime
+from lib2to3.pytree import convert
 from tracemalloc import start
 from binance.spot import Spot
 from Utils import DataHelpers
@@ -20,6 +22,9 @@ class BinanceExchange():
                 self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
 
         self.timeIntervlas = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
+
+        self.timeIndexesInCandleData = [0, 6]
+        self.desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
 
     def fetchBalance(self, asset=''):
         try:
@@ -326,17 +331,41 @@ class BinanceExchange():
         except Exception:
             return None
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False):
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False):
         if not interval in self.timeIntervlas:
             raise Exception('Time interval is not valid.')
 
         if futures:
+            data = []
             if BLVTNAV:
-                return self.futuresClient.get_blvt_nav_candlestick_data(symbol=symbol, interval=interval, startTime=startTime, endTime=endTime, limit=limit)
+                candles = self.futuresClient.get_blvt_nav_candlestick_data(symbol=symbol, interval=interval, startTime=startTime, endTime=endTime, limit=limit)
             else:
-                return self.futuresClient.get_candlestick_data(symbol=symbol, interval=interval, startTime=startTime, endTime=endTime, limit=limit)
+                candles = self.futuresClient.get_candlestick_data(symbol=symbol, interval=interval, startTime=startTime, endTime=endTime, limit=limit)
+
+            for candle in candles:
+                data.append(candle.toArray())
         else:
-            return self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
+            data = self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
+
+            for datum in data:
+                for idx in range(len(datum)):
+                    if idx in self.timeIndexesInCandleData:
+                        continue
+                    datum[idx] = float(datum[idx])
+
+        if convertDateTime:
+            for datum in data:
+                for idx in self.timeIndexesInCandleData:
+                    datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
+
+        if doClean:
+            outArray = []
+            for datum in data:
+                outArray.append([datum[index] for index in self.desiredCandleDataIndexes])
+            return outArray
+        else:
+            return data
+
 
     def getExchangeTime(self):
         try:

@@ -4,7 +4,8 @@ from Utils import DataHelpers
 
 
 class TradeGate():
-    def __init__(self, configDict, exchangeName, spot=False, sandbox=False):
+    def __init__(self, configDict, spot=False, sandbox=False):
+        exchangeName = configDict['exchangeName']
         exchangeClass = self.getCorrectExchange(exchangeName)
         if sandbox:
             self.apiKey = configDict['credentials']['test']['spot']['key']
@@ -93,8 +94,8 @@ class TradeGate():
     def getSymbolTickerPrice(self, symbol):
         return self.exchange.getSymbolTickerPrice(symbol)
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False):
-        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, BLVTNAV)
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False):
+        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, BLVTNAV, convertDateTime, doClean)
 
     def getExchangeTime(self):
         return self.exchange.getExchangeTime()
@@ -194,7 +195,7 @@ class TradeGate():
         return self.exchange.spotBestBidAsks(symbol)
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
-        return self.exchange.getSymbolOrderBook(symbol, limit, futures=False)
+        return self.exchange.getSymbolOrderBook(symbol, limit, futures)
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)

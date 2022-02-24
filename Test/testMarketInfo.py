@@ -4,7 +4,7 @@ from TradeGates.TradeGate import TradeGate
 import logging
 
 
-class BinanceAccountInfoTest(unittest.TestCase):
+class BinanceMarketInfoTest(unittest.TestCase):
     def setUp(self):
         with open('./config.json') as f:
             config = json.load(f)
@@ -33,6 +33,9 @@ class BinanceAccountInfoTest(unittest.TestCase):
     
     def testKlines(self):
         # self.log.info('\n"BTCUSDT" Ticker Price: {}'.format(self.tradeGate.getSymbolKlines('BTCUSDT', '1m', limit=10)))
+        # data = self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=False, doClean=True, convertDateTime=True)
+        # for candle in data:
+        #     self.log.info(candle)
         self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10))
         self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True))
 
