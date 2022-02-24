@@ -16,6 +16,7 @@ Use with a config file in json format. Your config file should look like this:
 ```json
 {
     "Binance": {
+        "exchangeName": "Binance",
         "credentials": {
             "test": {
                 "futures": {
@@ -43,7 +44,7 @@ import json
 with open('/Users/rustinsoraki/Documents/Projects/tradeGate/config.json') as f:
     config = json.load(f)
     
-gate = TradeGate(config['Binance'], 'Binance', sandbox=True)
+gate = TradeGate(config['Binance'], sandbox=True)
 
 print(gate.getSymbolTickerPrice('BTCUSDT'))
 ```
