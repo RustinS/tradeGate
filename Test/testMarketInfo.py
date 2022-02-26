@@ -34,14 +34,17 @@ class BinanceMarketInfoTest(unittest.TestCase):
     def testKlines(self):
         # self.log.info('\n"BTCUSDT" Ticker Price: {}'.format(self.tradeGate.getSymbolKlines('BTCUSDT', '1m', limit=10)))
         data = self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True, doClean=True, convertDateTime=True)
-        self.log.info('\n')
-        for candle in data:
-            self.log.info(candle)
-        self.log.info('\n')
+        # self.log.info('\n')
+        # for candle in data:
+        #     self.log.info(candle)
+        # self.log.info('\n')
         self.assertIsNotNone(data, 'Problem in fetching spot market candle data.')
         self.assertIsNotNone(data)
         self.assertEqual(len(data), 10, 'Length of spot market candle data is incorrect.')
         self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True), 'Problem in fetching futures candle data.')
+
+        data = self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True, toCleanDataframe=True)
+        assert data.shape == (10, 7), '7 columns were excpected, but failed'
 
     def testExchangeTime(self):
         self.assertIsNotNone(self.tradeGate.getExchangeTime(), 'Problem in fetching exchange time. Probably connectivity issues.')
