@@ -16,7 +16,7 @@ class BinanceFuturesTest(unittest.TestCase):
 
     def testSymbolFuturesOrders(self):
         # self.log.info('\BTCUSDT Futures Orders: {}'.format(self.tradeGate.getAllFuturesOrders('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolFuturesOrders('BTCUSDT'), 'Futures order list is none.')
+        self.assertIsNotNone(self.tradeGate.getSymbolOrders('BTCUSDT', futures=True), 'Futures order list is none.')
 
     def testFuturesBalance(self):
         # self.log.info('\BTCUSDT Futures Balance: {}'.format(self.tradeGate.getFuturesBalance()))

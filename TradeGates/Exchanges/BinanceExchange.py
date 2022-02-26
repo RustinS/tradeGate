@@ -292,9 +292,12 @@ class BinanceExchange():
             )
 
 
-    def getSymbolOrders(self, symbol):
+    def getSymbolOrders(self, symbol, futures=False):
         try:
-            return self.client.get_orders(symbol, timestamp=time.time())
+            if not futures:
+                return self.client.get_orders(symbol, timestamp=time.time())
+            else:
+                return self.futuresClient.get_all_orders(symbol)
         except Exception:
             return None
 
