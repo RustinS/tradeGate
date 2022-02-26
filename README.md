@@ -15,28 +15,43 @@ pip install TradeGate
 Use with a config file in json format. Your config file should look like this:
 ```json
 {
-    "Binance": {
+    "Binance": 
+    {
         "exchangeName": "Binance",
-        "credentials": {
-            "test": {
-                "futures": {
+        "credentials": 
+        {
+            "main": 
+            {
+                "futures": 
+                {
                     "key": "API-KEY",
                     "secret": "API-SECRET"
                 },
-                "spot": {
+                "spot": 
+                {
+                    "key": "API-KEY",
+                    "secret": "API-SECRET"
+                }
+            },
+            "test": 
+            {
+                "futures": 
+                {
+                    "key": "API-KEY",
+                    "secret": "API-SECRET"
+                },
+                "spot": 
+                {
                     "key": "API-KEY",
                     "secret": "API-SECRET"
                 }
             }
-        },
-        "baseUrls": {
-            "spot": "SPOT-URL",
-            "futures": "FUTURES-URL"
         }
     }
 }
+
 ```
-You should read this config file as json and give the desired exchange's informations to the main class initializer. This is shown below:
+You should read this config file as json and give the desired exchange's informations to the main class initializer. Use ```sandbox``` argument to connect to the testnets of exchanges (if it exsits). This is shown below:
 ```python
 from TradeGate import TradeGate
 import json
