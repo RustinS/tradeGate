@@ -4,22 +4,22 @@ from Utils import DataHelpers
 
 
 class TradeGate():
-    def __init__(self, configDict, spot=False, sandbox=False):
+    def __init__(self, configDict, sandbox=False):
         exchangeName = configDict['exchangeName']
         exchangeClass = self.getCorrectExchange(exchangeName)
         if sandbox:
             self.apiKey = configDict['credentials']['test']['spot']['key']
             self.apiSecret = configDict['credentials']['test']['spot']['secret']
 
-            self.exchange = exchangeClass(configDict['credentials']['test'], type='SPOT', sandbox=True)
+            self.exchange = exchangeClass(configDict['credentials']['test'], sandbox=True)
         else:
             self.apiKey = configDict['credentials']['main']['spot']['key']
             self.apiSecret = configDict['credentials']['main']['spot']['secret']
 
-            self.exchange = exchangeClass(configDict['credentials']['test'], type='SPOT', sandbox=False)
+            self.exchange = exchangeClass(configDict['credentials']['main'], sandbox=False)
 
-    def getBalance(self, asset=''):
-        return self.exchange.fetchBalance(asset)
+    def getBalance(self, asset='', futures=False):
+        return self.exchange.getBalance(asset, futures)
 
     def getSymbolTradeHistory(self, symbol):
         return self.exchange.SymbolTradeHistory(symbol)
@@ -102,9 +102,6 @@ class TradeGate():
 
     def getSymbolFuturesOrders(self, symbol):
         return self.exchange.getSymbolFuturesOrders(symbol)
-
-    def getFuturesBalance(self):
-        return self.exchange.getFuturesBalance()
 
     def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None, reduceOnly=False, price=None, newClientOrderId=None,
                                     stopPrice=None, closePosition=False, activationPrice=None, callbackRate=None, workingType=None, priceProtect=False, newOrderRespType=None,

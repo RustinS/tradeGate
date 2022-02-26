@@ -1,7 +1,7 @@
 import unittest
 import json
 from TradeGates.TradeGate import TradeGate
-from Utils.DataHelpers import OrderData
+from TradeGates.Utils.DataHelpers import OrderData
 import logging
 
 
@@ -10,7 +10,7 @@ class BinanceOrderingTest(unittest.TestCase):
         with open('./config.json') as f:
             config = json.load(f)
 
-        self.tradeGate = TradeGate(config['Binance'], 'Binance', sandbox=True)
+        self.tradeGate = TradeGate(config['Binance'], sandbox=True)
         loglevel = logging.INFO
         logging.basicConfig(level=loglevel)
         self.log = logging.getLogger(__name__)

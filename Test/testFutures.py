@@ -9,28 +9,28 @@ class BinanceFuturesTest(unittest.TestCase):
         with open('./config.json') as f:
             config = json.load(f)
 
-        self.tradeGate = TradeGate(config['Binance'], 'Binance', sandbox=True)
+        self.tradeGate = TradeGate(config['Binance'], sandbox=True)
         loglevel = logging.INFO
         logging.basicConfig(level=loglevel)
         self.log = logging.getLogger(__name__)
 
     def testSymbolFuturesOrders(self):
         # self.log.info('\BTCUSDT Futures Orders: {}'.format(self.tradeGate.getAllFuturesOrders('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolFuturesOrders('BTCUSDT'))
+        self.assertIsNotNone(self.tradeGate.getSymbolFuturesOrders('BTCUSDT'), 'Futures order list is none.')
 
     def testFuturesBalance(self):
         # self.log.info('\BTCUSDT Futures Balance: {}'.format(self.tradeGate.getFuturesBalance()))
-        self.assertIsNotNone(self.tradeGate.getFuturesBalance())
+        self.assertIsNotNone(self.tradeGate.getBalance(futures=True), 'Futures balance is none.')
 
     def testFuturesOrder(self):
         futuresOrderData = self.tradeGate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
 
         result = self.tradeGate.makeFuturesOrder(futuresOrderData)
-        self.log.info('\nFutures Order Result: {}'.format(result))
+        # self.log.info('\nFutures Order Result: {}'.format(result))
 
         self.assertIsNotNone(result, 'Problem in submiting futures order.')
 
-    def testCancelingAllFututresOpenOrders(self):
+    def testCancelingAllFuturesOpenOrders(self):
         result = self.tradeGate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
         self.assertIsNotNone(result, 'Problem in canceling all futures orders')
 
@@ -44,10 +44,10 @@ class BinanceFuturesTest(unittest.TestCase):
         result = self.tradeGate.makeFuturesOrder(futuresOrderData)
         # self.log.info('\n\n{}'.format(result.orderId))
         order = self.tradeGate.getFuturesOrder('BTCUSDT', orderId=result.orderId)
-        self.assertEqual(order.clientOrderId, result.clientOrderId)
+        self.assertEqual(order.clientOrderId, result.clientOrderId, 'Futures fetch client orderID is not equal to the actual client orderID')
 
         order = self.tradeGate.getFuturesOrder('BTCUSDT', localOrderId=result.clientOrderId)
-        self.assertEqual(order.orderId, result.orderId)
+        self.assertEqual(order.orderId, result.orderId, 'Futures fetch orderID is not equal to the actual orderID')
 
     def testCancelingAllFuturesOpenOrders(self):
         futuresOrderData = self.tradeGate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)

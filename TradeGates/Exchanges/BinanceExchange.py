@@ -9,42 +9,25 @@ from binance_f import RequestClient
 from binance_f.model.constant import *
 import time
 
+
+
 class BinanceExchange():
-    def __init__(self, credentials, type='SPOT', sandbox=False):
+    def __init__(self, credentials, sandbox=False):
         self.credentials = credentials
         self.sandbox = sandbox
 
-        if type == 'SPOT':
-            if sandbox:
-                self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'], base_url='https://testnet.binance.vision')
-                self.futuresClient = RequestClient(api_key=credentials['futures']['key'], secret_key=credentials['futures']['secret'], url='https://testnet.binancefuture.com')
-            else:
-                self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
+        if sandbox:
+            self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'], base_url='https://testnet.binance.vision')
+            self.futuresClient = RequestClient(api_key=credentials['futures']['key'], secret_key=credentials['futures']['secret'], url='https://testnet.binancefuture.com')
+        else:
+            self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
+            self.futuresClient = RequestClient(api_key=credentials['futures']['key'], secret_key=credentials['futures']['secret'])
 
         self.timeIntervlas = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
 
         self.timeIndexesInCandleData = [0, 6]
         self.desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
 
-    def fetchBalance(self, asset=''):
-        try:
-            balances = self.client.account()['balances']
-        except Exception:
-            return None
-
-        if asset == '':
-            return balances
-        else:
-            for balance in balances:
-                if balance['asset'] == asset:
-                    return balance
-        return None
-
-    def SymbolTradeHistory(self, symbol):
-        try:
-            return self.client.my_trades(symbol)
-        except Exception:
-            return None
 
     @staticmethod
     def isOrderDataValid(order : DataHelpers.OrderData):
@@ -89,6 +72,7 @@ class BinanceExchange():
                 return True
         
         return False
+
 
     @staticmethod
     def isFuturesOrderDataValid(order : DataHelpers.futuresOrderData):
@@ -150,6 +134,7 @@ class BinanceExchange():
             if order.callbackRate is not None:
                 return True
 
+    
     @staticmethod
     def getOrderAsDict(order : DataHelpers.OrderData):
         if order.timestamp is None:
@@ -189,6 +174,7 @@ class BinanceExchange():
             params['recvWindow'] = order.recvWindow
 
         return params
+
 
     @staticmethod
     def getFuturesOrderAsDict(order : DataHelpers.futuresOrderData):
@@ -241,6 +227,40 @@ class BinanceExchange():
 
         return params
 
+
+    def getBalance(self, asset='', futures=False):
+        if not futures:
+            try:
+                balances = self.client.account()['balances']
+            except Exception:
+                return None
+
+            if asset == '':
+                return balances
+            else:
+                for balance in balances:
+                    if balance['asset'] == asset:
+                        return balance
+            return None
+        else:
+            balances = self.futuresClient.get_balance()
+
+            if asset == '':
+                return balances
+            else:
+                for balance in balances:
+                    if balance['asset'] == asset:
+                        return balance
+            return None
+            
+
+    def SymbolTradeHistory(self, symbol):
+        try:
+            return self.client.my_trades(symbol)
+        except Exception:
+            return None
+
+
     def testOrder(self, orderData):
         orderData.setTimestamp()
         params = self.getOrderAsDict(orderData)
@@ -256,6 +276,7 @@ class BinanceExchange():
                 )
             )
 
+
     def makeOrder(self, orderData):
         params = self.getOrderAsDict(orderData)
 
@@ -270,11 +291,13 @@ class BinanceExchange():
                 )
             )
 
+
     def getSymbolOrders(self, symbol):
         try:
             return self.client.get_orders(symbol, timestamp=time.time())
         except Exception:
             return None
+
 
     def getOpenOrders(self, symbol=None):
         try:
@@ -282,8 +305,10 @@ class BinanceExchange():
         except Exception:
             return None
 
+
     def cancelAllSymbolOpenOrders(self, symbol):
         return self.client.cancel_open_orders(symbol, timestamp=time.time())
+
 
     def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
         if not orderId is None:
@@ -293,6 +318,7 @@ class BinanceExchange():
         else:
             raise Exception('Specify either order Id in the exchange or local Id sent with the order')
     
+
     def getOrder(self, symbol, orderId=None, localOrderId=None):
         if not orderId is None:
             return self.client.get_order(symbol, orderId=orderId, timestamp=time.time())
@@ -301,17 +327,20 @@ class BinanceExchange():
         else:
             raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         
+
     def getTradingFees(self):
         try:
             return self.client.trade_fee()
         except Exception:
             return None
 
+
     def getSymbolAveragePrice(self, symbol):
         try:
             return self.client.avg_price(symbol)
         except Exception:
             return None
+
 
     def getSymbolLatestTrades(self, symbol, limit=None):
         try:
@@ -325,11 +354,13 @@ class BinanceExchange():
         except Exception:
             return None
 
+
     def getSymbolTickerPrice(self, symbol):
         try:
             return self.client.ticker_price(symbol)['price']
         except Exception:
             return None
+
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False):
         if not interval in self.timeIntervlas:
@@ -373,17 +404,17 @@ class BinanceExchange():
         except Exception:
             return None
 
+
     def getSymbol24hTicker(self, symbol):
         try:
             return self.client.ticker_24hr(symbol)
         except Exception:
             return None
 
-    def getSymbolFuturesOrders(self, symbol):
+
+    def getAllSymbolFuturesOrders(self, symbol):
         return self.futuresClient.get_all_orders(symbol=symbol)
 
-    def getFuturesBalance(self):
-        return self.futuresClient.get_balance()
 
     def makeFuturesOrder(self, futuresOrderData):
         params = self.getFuturesOrderAsDict(futuresOrderData)
