@@ -94,8 +94,8 @@ class TradeGate():
     def getSymbolTickerPrice(self, symbol):
         return self.exchange.getSymbolTickerPrice(symbol)
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False):
-        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, BLVTNAV, convertDateTime, doClean)
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False, toCleanDataframe=False):
+        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, BLVTNAV, convertDateTime, doClean, toCleanDataframe)
 
     def getExchangeTime(self):
         return self.exchange.getExchangeTime()

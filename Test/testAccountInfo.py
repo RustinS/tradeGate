@@ -4,7 +4,7 @@ from TradeGates.TradeGate import TradeGate
 import logging
 
 
-class BinanceAccountInfoTest(unittest.TestCase):
+class TestBinanceAccountInfo(unittest.TestCase):
     def setUp(self):
         with open('./config.json') as f:
             config = json.load(f)

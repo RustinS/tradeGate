@@ -8,6 +8,7 @@ from binance.error import ClientError
 from binance_f import RequestClient
 from binance_f.model.constant import *
 import time
+import pandas as pd
 
 
 
@@ -365,7 +366,7 @@ class BinanceExchange():
             return None
 
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False):
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False, toCleanDataframe=False):
         if not interval in self.timeIntervlas:
             raise Exception('Time interval is not valid.')
 
@@ -387,15 +388,20 @@ class BinanceExchange():
                         continue
                     datum[idx] = float(datum[idx])
 
-        if convertDateTime:
+        if convertDateTime or toCleanDataframe:
             for datum in data:
                 for idx in self.timeIndexesInCandleData:
                     datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
 
-        if doClean:
+        if doClean or toCleanDataframe:
             outArray = []
             for datum in data:
                 outArray.append([datum[index] for index in self.desiredCandleDataIndexes])
+
+            if toCleanDataframe:
+                df = pd.DataFrame(outArray, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
+                df.set_index('date', inplace=True)
+                return df
             return outArray
         else:
             return data
