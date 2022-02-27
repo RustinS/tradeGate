@@ -1,8 +1,12 @@
 # Trade Gate
-[![Run Unit Tests](https://github.com/RastinS/tradeGate/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/RastinS/tradeGate/actions/workflows/main.yml)
-[![PyPI version](https://img.shields.io/pypi/v/TradeGate.svg)](https://pypi.python.org/pypi/TradeGate)
-[![Python version](https://img.shields.io/pypi/pyversions/TradeGate)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+    
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/RastinS/tradeGate/Run%20Unit%20Tests?label=Unit%20Tests&style=flat-square)
+![PyPI](https://img.shields.io/pypi/v/tradegate?style=flat-square)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tradeGate?style=flat-square)
+![GitHub](https://img.shields.io/github/license/rastins/tradegate?style=flat-square)
+    
+</div>
 
 An algorithmic trading library to use as a gateway to different exchanges.
 
