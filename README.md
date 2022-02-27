@@ -54,7 +54,6 @@ Use with a config file in json format. Your config file should look like this:
         }
     }
 }
-
 ```
 You should read this config file as json and give the desired exchange's informations to the main class initializer. Use ```sandbox``` argument to connect to the testnets of exchanges (if it exsits). This is shown below:
 ```python
@@ -68,3 +67,9 @@ gate = TradeGate(config['Binance'], sandbox=True)
 
 print(gate.getSymbolTickerPrice('BTCUSDT'))
 ```
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. Best way to contribute right now is to implement as many exchanges as possible. Make sure all test cases are passing.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
