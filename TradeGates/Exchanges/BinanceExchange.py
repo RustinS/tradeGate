@@ -7,6 +7,7 @@ import logging
 from binance.error import ClientError
 from binance_f import RequestClient
 from binance_f.model.constant import *
+from binance_f.model.balance import Balance
 import time
 import pandas as pd
 
@@ -244,7 +245,9 @@ class BinanceExchange():
                         return balance
             return None
         else:
-            balances = self.futuresClient.get_balance()
+            balances = []
+            for balance in self.futuresClient.get_balance():
+                balances.append(balance.toDict())
 
             if asset == '':
                 return balances
@@ -252,6 +255,7 @@ class BinanceExchange():
                 for balance in balances:
                     if balance['asset'] == asset:
                         return balance
+                return Balance.makeFreeBalance(asset)
             return None
             
 

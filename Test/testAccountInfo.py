@@ -1,4 +1,3 @@
-import unittest
 import json
 from TradeGates.TradeGate import TradeGate
 import logging
@@ -29,7 +28,7 @@ def testFullBalance(getGates):
 def testSingleCoinBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance('BTC')
-        # print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
         assert balance is not None, 'Fetching single coin balance is none.'
 
 def testTradeHistory(getGates):

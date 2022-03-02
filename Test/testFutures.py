@@ -2,68 +2,91 @@ import unittest
 import json
 from TradeGates.TradeGate import TradeGate
 import logging
+import pytest
 
 
-class BinanceFuturesTest(unittest.TestCase):
-    def setUp(self):
-        with open('./config.json') as f:
-            config = json.load(f)
 
-        self.tradeGate = TradeGate(config['Binance'], sandbox=True)
-        loglevel = logging.INFO
-        logging.basicConfig(level=loglevel)
-        self.log = logging.getLogger(__name__)
+loglevel = logging.INFO
+logging.basicConfig(level=loglevel)
+log = logging.getLogger(__name__)
 
-    def testSymbolFuturesOrders(self):
-        # self.log.info('\BTCUSDT Futures Orders: {}'.format(self.tradeGate.getAllFuturesOrders('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolOrders('BTCUSDT', futures=True), 'Futures order list is none.')
+@pytest.fixture
+def getGates():
+    gates = []
+    with open('./config.json') as f:
+        config = json.load(f)
 
-    def testFuturesBalance(self):
-        # self.log.info('\BTCUSDT Futures Balance: {}'.format(self.tradeGate.getFuturesBalance()))
-        self.assertIsNotNone(self.tradeGate.getBalance(futures=True), 'Futures balance is none.')
+    for key in config.keys():
+        gates.append(TradeGate(config[key], sandbox=True))
 
-    def testFuturesOrder(self):
-        futuresOrderData = self.tradeGate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
+    return gates
 
-        result = self.tradeGate.makeFuturesOrder(futuresOrderData)
-        # self.log.info('\nFutures Order Result: {}'.format(result))
+def testSymbolFuturesOrders(getGates):
+    for gate in getGates:
+        symbolFutureOrders = gate.getSymbolOrders('BTCUSDT', futures=True)
+        # print('\nSymbol future orders from {} exchange: {}'.format(gate.exchangeName, symbolFutureOrders))
+        assert symbolFutureOrders is not None, 'Futures order list is none.'
 
-        self.assertIsNotNone(result, 'Problem in submiting futures order.')
+def testFuturesBalance(getGates):
+    for gate in getGates:
+        balance = gate.getBalance(futures=True)
+        print('\nFutures balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        assert balance is not None, 'Futures balance is none.'
 
-    def testCancelingAllFuturesOpenOrders(self):
-        result = self.tradeGate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
-        self.assertIsNotNone(result, 'Problem in canceling all futures orders')
+def testFuturesSingleCoinBalance(getGates):
+    for gate in getGates:
+        balance = gate.getBalance('BTC', futures=True)
+        # print('\nBTC Futures balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        assert balance is not None, 'Futures single coin balance is none.'
 
-    def testGetFuturesOpenOrders(self):
-        # self.log.info('\nOrders: {}'.format(self.tradeGate.getOpenOrders('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getAllFuturesOpenOrders(), 'Problem in getting list of open orders without symbol.')
-        self.assertIsNotNone(self.tradeGate.getAllFuturesOpenOrders('BTCUSDT'), 'Problem in getting list of open orders with symbol.')
+def testFuturesOrder(getGates):
+    for gate in getGates:
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
+        result = gate.makeFuturesOrder(futuresOrderData)
 
-    def testGetFutureOrder(self):
-        futuresOrderData = self.tradeGate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
-        result = self.tradeGate.makeFuturesOrder(futuresOrderData)
-        # self.log.info('\n\n{}'.format(result.orderId))
-        order = self.tradeGate.getFuturesOrder('BTCUSDT', orderId=result.orderId)
-        self.assertEqual(order.clientOrderId, result.clientOrderId, 'Futures fetch client orderID is not equal to the actual client orderID')
+        # print('\nFuture ordering in [] exchange: {}'.format(gate.exchangeName, result))
+        assert result is not None, 'Problem in submiting futures order.'
 
-        order = self.tradeGate.getFuturesOrder('BTCUSDT', localOrderId=result.clientOrderId)
-        self.assertEqual(order.orderId, result.orderId, 'Futures fetch orderID is not equal to the actual orderID')
+def testCancelingAllFuturesOpenOrders(getGates):
+    for gate in getGates:
+        result = gate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
 
-    def testCancelingAllFuturesOpenOrders(self):
-        futuresOrderData = self.tradeGate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)
-        result = self.tradeGate.makeFuturesOrder(futuresOrderData)
+        print('\nFuture order canceling in [] exchange: {}'.format(gate.exchangeName, result))
+        assert result is not None, 'Problem in canceling all futures orders'
 
-        result = self.tradeGate.cancellAllSymbolFuturesOrders('BTCUSDT', 1)
+def testGetFuturesOpenOrders(getGates):
+    for gate in getGates:
+        cancelAllOrdersResult = gate.getAllFuturesOpenOrders()
+        assert cancelAllOrdersResult is not None, 'Problem in getting list of open orders without symbol.'
 
-        openOrders = self.tradeGate.getAllFuturesOpenOrders('BTCUSDT')
-        self.assertEqual(len(openOrders), 0, 'Problem in canceling all Open Orders')
+        cancelSingleSymbolOrdersResult = gate.getAllFuturesOpenOrders('BTCUSDT')
+        assert cancelSingleSymbolOrdersResult is not None, 'Problem in getting list of open orders with symbol.'
 
-    def testCancelingOrder(self):
-        futuresOrderData = self.tradeGate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)
-        result = self.tradeGate.makeFuturesOrder(futuresOrderData)
+def testGetFutureOrder(getGates):
+    for gate in getGates:
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
+        result = gate.makeFuturesOrder(futuresOrderData)
+        order = gate.getFuturesOrder('BTCUSDT', orderId=result.orderId)
 
-        result = self.tradeGate.cancelFuturesOrder(symbol='BTCUSDT', localOrderId=result.clientOrderId)
-        self.assertEqual(result.status, 'CANCELED', 'Problem in canceling specified Open Orders')
+        assert order.clientOrderId == result.clientOrderId, 'Futures fetch client orderID is not equal to the actual client orderID'
 
-if __name__ == '__main__':
-    unittest.main()
+        order = gate.getFuturesOrder('BTCUSDT', localOrderId=result.clientOrderId)
+        assert order.orderId == result.orderId, 'Futures fetch orderID is not equal to the actual orderID'
+
+def testCancelingAllFuturesOpenOrders(getGates):
+    for gate in getGates:
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)
+        gate.makeFuturesOrder(futuresOrderData)
+
+        gate.cancellAllSymbolFuturesOrders('BTCUSDT', 1)
+
+        openOrders = gate.getAllFuturesOpenOrders('BTCUSDT')
+        assert len(openOrders) == 0, 'Problem in canceling all Open Orders'
+
+def testCancelingOrder(getGates):
+    for gate in getGates:
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)
+        result = gate.makeFuturesOrder(futuresOrderData)
+
+        result = gate.cancelFuturesOrder(symbol='BTCUSDT', localOrderId=result.clientOrderId)
+        assert result.status == 'CANCELED', 'Problem in canceling specified Open Orders'

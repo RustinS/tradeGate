@@ -15,3 +15,23 @@ class Balance:
         result.withdrawAvailable = json_data.get_float("withdrawAvailable")
 
         return result
+
+    @staticmethod
+    def makeFreeBalance(asset):
+        outDict = {}
+        
+        outDict['asset'] = asset
+        outDict['free'] = str(0.0)
+        outDict['locked'] = str(0.0)
+
+        return outDict
+
+
+    def toDict(self):
+        outDict = {}
+        
+        outDict['asset'] = self.asset
+        outDict['free'] = str(self.withdrawAvailable)
+        outDict['locked'] = str(self.balance - self.withdrawAvailable)
+
+        return outDict
