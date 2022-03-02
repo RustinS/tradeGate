@@ -5,8 +5,8 @@ from Utils import DataHelpers
 
 class TradeGate():
     def __init__(self, configDict, sandbox=False):
-        exchangeName = configDict['exchangeName']
-        exchangeClass = self.getCorrectExchange(exchangeName)
+        self.exchangeName = configDict['exchangeName']
+        exchangeClass = self.getCorrectExchange(self.exchangeName)
         if sandbox:
             self.apiKey = configDict['credentials']['test']['spot']['key']
             self.apiSecret = configDict['credentials']['test']['spot']['secret']

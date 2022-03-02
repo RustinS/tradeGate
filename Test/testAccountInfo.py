@@ -2,30 +2,38 @@ import unittest
 import json
 from TradeGates.TradeGate import TradeGate
 import logging
+import pytest
 
 
-class TestBinanceAccountInfo(unittest.TestCase):
-    def setUp(self):
-        with open('./config.json') as f:
-            config = json.load(f)
+loglevel = logging.INFO
+logging.basicConfig(level=loglevel)
+log = logging.getLogger(__name__)
 
-        self.tradeGate = TradeGate(config['Binance'], sandbox=True)
-        loglevel = logging.INFO
-        logging.basicConfig(level=loglevel)
-        self.log = logging.getLogger(__name__)
+@pytest.fixture
+def getGates():
+    gates = []
+    with open('./config.json') as f:
+        config = json.load(f)
 
-    def testFullBalance(self):
-        # self.log.info('\nFull Balance: {}'.format(self.tradeGate.getBalance()))
-        self.assertIsNotNone(self.tradeGate.getBalance(), 'Fetching balance is none.')
+    for key in config.keys():
+        gates.append(TradeGate(config[key], sandbox=True))
 
-    def testSingleCoinBalance(self):
-        # self.log.info('\nCoin Balance: {}'.format(self.tradeGate.getBalance('BTC')))
-        self.assertIsNotNone(self.tradeGate.getBalance('BTC'), 'Fetching single coin balance is none.')
+    return gates
 
-    def testTradeHistory(self):
-        # self.log.info('\nHistory: {}'.format(self.tradeGate.getSymbolTradeHistory('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolTradeHistory('BTCUSDT'), 'Trade history is none.')
+def testFullBalance(getGates):
+    for gate in getGates:
+        balance = gate.getBalance()
+        # print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        assert balance is not None, 'Fetching balance is none.'
 
+def testSingleCoinBalance(getGates):
+    for gate in getGates:
+        balance = gate.getBalance('BTC')
+        # print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        assert balance is not None, 'Fetching single coin balance is none.'
 
-if __name__ == '__main__':
-    unittest.main()
+def testTradeHistory(getGates):
+    for gate in getGates:
+        tradeHisytory = gate.getSymbolTradeHistory('BTCUSDT')
+        # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHisytory))
+        assert tradeHisytory is not None, 'Trade history is none.'
