@@ -23,16 +23,16 @@ def testFullBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance()
         # print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
-        assert balance is not None, 'Fetching balance is none.'
+        assert balance is not None, 'Problem in fetching balance from {} exchange.'.format(gate.exchangeName)
 
 def testSingleCoinBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance('BTC')
         print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
-        assert balance is not None, 'Fetching single coin balance is none.'
+        assert balance is not None, 'Problem in fetching single coin balance from {} exchange.'.fomrat(gate.exchangeName)
 
 def testTradeHistory(getGates):
     for gate in getGates:
         tradeHisytory = gate.getSymbolTradeHistory('BTCUSDT')
         # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHisytory))
-        assert tradeHisytory is not None, 'Trade history is none.'
+        assert tradeHisytory is not None, 'Problem in fetching trade history from {} exchange.'.format(gate.exchangeName)

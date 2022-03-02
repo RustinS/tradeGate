@@ -1,9 +1,7 @@
-import unittest
 import json
 from TradeGates.TradeGate import TradeGate
 import logging
 import pytest
-
 
 
 loglevel = logging.INFO
@@ -25,42 +23,41 @@ def testSymbolFuturesOrders(getGates):
     for gate in getGates:
         symbolFutureOrders = gate.getSymbolOrders('BTCUSDT', futures=True)
         # print('\nSymbol future orders from {} exchange: {}'.format(gate.exchangeName, symbolFutureOrders))
-        assert symbolFutureOrders is not None, 'Futures order list is none.'
+        assert symbolFutureOrders is not None, 'Problem in futures order list from {} exchange.'.format(gate.exchangeName)
 
 def testFuturesBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance(futures=True)
         print('\nFutures balance from {} exchange: {}'.format(gate.exchangeName, balance))
-        assert balance is not None, 'Futures balance is none.'
+        assert balance is not None, 'Problem in futures balance from {} exchange.'.format(gate.exchangeName)
 
 def testFuturesSingleCoinBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance('BTC', futures=True)
         # print('\nBTC Futures balance from {} exchange: {}'.format(gate.exchangeName, balance))
-        assert balance is not None, 'Futures single coin balance is none.'
+        assert balance is not None, 'Problem in fetching futures single coin balance from {} exchange.'.format(gate.exchangeName)
 
 def testFuturesOrder(getGates):
     for gate in getGates:
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
-
         # print('\nFuture ordering in [] exchange: {}'.format(gate.exchangeName, result))
-        assert result is not None, 'Problem in submiting futures order.'
+        assert result is not None, 'Problem in submiting futures order in {} exchange.'.format(gate.exchangeName)
 
 def testCancelingAllFuturesOpenOrders(getGates):
     for gate in getGates:
         result = gate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
 
         print('\nFuture order canceling in [] exchange: {}'.format(gate.exchangeName, result))
-        assert result is not None, 'Problem in canceling all futures orders'
+        assert result is not None, 'Problem in canceling all futures orders in {} exchange.'.format(gate.exchangeName)
 
 def testGetFuturesOpenOrders(getGates):
     for gate in getGates:
         cancelAllOrdersResult = gate.getAllFuturesOpenOrders()
-        assert cancelAllOrdersResult is not None, 'Problem in getting list of open orders without symbol.'
+        assert cancelAllOrdersResult is not None, 'Problem in getting list of open orders without symbol from {} exchanghe.'.format(gate.exchangeName)
 
         cancelSingleSymbolOrdersResult = gate.getAllFuturesOpenOrders('BTCUSDT')
-        assert cancelSingleSymbolOrdersResult is not None, 'Problem in getting list of open orders with symbol.'
+        assert cancelSingleSymbolOrdersResult is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(gate.exchangeName)
 
 def testGetFutureOrder(getGates):
     for gate in getGates:
@@ -68,10 +65,10 @@ def testGetFutureOrder(getGates):
         result = gate.makeFuturesOrder(futuresOrderData)
         order = gate.getFuturesOrder('BTCUSDT', orderId=result.orderId)
 
-        assert order.clientOrderId == result.clientOrderId, 'Futures fetch client orderID is not equal to the actual client orderID'
+        assert order.clientOrderId == result.clientOrderId, 'Futures fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(gate.exchangeName)
 
         order = gate.getFuturesOrder('BTCUSDT', localOrderId=result.clientOrderId)
-        assert order.orderId == result.orderId, 'Futures fetch orderID is not equal to the actual orderID'
+        assert order.orderId == result.orderId, 'Futures fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
 
 def testCancelingAllFuturesOpenOrders(getGates):
     for gate in getGates:
@@ -81,7 +78,7 @@ def testCancelingAllFuturesOpenOrders(getGates):
         gate.cancellAllSymbolFuturesOrders('BTCUSDT', 1)
 
         openOrders = gate.getAllFuturesOpenOrders('BTCUSDT')
-        assert len(openOrders) == 0, 'Problem in canceling all Open Orders'
+        assert len(openOrders) == 0, 'Problem in canceling all Open Orders in {} exchange.'.format(gate.exchangeName)
 
 def testCancelingOrder(getGates):
     for gate in getGates:
@@ -89,4 +86,4 @@ def testCancelingOrder(getGates):
         result = gate.makeFuturesOrder(futuresOrderData)
 
         result = gate.cancelFuturesOrder(symbol='BTCUSDT', localOrderId=result.clientOrderId)
-        assert result.status == 'CANCELED', 'Problem in canceling specified Open Orders'
+        assert result.status == 'CANCELED', 'Problem in canceling specified Open Orders from {} exchnage.'.format(gate.exchangeName)

@@ -2,53 +2,69 @@ import unittest
 import json
 from TradeGates.TradeGate import TradeGate
 import logging
+import pytest
 
 
-class BinanceMarketInfoTest(unittest.TestCase):
-    def setUp(self):
-        with open('./config.json') as f:
-            config = json.load(f)
 
-        self.tradeGate = TradeGate(config['Binance'], sandbox=False)
-        loglevel = logging.INFO
-        logging.basicConfig(level=loglevel)
-        self.log = logging.getLogger(__name__)
+loglevel = logging.INFO
+logging.basicConfig(level=loglevel)
+log = logging.getLogger(__name__)
 
-    @unittest.skip
-    def testTradingFees(self):
-        # self.log.info('\nTrading Fees: {}'.format(self.tradeGate.getTradingFees()))
-        self.assertIsNotNone(self.tradeGate.getTradingFees(), 'Problem in fetching trading fees.')
+@pytest.fixture
+def getGates():
+    gates = []
+    with open('./config.json') as f:
+        config = json.load(f)
 
-    def testAveragePrice(self):
-        # self.log.info('\BTCUSDT Average Price: {}'.format(self.tradeGate.getSymbolAveragePrice('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolAveragePrice('BTCUSDT'), 'Problem in fetching symbol average price.')
+    for key in config.keys():
+        gates.append(TradeGate(config[key], sandbox=True))
 
-    def testLatestTrades(self):
-        # self.log.info('\nLatest Trades For BTCUSDT: {}'.format(self.tradeGate.getSymbolLatestTrades('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolLatestTrades('BTCUSDT'), 'Problem in fetching latest trades.')
+    return gates
 
-    def testTickerPrice(self):
-        # self.log.info('\n"BTCUSDT" Ticker Price: {}'.format(self.tradeGate.getSymbolTickerPrice('BTCUSDT')))
-        self.assertIsNotNone(self.tradeGate.getSymbolTickerPrice('BTCUSDT'), 'Problem in fetching symbol\'s ticker price')
-    
-    def testKlines(self):
-        # self.log.info('\n"BTCUSDT" Ticker Price: {}'.format(self.tradeGate.getSymbolKlines('BTCUSDT', '1m', limit=10)))
-        data = self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True, doClean=True, convertDateTime=True)
-        # self.log.info('\n')
-        # for candle in data:
-        #     self.log.info(candle)
-        # self.log.info('\n')
-        self.assertIsNotNone(data, 'Problem in fetching spot market candle data.')
-        self.assertIsNotNone(data)
-        self.assertEqual(len(data), 10, 'Length of spot market candle data is incorrect.')
-        self.assertIsNotNone(self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True), 'Problem in fetching futures candle data.')
+@pytest.mark.skip(reason="Only works with main network")
+def testTradingFees(getGates):
+    for gate in getGates:
+        tradingFees = gate.getTradingFees()
+        # print('\nTrading fees from {} exchange: {}'.format(gate.exchangeName, tradingFees))
 
-        data = self.tradeGate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True, toCleanDataframe=True)
-        assert data.shape == (10, 7), '7 columns were excpected, but failed'
+        assert tradingFees is not None, 'Problem in fetching trading fees from {} exchange.'.format(gate.exchangeName)
 
-    def testExchangeTime(self):
-        self.assertIsNotNone(self.tradeGate.getExchangeTime(), 'Problem in fetching exchange time. Probably connectivity issues.')
+def testAveragePrice(getGates):
+    for gate in getGates:
+        symbolAveragePrice = gate.getSymbolAveragePrice('BTCUSDT')
+        # print('\nBTCUSDT average Price from {} exchange: {}'.format(gate.exchangeName, symbolAveragePrice))
 
+        assert symbolAveragePrice is not None, 'Problem in fetching symbol average price from {} exchange.'.format(gate.exchangeName)
 
-if __name__ == '__main__':
-    unittest.main()
+def testLatestTrades(getGates):
+    for gate in getGates:
+        symbolLatestPrice = gate.getSymbolLatestTrades('BTCUSDT')
+        # print('\nBTCUSDT latest Price from {} exchange: {}'.format(gate.exchangeName, symbolLatestPrice))
+
+        assert symbolLatestPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(gate.exchangeName)
+
+def testTickerPrice(getGates):
+    for gate in getGates:
+        symbolTickerPrice = gate.getSymbolTickerPrice('BTCUSDT')
+        print('\nBTCUSDT ticker Price from {} exchange: {}'.format(gate.exchangeName, symbolTickerPrice))
+
+        assert symbolTickerPrice is not None, 'Problem in fetching symbol ticker price from {} exchange.'.format(gate.exchangeName)
+
+def testKlines(getGates):
+    for gate in getGates:
+        # print('\nBTCUSDT candles: {}'.format(gate.getSymbolKlines('BTCUSDT', '1m', limit=10)))
+        spotData = gate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=False, doClean=True, convertDateTime=True)
+        assert spotData is not None, 'Problem in fetching spot market candle data from {} exchange.'.format(gate.exchangeName)
+        assert len(spotData) == 10, 'Length of spot market candle data is incorrect from {} exchange.'.format(gate.exchangeName)
+
+        futuresData = gate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True, toCleanDataframe=True)
+        assert futuresData is not None, 'Problem in fetching spot market candle data from {} exchange.'.format(gate.exchangeName)
+        assert len(futuresData) == 10, 'Length of spot market candle data is incorrect from {} exchange.'.format(gate.exchangeName)
+
+        assert futuresData.shape == (10, 7), '7 columns were excpected, but failed from {} exchange.'.format(gate.exchangeName)
+
+def testExchangeTime(getGates):
+    for gate in getGates:
+        exchangeTime = gate.getExchangeTime()
+        print('\nExchange time from {} exchange: {}'.format(gate.exchangeName, exchangeTime))
+        assert exchangeTime is not None, 'Problem in fetching exchange time from {} exchange.'.format(gate.exchangeName)
