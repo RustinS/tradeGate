@@ -11,9 +11,11 @@ from binance_f.model.balance import Balance
 import time
 import pandas as pd
 
+from BaseExchange import BaseExchange
 
 
-class BinanceExchange():
+
+class BinanceExchange(BaseExchange):
     def __init__(self, credentials, sandbox=False):
         self.credentials = credentials
         self.sandbox = sandbox

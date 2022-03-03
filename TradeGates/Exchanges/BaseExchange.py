@@ -9,26 +9,26 @@ class BaseExchange(ABC):
         pass
 
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def isOrderDataValid(order : DataHelpers.OrderData):
         pass
 
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def isFuturesOrderDataValid(order : DataHelpers.futuresOrderData):
         pass
 
     
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def getOrderAsDict(order : DataHelpers.OrderData):
         pass
 
     
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def getFuturesOrderAsDict(order : DataHelpers.futuresOrderData):
         pass
 
