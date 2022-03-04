@@ -317,9 +317,15 @@ class BinanceExchange(BaseExchange):
             return None
 
 
-    def getOpenOrders(self, symbol=None):
+    def getOpenOrders(self, symbol=None, futures=False):
         try:
-            return self.client.get_open_orders(symbol, timestamp=time.time())
+            if not futures:
+                return self.client.get_open_orders(symbol, timestamp=time.time())
+            else:
+                orders = []
+                for order in self.futuresClient.get_open_orders(symbol=symbol):
+                    orders.append(order.toDict())
+                return orders
         except Exception:
             return None
 
@@ -462,9 +468,7 @@ class BinanceExchange(BaseExchange):
             return self.futuresClient.cancel_order(symbol, origClientOrderId=localOrderId)
         else:
             raise Exception('Specify either order Id in the exchange or local Id sent with the order')
-
-    def getAllFuturesOpenOrders(self, symbol=None):
-        return self.futuresClient.get_open_orders(symbol=symbol)
+        
         
     def getFuturesOrder(self, symbol, orderId=None, localOrderId=None):
         if not orderId is None:

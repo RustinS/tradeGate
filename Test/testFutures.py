@@ -53,11 +53,11 @@ def testCancelingAllFuturesOpenOrders(getGates):
 
 def testGetFuturesOpenOrders(getGates):
     for gate in getGates:
-        cancelAllOrdersResult = gate.getAllFuturesOpenOrders()
+        cancelAllOrdersResult = gate.getOpenOrders(futures=True)
         assert cancelAllOrdersResult is not None, 'Problem in getting list of open orders without symbol from {} exchanghe.'.format(gate.exchangeName)
 
-        cancelSingleSymbolOrdersResult = gate.getAllFuturesOpenOrders('BTCUSDT')
-        assert cancelSingleSymbolOrdersResult is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(gate.exchangeName)
+        getSingleSymbolOrdersResult = gate.getAllFuturesOpenOrders('BTCUSDT')
+        assert getSingleSymbolOrdersResult is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(gate.exchangeName)
 
 def testGetFutureOrder(getGates):
     for gate in getGates:

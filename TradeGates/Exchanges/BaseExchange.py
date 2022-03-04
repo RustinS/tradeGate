@@ -134,11 +134,6 @@ class BaseExchange(ABC):
 
 
     @abstractmethod
-    def getAllFuturesOpenOrders(self, symbol=None):
-        pass
-    
-
-    @abstractmethod
     def getFuturesOrder(self, symbol, orderId=None, localOrderId=None):
         pass
 

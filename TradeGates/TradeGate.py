@@ -69,8 +69,8 @@ class TradeGate():
     def getSymbolOrders(self, symbol, futures=False):
         return self.exchange.getSymbolOrders(symbol, futures)
 
-    def getOpenOrders(self, symbol=None):
-        return self.exchange.getOpenOrders(symbol)
+    def getOpenOrders(self, symbol=None, futures=False):
+        return self.exchange.getOpenOrders(symbol, futures)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None):
         return self.exchange.getOrder(symbol, orderId, localOrderId)
