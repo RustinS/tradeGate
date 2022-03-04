@@ -330,8 +330,26 @@ class BinanceExchange(BaseExchange):
             return None
 
 
-    def cancelAllSymbolOpenOrders(self, symbol):
-        return self.client.cancel_open_orders(symbol, timestamp=time.time())
+    def cancelAllSymbolOpenOrders(self, symbol, futures=False):
+        if not futures:
+            openOrders = self.getOpenOrders(symbol)
+            if len(openOrders) == 0:
+                return []
+            else:
+                return self.client.cancel_open_orders(symbol, timestamp=time.time())
+        else:
+            openOrders = self.getOpenOrders(symbol, futures=True)
+
+            if len(openOrders) == 0:
+                return []
+            else:
+                orderIds = [order['orderId'] for order in openOrders]
+
+                results = []
+                for res in self.futuresClient.cancel_list_orders(symbol=symbol, orderIdList=orderIds):
+                    results.append(res.toDict())
+
+                return results
 
 
     def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
@@ -458,8 +476,6 @@ class BinanceExchange(BaseExchange):
                 )
             )
 
-    def cancelAllSymbolFuturesOpenOrders(self, symbol):
-        return self.futuresClient.cancel_all_orders(symbol=symbol)
 
     def cancelFuturesOrder(self, symbol, orderId=None, localOrderId=None):
         if not orderId is None:

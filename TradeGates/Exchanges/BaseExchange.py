@@ -64,7 +64,7 @@ class BaseExchange(ABC):
 
     
     @abstractmethod
-    def cancelAllSymbolOpenOrders(self, symbol):
+    def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         pass
 
 
@@ -120,11 +120,6 @@ class BaseExchange(ABC):
     
     @abstractmethod
     def makeFuturesOrder(self, futuresOrderData):
-        pass
-    
-
-    @abstractmethod
-    def cancelAllSymbolFuturesOpenOrders(self, symbol):
         pass
 
 
