@@ -69,7 +69,7 @@ class BaseExchange(ABC):
 
 
     @abstractmethod
-    def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
+    def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         pass
     
 
@@ -124,17 +124,7 @@ class BaseExchange(ABC):
 
 
     @abstractmethod
-    def cancelFuturesOrder(self, symbol, orderId=None, localOrderId=None):
-        pass
-
-
-    @abstractmethod
-    def getFuturesOrder(self, symbol, orderId=None, localOrderId=None):
-        pass
-
-
-    @abstractmethod
-    def cancellAllSymbolFuturesOrders(self, symbol, countdownTime):
+    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         pass
 
 

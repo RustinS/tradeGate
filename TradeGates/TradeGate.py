@@ -72,14 +72,14 @@ class TradeGate():
     def getOpenOrders(self, symbol=None, futures=False):
         return self.exchange.getOpenOrders(symbol, futures)
 
-    def getOrder(self, symbol, orderId=None, localOrderId=None):
-        return self.exchange.getOrder(symbol, orderId, localOrderId)
+    def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        return self.exchange.getOrder(symbol, orderId, localOrderId, futures=futures)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         return self.exchange.cancelAllSymbolOpenOrders(symbol, futures)
 
-    def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
-        return self.exchange.cancelSymbolOpenOrder(symbol, orderId, localOrderId)
+    def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        return self.exchange.cancelOrder(symbol, orderId, localOrderId, futures)
 
     def getTradingFees(self):
         return self.exchange.getTradingFees()
@@ -157,20 +157,9 @@ class TradeGate():
     def makeFuturesOrder(self, futuresOrderData):
         return self.exchange.makeFuturesOrder(futuresOrderData)
 
-    def cancelFuturesOrder(self, symbol, orderId=None, localOrderId=None):
-        return self.exchange.cancelFuturesOrder(symbol, orderId, localOrderId)
 
-    def getAllFuturesOpenOrders(self, symbol=None):
-        return self.exchange.getAllFuturesOpenOrders(symbol)
-
-    def getFuturesOrder(self, symbol, orderId=None, localOrderId=None):
-        return self.exchange.getFuturesOrder(symbol, orderId, localOrderId)
-
-    def cancellAllSymbolFuturesOrders(self, symbol, countdownTime):
-        return self.exchange.cancellAllSymbolFuturesOrders(symbol, countdownTime)
-
-    def getAllOpenFuturesOrders(self, symbol=None):
-        return self.exchange.getAllOpenFuturesOrders(symbol)
+    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
+        return self.exchange.cancellAllSymbolFuturesOrdersWithCountDown(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):
         return self.exchange.changeInitialLeverage(symbol, leverage)

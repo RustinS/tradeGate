@@ -53,31 +53,31 @@ def testCancelingAllFuturesOpenOrders(getGates):
 
 def testGetFuturesOpenOrders(getGates):
     for gate in getGates:
-        cancelAllOrdersResult = gate.getOpenOrders(futures=True)
-        assert cancelAllOrdersResult is not None, 'Problem in getting list of open orders without symbol from {} exchanghe.'.format(gate.exchangeName)
+        openOrders = gate.getOpenOrders(futures=True)
+        assert openOrders is not None, 'Problem in getting list of open orders without symbol from {} exchanghe.'.format(gate.exchangeName)
 
-        getSingleSymbolOrdersResult = gate.getAllFuturesOpenOrders('BTCUSDT')
-        assert getSingleSymbolOrdersResult is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(gate.exchangeName)
+        symbolOpenOrders = gate.getOpenOrders('BTCUSDT', futures=True)
+        assert symbolOpenOrders is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(gate.exchangeName)
 
 def testGetFutureOrder(getGates):
     for gate in getGates:
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
-        order = gate.getFuturesOrder('BTCUSDT', orderId=result.orderId)
+        order = gate.getOrder('BTCUSDT', orderId=result['orderId'], futures=True)
 
-        assert order.clientOrderId == result.clientOrderId, 'Futures fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(gate.exchangeName)
+        assert order['clientOrderId'] == result['clientOrderId'], 'Futures fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(gate.exchangeName)
 
-        order = gate.getFuturesOrder('BTCUSDT', localOrderId=result.clientOrderId)
-        assert order.orderId == result.orderId, 'Futures fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
+        order = gate.getOrder('BTCUSDT', localOrderId=result['clientOrderId'], futures=True)
+        assert order['orderId'] == result['orderId'], 'Futures fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
 
 def testCancelingAllFuturesOpenOrders(getGates):
     for gate in getGates:
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)
         gate.makeFuturesOrder(futuresOrderData)
 
-        gate.cancellAllSymbolFuturesOrders('BTCUSDT', 1)
+        gate.cancelAllSymbolOpenOrders('BTCUSDT', futures=True)
 
-        openOrders = gate.getAllFuturesOpenOrders('BTCUSDT')
+        openOrders = gate.getOpenOrders('BTCUSDT', futures=True)
         assert len(openOrders) == 0, 'Problem in canceling all Open Orders in {} exchange.'.format(gate.exchangeName)
 
 def testCancelingOrder(getGates):
@@ -85,5 +85,5 @@ def testCancelingOrder(getGates):
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000, quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
 
-        result = gate.cancelFuturesOrder(symbol='BTCUSDT', localOrderId=result.clientOrderId)
-        assert result.status == 'CANCELED', 'Problem in canceling specified Open Orders from {} exchnage.'.format(gate.exchangeName)
+        result = gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'], futures=True)
+        assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders from {} exchnage.'.format(gate.exchangeName)

@@ -352,22 +352,38 @@ class BinanceExchange(BaseExchange):
                 return results
 
 
-    def cancelSymbolOpenOrder(self, symbol, orderId=None, localOrderId=None):
-        if not orderId is None:
-            return self.client.cancel_order(symbol, orderId=orderId, timestamp=time.time())
-        elif not localOrderId is None:
-            return self.client.cancel_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
+    def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        if not futures:
+            if not orderId is None:
+                return self.client.cancel_order(symbol, orderId=orderId, timestamp=time.time())
+            elif not localOrderId is None:
+                return self.client.cancel_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         else:
-            raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+            if not orderId is None:
+                return self.futuresClient.cancel_order(symbol, orderId=orderId).toDict()
+            elif not localOrderId is None:
+                return self.futuresClient.cancel_order(symbol, origClientOrderId=localOrderId).toDict()
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
     
 
-    def getOrder(self, symbol, orderId=None, localOrderId=None):
-        if not orderId is None:
-            return self.client.get_order(symbol, orderId=orderId, timestamp=time.time())
-        elif not localOrderId is None:
-            return self.client.get_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
+    def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        if not futures:
+            if not orderId is None:
+                return self.client.get_order(symbol, orderId=orderId, timestamp=time.time())
+            elif not localOrderId is None:
+                return self.client.get_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         else:
-            raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+            if not orderId is None:
+                return self.futuresClient.get_order(symbol, orderId=orderId).toDict()
+            elif not localOrderId is None:
+                return self.futuresClient.get_order(symbol, origClientOrderId=localOrderId).toDict()
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         
 
     def getTradingFees(self):
@@ -475,26 +491,9 @@ class BinanceExchange(BaseExchange):
                     error.status_code, error.error_code, error.error_message
                 )
             )
-
-
-    def cancelFuturesOrder(self, symbol, orderId=None, localOrderId=None):
-        if not orderId is None:
-            return self.futuresClient.cancel_order(symbol, orderId=orderId)
-        elif not localOrderId is None:
-            return self.futuresClient.cancel_order(symbol, origClientOrderId=localOrderId)
-        else:
-            raise Exception('Specify either order Id in the exchange or local Id sent with the order')
         
-        
-    def getFuturesOrder(self, symbol, orderId=None, localOrderId=None):
-        if not orderId is None:
-            return self.futuresClient.get_order(symbol, orderId=orderId)
-        elif not localOrderId is None:
-            return self.futuresClient.get_order(symbol, origClientOrderId=localOrderId)
-        else:
-            raise Exception('Specify either order Id in the exchange or local Id sent with the order')
 
-    def cancellAllSymbolFuturesOrders(self, symbol, countdownTime):
+    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):

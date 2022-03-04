@@ -66,8 +66,8 @@ def testGetOpenOrders(getGates):
 def testGetOrder(getGates):
     for gate in getGates:
         try:
-            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
-            result = gate.makeOrder(verifiedOrder)
+            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=32000, timeInForce='GTC')
+            result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order from {} exchange: {}'.format(gate.exchangeName, str(e))
         
@@ -77,7 +77,7 @@ def testGetOrder(getGates):
         order = gate.getOrder('BTCUSDT', localOrderId=result['clientOrderId'])
         assert order['orderId'] == result['orderId'], 'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
 
-        gate.cancelSymbolOpenOrder('BTCUSDT', orderId=result['orderId'])
+        gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
 
 def testCancelingAllOpenOrders(getGates):
     for gate in getGates:
@@ -90,18 +90,18 @@ def testCancelingOrder(getGates):
     for gate in getGates:
         try:
             verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
-            result = gate.makeOrder(verifiedOrder)
+            result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
 
-        result = gate.cancelSymbolOpenOrder(symbol='BTCUSDT', orderId=result['orderId'])
+        result = gate.cancelOrder(symbol='BTCUSDT', orderId=result['orderId'])
         assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
 
         try:
             verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
-            result = gate.makeOrder(verifiedOrder)
+            result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
 
-        result = gate.cancelSymbolOpenOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'])
+        result = gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'])
         assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
