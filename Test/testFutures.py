@@ -28,7 +28,7 @@ def testSymbolFuturesOrders(getGates):
 def testFuturesBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance(futures=True)
-        print('\nFutures balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        # print('\nFutures balance from {} exchange: {}'.format(gate.exchangeName, balance))
         assert balance is not None, 'Problem in futures balance from {} exchange.'.format(gate.exchangeName)
 
 def testFuturesSingleCoinBalance(getGates):

@@ -87,11 +87,6 @@ class BaseExchange(ABC):
     def getSymbolAveragePrice(self, symbol):
         pass
 
-    
-    @abstractmethod
-    def getSymbolLatestTrades(self, symbol, limit=None):
-        pass
-
 
     @abstractmethod
     def getSymbolTickerPrice(self, symbol):

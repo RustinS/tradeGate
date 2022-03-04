@@ -86,9 +86,6 @@ class TradeGate():
 
     def getSymbolAveragePrice(self, symbol):
         return self.exchange.getSymbolAveragePrice(symbol)
-        
-    def getSymbolLatestTrades(self, symbol, limit=None):
-        return self.exchange.getSymbolLatestTrades(symbol, limit)
 
     def getSymbolTickerPrice(self, symbol):
         return self.exchange.getSymbolTickerPrice(symbol)

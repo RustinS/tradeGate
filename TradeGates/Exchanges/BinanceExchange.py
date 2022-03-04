@@ -400,19 +400,6 @@ class BinanceExchange(BaseExchange):
             return None
 
 
-    def getSymbolLatestTrades(self, symbol, limit=None):
-        try:
-            if not limit is None:
-                if limit > 1000: limit = 1000
-                elif limit < 1: limit = 1
-
-                return self.client.trades(symbol, limit)
-            else:
-                return self.client.trades(symbol)
-        except Exception:
-            return None
-
-
     def getSymbolTickerPrice(self, symbol):
         try:
             return self.client.ticker_price(symbol)['price']
@@ -529,6 +516,9 @@ class BinanceExchange(BaseExchange):
                 return self.futuresClient.get_order_book(symbol=symbol, limit=limit)
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
+        if not limit is None:
+            if limit > 1000: limit = 1000
+            elif limit < 1: limit = 1
         if not futures:
             if limit is None:
                 return self.client.trades(symbol)
