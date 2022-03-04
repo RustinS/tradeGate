@@ -309,7 +309,10 @@ class BinanceExchange(BaseExchange):
             if not futures:
                 return self.client.get_orders(symbol, timestamp=time.time())
             else:
-                return self.futuresClient.get_all_orders(symbol)
+                orders = []
+                for order in self.futuresClient.get_all_orders(symbol):
+                    orders.append(order.toDict())
+                return orders
         except Exception:
             return None
 
