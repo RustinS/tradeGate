@@ -133,3 +133,5 @@ dmypy.json
 .pypirc
 
 .DS_Store
+
+testingTradeGate.ipynb

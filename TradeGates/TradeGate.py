@@ -196,3 +196,6 @@ class TradeGate():
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
+
+    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+        return self.exchange.SymbolTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)

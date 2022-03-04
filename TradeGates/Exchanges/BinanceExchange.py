@@ -1,17 +1,15 @@
-from datetime import datetime
-from lib2to3.pytree import convert
-from tracemalloc import start
-from binance.spot import Spot
-from Utils import DataHelpers
 import logging
-from binance.error import ClientError
-from binance_f import RequestClient
-from binance_f.model.constant import *
-from binance_f.model.balance import Balance
 import time
 import pandas as pd
 
 from BaseExchange import BaseExchange
+from datetime import datetime
+from binance.spot import Spot
+from Utils import DataHelpers
+from binance.error import ClientError
+from binance_f import RequestClient
+from binance_f.model.constant import *
+from binance_f.model.balance import Balance
 
 
 
@@ -261,9 +259,16 @@ class BinanceExchange(BaseExchange):
             return None
             
 
-    def SymbolTradeHistory(self, symbol):
+    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         try:
-            return self.client.my_trades(symbol)
+            if not futures:
+                return self.client.my_trades(symbol, fromId=fromId, limit=limit)
+            else:
+                trades = []
+                for trade in self.futuresClient.get_account_trades(symbol=symbol, fromId=fromId, limit=limit):
+                    trades.append(trade.toDict())
+                return trades
+
         except Exception:
             return None
 

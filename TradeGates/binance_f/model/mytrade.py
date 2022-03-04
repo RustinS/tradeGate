@@ -35,3 +35,34 @@ class MyTrade:
         result.time = json_data.get_int("time")
         
         return result
+
+    def toDict(self):
+        outDict = {'symbol': self.symbol,
+                    'id': self.id,
+                    'orderId': self.orderId,
+                    'orderListId': self.counterPartyId,
+                    'price': self.price,
+                    'qty': self.qty,
+                    'quoteQty': self.quoteQty,
+                    'commission': self.commission,
+                    'commissionAsset': self.commissionAsset,
+                    'time': self.time,
+                    'isBuyer': self.isBuyer,
+                    'isMaker': self.isMaker,
+                    'isBestMatch': None}
+
+        return outDict
+
+# {'symbol': 'BTCUSDT',
+#   'id': 12786,
+#   'orderId': 15005,
+#   'orderListId': -1,
+#   'price': '35000.00000000',
+#   'qty': '0.00200000',
+#   'quoteQty': '70.00000000',
+#   'commission': '0.00000000',
+#   'commissionAsset': 'BTC',
+#   'time': 1646213286609,
+#   'isBuyer': True,
+#   'isMaker': True,
+#   'isBestMatch': True}
