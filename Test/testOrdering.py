@@ -28,7 +28,7 @@ def getGates():
 def testNewTestOrder(getGates):
     for gate in getGates:
         try:
-            res = gate.createAndTestOrder('BTCUSDT', 'SELL', 'LIMIT', timeInForce='GTC', quantity=0.002, price=49500)
+            res = gate.createAndTestSpotOrder('BTCUSDT', 'SELL', 'LIMIT', timeInForce='GTC', quantity=0.002, price=49500)
             assert res is not None, 'Problem in testing making order from {} exchange'.format(gate.exchangeName)
         except Exception as e:
             assert False, str(e)
@@ -36,7 +36,7 @@ def testNewTestOrder(getGates):
 def testNewTestOrderBadOrderType(getGates):
     for gate in getGates:
         try:
-            res = gate.createAndTestOrder('BTCUSDT', 'SELL', 'LINIT', timeInForce='GTC', quantity=0.002, price=49500)
+            res = gate.createAndTestSpotOrder('BTCUSDT', 'SELL', 'LINIT', timeInForce='GTC', quantity=0.002, price=49500)
             assert res is None, 'Bad order type and information provided. Must fail (Exchange: {})'.format(gate.exchangeName) 
         except Exception as e:
             assert True, 'Bad order type and information provided. Must fail (Exchange: {})'.format(gate.exchangeName)
@@ -44,7 +44,7 @@ def testNewTestOrderBadOrderType(getGates):
 def testNewOrder(getGates):
     for gate in getGates:
         try:
-            verifiedOrder = gate.createAndTestOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
+            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
             result = gate.makeOrder(verifiedOrder)
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
         except Exception as e:
@@ -66,7 +66,7 @@ def testGetOpenOrders(getGates):
 def testGetOrder(getGates):
     for gate in getGates:
         try:
-            verifiedOrder = gate.createAndTestOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
+            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
             result = gate.makeOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order from {} exchange: {}'.format(gate.exchangeName, str(e))
@@ -89,7 +89,7 @@ def testCancelingAllOpenOrders(getGates):
 def testCancelingOrder(getGates):
     for gate in getGates:
         try:
-            verifiedOrder = gate.createAndTestOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
+            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
             result = gate.makeOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
@@ -98,7 +98,7 @@ def testCancelingOrder(getGates):
         assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
 
         try:
-            verifiedOrder = gate.createAndTestOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
+            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
             result = gate.makeOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))

@@ -1,4 +1,3 @@
-import json
 from Exchanges import BinanceExchange
 from Utils import DataHelpers
 
@@ -29,7 +28,7 @@ class TradeGate():
         if exchangeName == 'Binance':
             return BinanceExchange.BinanceExchange
 
-    def createAndTestOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
                             newClientOrderId=None):
         currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
 
@@ -60,7 +59,7 @@ class TradeGate():
         if not self.exchange.isOrderDataValid(currOrder):
             raise Exception('Incomplete data provided.')
 
-        self.exchange.testOrder(currOrder)
+        self.exchange.testSpotOrder(currOrder)
 
         return currOrder
 

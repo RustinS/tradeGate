@@ -44,7 +44,7 @@ class BaseExchange(ABC):
 
 
     @abstractmethod
-    def testOrder(self, orderData):
+    def testSpotOrder(self, orderData):
         pass
 
     

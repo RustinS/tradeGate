@@ -273,7 +273,7 @@ class BinanceExchange(BaseExchange):
             return None
 
 
-    def testOrder(self, orderData):
+    def testSpotOrder(self, orderData):
         orderData.setTimestamp()
         params = self.getOrderAsDict(orderData)
 
