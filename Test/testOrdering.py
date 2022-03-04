@@ -45,7 +45,7 @@ def testNewOrder(getGates):
     for gate in getGates:
         try:
             verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000, timeInForce='GTC')
-            result = gate.makeOrder(verifiedOrder)
+            result = gate.makeSpotOrder(verifiedOrder)
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
         except Exception as e:
             assert False, 'Problem in making new order in {} exchange'.format(gate.exchangeName)

@@ -289,7 +289,7 @@ class BinanceExchange(BaseExchange):
             )
 
 
-    def makeOrder(self, orderData):
+    def makeSpotOrder(self, orderData):
         params = self.getOrderAsDict(orderData)
 
         try:

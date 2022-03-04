@@ -49,7 +49,7 @@ class BaseExchange(ABC):
 
     
     @abstractmethod
-    def makeOrder(self, orderData):
+    def makeSpotOrder(self, orderData):
         pass
 
     
