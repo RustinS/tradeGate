@@ -49,3 +49,35 @@ class Order:
         result.closePosition = json_data.get_boolean("closePosition")
 
         return result
+
+    def toDict(self):
+        outDict = {
+            'symbol': self.symbol,
+            'orderId': self.orderId,
+            'clientOrderId': self.clientOrderId,
+            'transactTime': self.updateTime,
+            'price': self.price,
+            'origQty': self.origQty,
+            'executedQty': self.executedQty,
+            'cummulativeQuoteQty': self.cumQuote,
+            'status': self.status,
+            'timeInForce': self.timeInForce,
+            'type': self.type,
+            'side': self.side,
+        }
+
+        extraData = {
+            'reduceOnly': self.reduceOnly,
+            'stopPrice': self.stopPrice,
+            'workingType': self.workingType,
+            'avgPrice': self.avgPrice,
+            'origType': self.origType,
+            'positionSide': self.positionSide,
+            'activatePrice': self.activatePrice,
+            'priceRate': self.priceRate,
+            'closePosition': self.closePosition
+        }
+
+        outDict['extraData'] = extraData
+
+        return outDict

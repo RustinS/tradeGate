@@ -441,8 +441,7 @@ class BinanceExchange(BaseExchange):
 
         try:
             response = self.futuresClient.post_order(**params)
-            logging.info(response)
-            return response
+            return response.toDict()
         except ClientError as error:
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(
