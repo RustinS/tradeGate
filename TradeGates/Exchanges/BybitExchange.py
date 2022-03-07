@@ -1,15 +1,17 @@
+from numpy import single
 from pybit import HTTP
 
 from BaseExchange import BaseExchange
-from Utils import DataHelpers
+from Utils import DataHelpers, BybitHelpers
 
 
 
 class BybitExchange(BaseExchange):
-    def __init__(self, credentials, sandbox=False):
+    def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         self.apiKey = credentials['spot']['key']
         self.secret = credentials['spot']['secret']
         self.sandbox = sandbox
+        self.unifiedInOuts = unifiedInOuts
 
         if sandbox:
             self.spotSession = HTTP("https://api-testnet.bybit.com", api_key=self.apiKey, api_secret=self.secret, spot=True)
@@ -50,17 +52,17 @@ class BybitExchange(BaseExchange):
     def getBalance(self, asset='', futures=False):
         if futures:
             if asset is None or asset == '':
-                return self.futuresSession.get_wallet_balance()['result']
+                return BybitHelpers.getBalanceOut(self.futuresSession.get_wallet_balance()['result'], futures=True)
             else:
-                return self.futuresSession.get_wallet_balance(coin=asset)['result']
+                return BybitHelpers.getBalanceOut(self.futuresSession.get_wallet_balance(coin=asset)['result'], single=True, futures=True)
         else:
             if asset is None or asset == '':
-                return self.spotSession.get_wallet_balance()['result']
+                return BybitHelpers.getBalanceOut(self.spotSession.get_wallet_balance()['result']['balances'])
             else:
-                assets = self.spotSession.get_wallet_balance()['result']
+                assets = self.spotSession.get_wallet_balance()['result']['balances']
                 for coin in assets:
-                    if asset == coin['name']:
-                        return coin
+                    if asset == coin['coin']:
+                        return BybitHelpers.getBalanceOut(coin, single=True)
                 return None
             
     

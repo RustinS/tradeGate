@@ -5,7 +5,7 @@ from Utils import DataHelpers
 
 class BaseExchange(ABC):
     @abstractmethod
-    def __init__(self, credentials, sandbox=False):
+    def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         pass
 
 

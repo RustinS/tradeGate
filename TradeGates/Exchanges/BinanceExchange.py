@@ -14,9 +14,10 @@ from binance_f.model.balance import Balance
 
 
 class BinanceExchange(BaseExchange):
-    def __init__(self, credentials, sandbox=False):
+    def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         self.credentials = credentials
         self.sandbox = sandbox
+        self.unifiedInOuts = unifiedInOuts
 
         if sandbox:
             self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'], base_url='https://testnet.binance.vision')
