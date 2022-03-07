@@ -1,4 +1,4 @@
-from Exchanges import BinanceExchange
+from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
 
 
@@ -25,8 +25,10 @@ class TradeGate():
 
     @staticmethod
     def getCorrectExchange(exchangeName):
-        if exchangeName == 'Binance':
+        if exchangeName.lower() == 'binance':
             return BinanceExchange.BinanceExchange
+        if exchangeName.lower() == 'bybit':
+            return BybitExchange.BybitExchange
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
                             newClientOrderId=None):

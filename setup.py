@@ -29,7 +29,7 @@ setuptools.setup(
     python_requires='>=3.6',                # Minimum version requirement of the package
     py_modules=["TradeGate"],             # Name of the python package
     package_dir={'':'TradeGates'},     # Directory of the source code of the package
-    install_requires=['binance-connector', 'requests', 'apscheduler', 'websocket-client', 'urllib3', 'tzlocal<3.0', 'pandas']                     # Install other dependencies if any
+    install_requires=['binance-connector', 'requests', 'apscheduler', 'websocket-client', 'urllib3', 'tzlocal<3.0', 'pandas', 'pybit']                     # Install other dependencies if any
 )
 
 # python setup.py sdist bdist_wheel  
