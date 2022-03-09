@@ -32,17 +32,30 @@ def testFuturesBalance(getGates):
         assert balance is not None, 'Problem in futures balance from {} exchange.'.format(gate.exchangeName)
 
         try:
-            for asset in balance:
-                if not sorted(list(asset.keys())) == sorted(['asset', 'free', 'locked']):
+            if not gate.exchangeName == 'Binance':
+                if not sorted(list(balance[0].keys())) == sorted(['asset', 'free', 'locked', 'exchangeSpecific']):
+                    assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
+            else:
+                if not sorted(list(balance[0].keys())) == sorted(['asset', 'free', 'locked']):
                     assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
         except:
-            assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
+            assert False, 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)
 
 def testFuturesSingleCoinBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance('USDT', futures=True)
         print('\nUSDT Futures balance from {} exchange: {}'.format(gate.exchangeName, balance))
         assert balance is not None, 'Problem in fetching futures single coin balance from {} exchange.'.format(gate.exchangeName)
+
+        try:
+            if not gate.exchangeName == 'Binance':
+                if not sorted(list(balance.keys())) == sorted(['asset', 'free', 'locked', 'exchangeSpecific']):
+                    assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
+            else:
+                if not sorted(list(balance.keys())) == sorted(['asset', 'free', 'locked']):
+                    assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
+        except:
+            assert False, 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)
 
 def testFuturesOrder(getGates):
     for gate in getGates:
