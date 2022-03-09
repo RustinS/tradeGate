@@ -55,6 +55,22 @@ def testSingleCoinBalance(getGates):
 
 def testTradeHistory(getGates):
     for gate in getGates:
-        tradeHisytory = gate.getSymbolTradeHistory('BTCUSDT')
-        # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHisytory))
-        assert tradeHisytory is not None, 'Problem in fetching trade history from {} exchange.'.format(gate.exchangeName)
+        tradeHistory = gate.symbolAccountTradeHistory('BTCUSDT')
+        # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHisytory[0]))
+
+        assert tradeHistory is not None, 'Problem in fetching trade history from {} exchange.'.format(gate.exchangeName)
+
+        interface = ['symbol', 'id', 'orderId', 'orderListId', 'price', 'qty', 'quoteQty', 'commission', 'commissionAsset', 'time',
+                        'isBuyer', 'isMaker', 'isBestMatch']
+
+        try:
+            if not gate.exchangeName == 'Binance':
+                interface.append('exchangeSpecific')
+                if not sorted(list(tradeHistory[0].keys())) == sorted(interface):
+                    assert False, 'Bad fetch trade history interface for {} exchange,'.format(gate.exchangeName)
+            else:
+                if not sorted(list(tradeHistory[0].keys())) == sorted(interface):
+                    assert False, 'Bad fetch trade history interface for {} exchange,'.format(gate.exchangeName)
+        except:
+            assert False, 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)
+

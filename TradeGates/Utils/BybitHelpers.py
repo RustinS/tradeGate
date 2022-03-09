@@ -38,3 +38,29 @@ def getBalanceOut(data, single=False, futures=False):
             outData['locked'] = data[key]['used_margin']
             outData['exchangeSpecific'] = data[key]
             return outData
+
+def getMyTradeHistory(data, futures=False):
+    if futures:
+        pass
+    else:
+        outData = []
+        for history in data:
+            corrHist = {}
+
+            corrHist['symbol'] = history['symbol']
+            corrHist['id'] = history['id']
+            corrHist['orderId'] = history['orderId']
+            corrHist['orderListId'] = -1
+            corrHist['price'] = history['price']
+            corrHist['qty'] = history['qty']
+            corrHist['quoteQty'] = str(float(history['price']) * float(history['qty']))
+            corrHist['commission'] = history['commission']
+            corrHist['commissionAsset'] = history['commissionAsset']
+            corrHist['time'] = history['time']
+            corrHist['isBuyer'] = history['isBuyer']
+            corrHist['isMaker'] = history['isMaker']
+            corrHist['isBestMatch'] = None
+            corrHist['exchangeSpecific'] = history
+
+            outData.append(corrHist)
+        return outData

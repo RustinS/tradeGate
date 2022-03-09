@@ -39,7 +39,7 @@ class BaseExchange(ABC):
             
     
     @abstractmethod
-    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+    def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         pass
 
 

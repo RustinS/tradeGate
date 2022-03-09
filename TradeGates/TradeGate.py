@@ -20,9 +20,6 @@ class TradeGate():
     def getBalance(self, asset='', futures=False):
         return self.exchange.getBalance(asset, futures)
 
-    def getSymbolTradeHistory(self, symbol):
-        return self.exchange.SymbolTradeHistory(symbol)
-
     @staticmethod
     def getCorrectExchange(exchangeName):
         if exchangeName.lower() == 'binance':
@@ -181,5 +178,5 @@ class TradeGate():
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
 
-    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
-        return self.exchange.SymbolTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
+    def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+        return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)

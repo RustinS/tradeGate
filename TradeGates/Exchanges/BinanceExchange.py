@@ -260,7 +260,7 @@ class BinanceExchange(BaseExchange):
             return None
             
 
-    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+    def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         try:
             if not futures:
                 return self.client.my_trades(symbol, fromId=fromId, limit=limit)

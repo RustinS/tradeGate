@@ -66,8 +66,13 @@ class BybitExchange(BaseExchange):
                 return None
             
     
-    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
-        pass
+    def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+        if futures:
+            tradeHistory = self.futures.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
+            return BybitHelpers.getMyTradeHistory(tradeHistory['result'])
+        else:
+            tradeHistory = self.spotSession.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
+            return BybitHelpers.getMyTradeHistory(tradeHistory['result'])
 
 
     def testSpotOrder(self, orderData):

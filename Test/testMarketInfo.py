@@ -39,12 +39,12 @@ def testAveragePrice(getGates):
 def testRecentTrades(getGates):
     for gate in getGates:
         symbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT')
-        # print('\nBTCUSDT latest Price from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice))
+        print('\nBTCUSDT latest Price from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice))
 
         assert symbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(gate.exchangeName)
 
         futuresSymbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT', futures=True)
-        # print('\nBTCUSDT futures latest Price from {} exchange: {}'.format(gate.exchangeName, futuresSymbolRecentPrice))
+        print('\nBTCUSDT futures latest Price from {} exchange: {}'.format(gate.exchangeName, futuresSymbolRecentPrice))
 
         assert futuresSymbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(gate.exchangeName)
 
