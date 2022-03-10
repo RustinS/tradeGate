@@ -54,7 +54,7 @@ class BaseExchange(ABC):
 
     
     @abstractmethod
-    def getSymbolOrders(self, symbol, futures=False):
+    def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         pass
 
 

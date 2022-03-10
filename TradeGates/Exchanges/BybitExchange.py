@@ -1,9 +1,34 @@
 from numpy import single
 from pybit import HTTP
+import time
+from datetime import datetime
 
 from BaseExchange import BaseExchange
 from Utils import DataHelpers, BybitHelpers
+import logging
 
+
+
+class PyBitHTTP(HTTP):
+    def __init__(self, endpoint=None, api_key=None, api_secret=None, logging_level=logging.INFO, log_requests=False, request_timeout=10, 
+                    recv_window=5000, force_retry=False, retry_codes=None, ignore_codes=None, max_retries=3, retry_delay=3, referral_id=None, 
+                    spot=False):
+        super().__init__(endpoint, api_key, api_secret, logging_level, log_requests, request_timeout, recv_window, force_retry, retry_codes, 
+                            ignore_codes, max_retries, retry_delay, referral_id, spot)
+        
+    
+    def query_history_order(self, **kwargs):
+        if self.spot is True:
+            suffix = '/spot/v1/history-orders'
+
+            return self._submit_request(
+                method='GET',
+                path=self.endpoint + suffix,
+                query=kwargs,
+                auth=True
+            )
+        else:
+            raise Exception('Not implemented for futures market.')
 
 
 class BybitExchange(BaseExchange):
@@ -14,11 +39,11 @@ class BybitExchange(BaseExchange):
         self.unifiedInOuts = unifiedInOuts
 
         if sandbox:
-            self.spotSession = HTTP("https://api-testnet.bybit.com", api_key=self.apiKey, api_secret=self.secret, spot=True)
-            self.futuresSession = HTTP("https://api-testnet.bybit.com", api_key=self.apiKey, api_secret=self.secret)
+            self.spotSession = PyBitHTTP("https://api-testnet.bybit.com", api_key=self.apiKey, api_secret=self.secret, spot=True)
+            self.futuresSession = PyBitHTTP("https://api-testnet.bybit.com", api_key=self.apiKey, api_secret=self.secret)
         else:
-            self.spotSession = HTTP("https://api.bybit.com", api_key=self.apiKey, api_secret=self.secret, spot=True)
-            self.futuresSession = HTTP("https://api.bybit.com", api_key=self.apiKey, api_secret=self.secret)
+            self.spotSession = PyBitHTTP("https://api.bybit.com", api_key=self.apiKey, api_secret=self.secret, spot=True)
+            self.futuresSession = PyBitHTTP("https://api.bybit.com", api_key=self.apiKey, api_secret=self.secret)
 
         self.timeIndexesInCandleData = [0, 6]
         self.desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
@@ -83,8 +108,46 @@ class BybitExchange(BaseExchange):
         pass
 
     
-    def getSymbolOrders(self, symbol, futures=False):
-        pass
+    def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
+        if futures:
+            historyList = []
+            pageNumber = 1
+            done = False
+            print(startTime)
+            while not done:
+                history = self.futuresSession.get_active_order(symbol=symbol, page=pageNumber, limit=50)
+
+                if startTime is not None:
+                    startTimeString = startTime.strftime('%Y-%m-%dT%H:%M:%SZ')
+                if endTime is not None:
+                    endTimeString = endTime.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+                for order in history['result']['data']:
+                    if endTime is not None:
+                        if endTimeString < order['create_time']:
+                            continue
+                    
+                    if startTime is not None:
+                        print(order)
+                        print(startTimeString, order['created_time'])
+                        if order['created_time'] < startTimeString:
+                            done = True
+                            break
+                    
+                    historyList.append(order)
+
+                if limit is not None and limit <= len(historyList):
+                    done = True
+
+                if len(history['result']['data']) < 50:
+                    done = True
+
+                pageNumber += 1
+                
+            return historyList
+        else:
+            history = self.spotSession.query_history_order(symbol=symbol, orderId=orderId, startTime=startTime, endtime=endTime, limit=limit)
+            return history['result']
 
 
     def getOpenOrders(self, symbol=None):

@@ -65,8 +65,8 @@ class TradeGate():
     def makeSpotOrder(self, orderData):
         return self.exchange.makeSpotOrder(orderData)
 
-    def getSymbolOrders(self, symbol, futures=False):
-        return self.exchange.getSymbolOrders(symbol, futures)
+    def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
+        return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime, endTime=endTime, limit=limit)
 
     def getOpenOrders(self, symbol=None, futures=False):
         return self.exchange.getOpenOrders(symbol, futures)

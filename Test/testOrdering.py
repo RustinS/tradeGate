@@ -3,6 +3,7 @@ import json
 from TradeGates.TradeGate import TradeGate
 from TradeGates.Utils.DataHelpers import OrderData
 import logging
+from datetime import datetime
 
 
 def setUp(self):
@@ -52,7 +53,12 @@ def testNewOrder(getGates):
 
 def testGetOrders(getGates):
     for gate in getGates:
-        orders = gate.getSymbolOrders('BTCUSDT')
+        if gate.exchangeName.lower() == 'bybit':
+            orders = gate.getSymbolOrders('BTCUSDT', futures=True, startTime=datetime.strptime('2021-12-24T10:14:08Z' ,'%Y-%m-%dT%H:%M:%SZ'))
+        else:
+            orders = gate.getSymbolOrders('BTCUSDT', futures=True)
+        print('\nGetting order history for BTCUSDT symbol from {}: {}'.format(gate.exchangeName, len(orders)))
+
         assert orders is not None, 'Problem in getting list of all orders from {} exchange.'.format(gate.exchangeName)
 
 def testGetOpenOrders(getGates):
