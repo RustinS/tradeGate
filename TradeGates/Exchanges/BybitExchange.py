@@ -88,7 +88,7 @@ class BybitExchange(BaseExchange):
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         if futures:
             tradeHistory = self.futuresSession.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
-            return BybitHelpers.getMyTradeHistory(tradeHistory['result'])
+            return BybitHelpers.getMyTradeHistory(tradeHistory['result']['data'], futures=True)
         else:
             tradeHistory = self.spotSession.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
             return BybitHelpers.getMyTradeHistory(tradeHistory['result'])

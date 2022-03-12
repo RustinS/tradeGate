@@ -1,5 +1,3 @@
-
-
 def getBalanceOut(data, single=False, futures=False):
     if not single:
         outData = []
@@ -39,28 +37,24 @@ def getBalanceOut(data, single=False, futures=False):
             outData['exchangeSpecific'] = data[key]
             return outData
 
+
 def getMyTradeHistory(data, futures=False):
     if futures:
-        pass
+        outData = []
+        for history in data:
+            outData.append({'symbol': history['symbol'], 'id': history['exec_id'], 'orderId': history['order_id'],
+                            'orderListId': history['order_link_id'], 'price': history['price'],
+                            'qty': history['order_qty'],
+                            'quoteQty': str(float(history['price']) * float(history['order_qty'])),
+                            'commission': None, 'commissionAsset': None, 'time': history['trade_time_ms'],
+                            'isBuyer': None, 'isMaker': None, 'isBestMatch': None, 'exchangeSpecific': history})
     else:
         outData = []
         for history in data:
-            corrHist = {}
-
-            corrHist['symbol'] = history['symbol']
-            corrHist['id'] = history['id']
-            corrHist['orderId'] = history['orderId']
-            corrHist['orderListId'] = -1
-            corrHist['price'] = history['price']
-            corrHist['qty'] = history['qty']
-            corrHist['quoteQty'] = str(float(history['price']) * float(history['qty']))
-            corrHist['commission'] = history['commission']
-            corrHist['commissionAsset'] = history['commissionAsset']
-            corrHist['time'] = history['time']
-            corrHist['isBuyer'] = history['isBuyer']
-            corrHist['isMaker'] = history['isMaker']
-            corrHist['isBestMatch'] = None
-            corrHist['exchangeSpecific'] = history
-
-            outData.append(corrHist)
-        return outData
+            outData.append({'symbol': history['symbol'], 'id': history['id'], 'orderId': history['orderId'],
+                            'orderListId': -1, 'price': history['price'], 'qty': history['qty'],
+                            'quoteQty': str(float(history['price']) * float(history['qty'])),
+                            'commission': history['commission'], 'commissionAsset': history['commissionAsset'],
+                            'time': history['time'], 'isBuyer': history['isBuyer'], 'isMaker': history['isMaker'],
+                            'isBestMatch': None, 'exchangeSpecific': history})
+    return outData
