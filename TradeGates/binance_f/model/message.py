@@ -11,3 +11,8 @@ class Msg:
         result.msg = json_data.get_string("msg")
 
         return result
+
+    def toDict(self):
+        outDict = {"code": self.code, "msg": self.msg}
+
+        return outDict

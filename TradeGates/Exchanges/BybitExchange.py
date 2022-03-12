@@ -177,6 +177,9 @@ class BybitExchange(BaseExchange):
     def makeFuturesOrder(self, futuresOrderData):
         pass
 
+    def makeBatchFuturesOrder(self, futuresOrderDatas):
+        pass
+
     def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         pass
 

@@ -5,21 +5,15 @@ import pytest
 
 from TradeGates.TradeGate import TradeGate
 
-
-def setUp(self):
-    with open('./config.json') as f:
-        config = json.load(f)
-
-    self.tradeGate = TradeGate(config['Binance'], sandbox=True)
-    loglevel = logging.INFO
-    logging.basicConfig(level=loglevel)
-    self.log = logging.getLogger(__name__)
+loglevel = logging.INFO
+logging.basicConfig(level=loglevel)
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture
 def getGates():
     gates = []
-    with open('./config.json') as f:
+    with open('../config.json') as f:
         config = json.load(f)
 
     for key in config.keys():

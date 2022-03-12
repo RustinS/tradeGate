@@ -157,6 +157,9 @@ class TradeGate:
     def makeFuturesOrder(self, futuresOrderData):
         return self.exchange.makeFuturesOrder(futuresOrderData)
 
+    def makeBatchFuturesOrder(self, batchOrders):
+        return self.exchange.makeBatchFuturesOrder(batchOrders)
+
     def cancelAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         return self.exchange.cancellAllSymbolFuturesOrdersWithCountDown(symbol, countdownTime)
 

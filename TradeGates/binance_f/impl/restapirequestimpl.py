@@ -1,10 +1,11 @@
 from binance_f.impl import RestApiRequest
-from binance_f.impl.utils.urlparamsbuilder import UrlParamsBuilder
 from binance_f.impl.utils.apisignature import create_signature
-from binance_f.impl.utils.apisignature import create_signature_with_query
 from binance_f.impl.utils.inputchecker import *
 from binance_f.impl.utils.timeservice import *
+from binance_f.impl.utils.urlparamsbuilder import UrlParamsBuilder
 from binance_f.model import *
+
+
 # For develop
 # from binance_f.base.printobject import *
 
@@ -106,7 +107,7 @@ class RestApiRequestImpl(object):
         # PrintMix.print_data(request)
         # print("=====================")
         return request
-        
+
     def get_servertime(self):
         builder = UrlParamsBuilder()
         request = self.__create_request_by_get("/fapi/v1/time", builder)
@@ -117,7 +118,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-         
+
     def get_exchange_information(self):
         builder = UrlParamsBuilder()
         request = self.__create_request_by_get("/fapi/v1/exchangeInfo", builder)
@@ -128,7 +129,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-                
+
     def get_order_book(self, symbol, limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -143,7 +144,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-       
+
     def get_recent_trades_list(self, symbol, limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -162,7 +163,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def get_old_trade_lookup(self, symbol, limit, fromId):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -182,7 +183,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-          
+
     def get_aggregate_trades_list(self, symbol, fromId, startTime, endTime, limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -204,7 +205,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-          
+
     def get_candlestick_data(self, symbol, interval, startTime, endTime, limit):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(symbol, "interval")
@@ -268,7 +269,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
+
     def get_ticker_price_change_statistics(self, symbol):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
@@ -334,7 +335,6 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-
     def get_open_interest(self, symbol):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
@@ -349,7 +349,6 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-
 
     def get_liquidation_orders(self, symbol, startTime, endTime, limit):
         builder = UrlParamsBuilder()
@@ -370,13 +369,12 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-     
-   
+
     def change_position_mode(self, dualSidePosition):
         check_should_not_none(dualSidePosition, "dualSidePosition")
         builder = UrlParamsBuilder()
         builder.put_url("dualSidePosition", dualSidePosition)
-        
+
         request = self.__create_request_by_post_with_signature("/fapi/v1/positionSide/dual", builder)
 
         def parse(json_wrapper):
@@ -386,9 +384,8 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-
     def get_position_mode(self):
-        
+
         request = self.__create_request_by_get_with_signature("/fapi/v1/positionSide/dual", builder)
 
         def parse(json_wrapper):
@@ -398,10 +395,9 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-
-
-    def post_order(self, symbol, side, ordertype, timeInForce, quantity, reduceOnly, price, newClientOrderId, stopPrice, workingType, closePosition, 
-                    positionSide, callbackRate, activationPrice, priceProtect, newOrderRespType):
+    def post_order(self, symbol, side, ordertype, timeInForce, quantity, reduceOnly, price, newClientOrderId, stopPrice,
+                   workingType, closePosition,
+                   positionSide, callbackRate, activationPrice, priceProtect, newOrderRespType):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(side, "side")
         check_should_not_none(ordertype, "ordertype")
@@ -423,11 +419,31 @@ class RestApiRequestImpl(object):
         builder.put_url("priceProtect", priceProtect)
         builder.put_url("newOrderRespType", newOrderRespType)
 
-
         request = self.__create_request_by_post_with_signature("/fapi/v1/order", builder)
 
         def parse(json_wrapper):
             result = Order.json_parse(json_wrapper)
+            return result
+
+        request.json_parser = parse
+        return request
+
+    def post_batch_order(self, batchOrders):
+        check_should_not_none(batchOrders, "batchOrders")
+
+        builder = UrlParamsBuilder()
+        builder.put_url("batchOrders", batchOrders)
+
+        request = self.__create_request_by_post_with_signature("/fapi/v1/batchOrders", builder)
+
+        def parse(json_wrapper):
+            result = list()
+            dataList = json_wrapper.convert_2_array()
+            for item in dataList.get_items():
+                if item.contain_key("code"):
+                    result.append(Msg.json_parse(item))
+                else:
+                    result.append(Order.json_parse(item))
             return result
 
         request.json_parser = parse
@@ -567,7 +583,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def change_initial_leverage(self, symbol, leverage):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(leverage, "leverage")
@@ -583,7 +599,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def change_margin_type(self, symbol, marginType):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(marginType, "marginType")
@@ -599,7 +615,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def change_position_margin(self, symbol, amount, type):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(amount, "amount")
@@ -639,7 +655,6 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-
 
     def get_position(self):
         builder = UrlParamsBuilder()
@@ -711,7 +726,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
+
     def keep_user_data_stream(self):
         builder = UrlParamsBuilder()
 
@@ -723,7 +738,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
+
     def close_user_data_stream(self):
         builder = UrlParamsBuilder()
 
@@ -735,7 +750,6 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
 
     def get_open_interest_stats(self, symbol, period, startTime, endTime, limit):
         builder = UrlParamsBuilder()
