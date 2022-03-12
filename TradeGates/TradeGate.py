@@ -2,7 +2,7 @@ from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
 
 
-class TradeGate():
+class TradeGate:
     def __init__(self, configDict, sandbox=False):
         self.exchangeName = configDict['exchangeName']
         exchangeClass = self.getCorrectExchange(self.exchangeName)
@@ -27,36 +27,38 @@ class TradeGate():
         if exchangeName.lower() == 'bybit':
             return BybitExchange.BybitExchange
 
-    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
-                            newClientOrderId=None):
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
+                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                               newClientOrderId=None):
+
         currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
 
-        if not quantity is None:
+        if quantity is not None:
             currOrder.setQuantity(quantity)
 
-        if not price is None:
+        if price is not None:
             currOrder.setPrice(price)
 
-        if not timeInForce is None:
+        if timeInForce is not None:
             currOrder.setTimeInForce(timeInForce)
 
-        if not stopPrice is None:
+        if stopPrice is not None:
             currOrder.setStopPrice(stopPrice)
 
-        if not icebergQty is None:
+        if icebergQty is not None:
             currOrder.setIcebergQty(icebergQty)
 
-        if not newOrderRespType is None:
+        if newOrderRespType is not None:
             currOrder.setNewOrderRespType(newOrderRespType)
-        
-        if not recvWindow is None:
+
+        if recvWindow is not None:
             currOrder.setRecvWindow(recvWindow)
 
-        if not newClientOrderId is None:
+        if newClientOrderId is not None:
             currOrder.setNewClientOrderId(newClientOrderId)
 
         if not self.exchange.isOrderDataValid(currOrder):
-            raise Exception('Incomplete data provided.')
+            raise ValueError('Incomplete data provided.')
 
         self.exchange.testSpotOrder(currOrder)
 
@@ -66,7 +68,8 @@ class TradeGate():
         return self.exchange.makeSpotOrder(orderData)
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
-        return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime, endTime=endTime, limit=limit)
+        return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime,
+                                             endTime=endTime, limit=limit)
 
     def getOpenOrders(self, symbol=None, futures=False):
         return self.exchange.getOpenOrders(symbol, futures)
@@ -89,72 +92,72 @@ class TradeGate():
     def getSymbolTickerPrice(self, symbol):
         return self.exchange.getSymbolTickerPrice(symbol)
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False, toCleanDataframe=False):
-        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, BLVTNAV, convertDateTime, doClean, toCleanDataframe)
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
+                        convertDateTime=False, doClean=False, toCleanDataframe=False):
+        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, blvtnav,
+                                             convertDateTime, doClean, toCleanDataframe)
 
     def getExchangeTime(self):
         return self.exchange.getExchangeTime()
 
-    def getSymbolFuturesOrders(self, symbol):
-        return self.exchange.getSymbolFuturesOrders(symbol)
-
-    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None, reduceOnly=False, price=None, newClientOrderId=None,
-                                    stopPrice=None, closePosition=False, activationPrice=None, callbackRate=None, workingType=None, priceProtect=False, newOrderRespType=None,
-                                    recvWindow=None):
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=False, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=False, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=False, newOrderRespType=None,
+                                  recvWindow=None):
         currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
 
-        if not positionSide is None:
+        if positionSide is not None:
             currOrder.setPositionSide(positionSide)
-        
-        if not timeInForce is None:
+
+        if timeInForce is not None:
             currOrder.setTimeInForce(timeInForce)
 
-        if not quantity is None:
+        if quantity is not None:
             currOrder.setQuantity(quantity)
 
-        if not reduceOnly is None:
+        if reduceOnly is not None:
             currOrder.setReduceOnly(reduceOnly)
 
-        if not price is None:
+        if price is not None:
             currOrder.setPrice(price)
 
-        if not newClientOrderId is None:
+        if newClientOrderId is not None:
             currOrder.setNewClientOrderId(newClientOrderId)
 
-        if not stopPrice is None:
+        if stopPrice is not None:
             currOrder.setStopPrice(stopPrice)
 
-        if not closePosition is None:
+        if closePosition is not None:
             currOrder.setClosePosition(closePosition)
 
-        if not activationPrice is None:
+        if activationPrice is not None:
             currOrder.setActivationPrice(activationPrice)
 
-        if not callbackRate is None:
+        if callbackRate is not None:
             currOrder.setCallbackRate(callbackRate)
 
-        if not workingType is None:
+        if workingType is not None:
             currOrder.setWorkingType(workingType)
 
-        if not priceProtect is None:
+        if priceProtect is not None:
             currOrder.setPriceProtect(priceProtect)
 
-        if not newOrderRespType is None:
+        if newOrderRespType is not None:
             currOrder.setNewOrderRespType(newOrderRespType)
-        
-        if not recvWindow is None:
+
+        if recvWindow is not None:
             currOrder.setRecvWindow(recvWindow)
 
         if not self.exchange.isFuturesOrderDataValid(currOrder):
-            raise Exception('Incomplete data provided.')
+            raise ValueError('Incomplete data provided.')
 
         return currOrder
 
     def makeFuturesOrder(self, futuresOrderData):
         return self.exchange.makeFuturesOrder(futuresOrderData)
 
-
-    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
+    def cancelAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         return self.exchange.cancellAllSymbolFuturesOrdersWithCountDown(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):

@@ -1,7 +1,10 @@
 binance-connector
-requests
-apscheduler
-websocket-client
+requests~=2.27.1
+apscheduler~=3.8.1
+websocket-client~=1.2.3
 urllib3
 tzlocal<3.0
-pandas
+pandas~=1.4.1
+pytest~=7.0.1
+setuptools~=60.8.2
+pybit~=1.3.6
