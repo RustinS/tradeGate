@@ -1,5 +1,7 @@
 from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
+from Watchers.futureOrderWatchers import watchFuturesLimitTrigger
+from binance_f.exception.binanceapiexception import BinanceApiException
 
 
 class TradeGate:
@@ -101,9 +103,9 @@ class TradeGate:
         return self.exchange.getExchangeTime()
 
     def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
-                                  reduceOnly=False, price=None, newClientOrderId=None,
-                                  stopPrice=None, closePosition=False, activationPrice=None, callbackRate=None,
-                                  workingType=None, priceProtect=False, newOrderRespType=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
                                   recvWindow=None):
         currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
 
@@ -186,3 +188,30 @@ class TradeGate:
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
+
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity, enterPrice, takeProfit, stopLoss, leverage,
+                                  marginType):
+        setLeverageResult = self.changeInitialLeverage(symbol, leverage)
+
+        if not (setLeverageResult['leverage'] == leverage):
+            raise ConnectionError('Could not change leverage.')
+
+        try:
+            self.exchange.setMarginType(symbol, marginType)
+        except BinanceApiException as e:
+            pass
+
+        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
+
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=quantity,
+                                                   price=enterPrice, timeInForce='GTC')
+        order = self.makeFuturesOrder(mainOrder)
+
+        print('Main order sent')
+        watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, tpSlOrderSide=tpSlOrderSide,
+                                 takeProfit=takeProfit, stopLoss=stopLoss)
+
+        return order
+
+    def getPositionInfo(self, symbol=None):
+        return self.exchange.getPositionInfo(symbol)

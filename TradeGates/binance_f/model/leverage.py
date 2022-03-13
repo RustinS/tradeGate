@@ -11,5 +11,8 @@ class Leverage:
         result.leverage = json_data.get_float("leverage")
         result.maxNotionalValue = json_data.get_float("maxNotionalValue")
         result.symbol = json_data.get_string("symbol")
-        
+
         return result
+
+    def toDict(self):
+        return {'leverage': self.leverage, 'maxNotionalValue': self.maxNotionalValue, 'symbol': self.symbol}

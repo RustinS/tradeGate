@@ -87,6 +87,18 @@ def testBatchFuturesOrders(getGates):
             assert False, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
 
 
+def testFuturesTpSlLimitOrder(getGates):
+    for gate in getGates:
+        if gate.exchangeName.lower() != 'binance':
+            continue
+        try:
+            result = gate.makeSlTpLimitFuturesOrder('BTCUSDT', 'BUY', 1, 38880, 39000, 38700, 20, marginType='ISOLATED')
+            print('\nResult of batch ordering from {} exchange: {}'.format(gate.exchangeName, result))
+            assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
+        except Exception:
+            assert False, 'Problem in making new SL-TP-Limit order in {} exchange'.format(gate.exchangeName)
+
+
 def testCancelingAllFuturesOpenOrders(getGates):
     for gate in getGates:
         result = gate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
@@ -97,8 +109,13 @@ def testCancelingAllFuturesOpenOrders(getGates):
 
 def testGetFuturesOpenOrders(getGates):
     for gate in getGates:
+        if gate.exchangeName.lower() != 'binance':
+            continue
         openOrders = gate.getOpenOrders(futures=True)
-        assert openOrders is not None, 'Problem in getting list of open orders without symbol from {} exchanghe.'.format(
+
+        print('\nOpen orders from {} exchange: {}'.format(gate.exchangeName, openOrders))
+
+        assert openOrders is not None, 'Problem in getting list of open orders without symbol from {} exchange.'.format(
             gate.exchangeName)
 
         symbolOpenOrders = gate.getOpenOrders('BTCUSDT', futures=True)
@@ -106,11 +123,29 @@ def testGetFuturesOpenOrders(getGates):
             gate.exchangeName)
 
 
+def testGetPositionInformation(getGates):
+    for gate in getGates:
+        if gate.exchangeName.lower() != 'binance':
+            continue
+
+        openPosition = gate.getPositionInfo('BTCUSDT')
+
+        print('\nOpen position information from {} exchange: {}'.format(gate.exchangeName, openPosition))
+
+        assert openPosition is not None, 'Problem in getting position information without symbol from {} exchange.'.format(
+            gate.exchangeName)
+
+
 def testGetFutureOrder(getGates):
     for gate in getGates:
-        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
+        if gate.exchangeName.lower() != 'binance':
+            continue
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=40000,
+                                                          timeInForce='GTC')
         result = gate.makeFuturesOrder(futuresOrderData)
         order = gate.getOrder('BTCUSDT', orderId=result['orderId'], futures=True)
+
+        print('\nOrder data fetched from {} exchange: {}'.format(gate.exchangeName, order))
 
         assert order['clientOrderId'] == result[
             'clientOrderId'], 'Futures fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(

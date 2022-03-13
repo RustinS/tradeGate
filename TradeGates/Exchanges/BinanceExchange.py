@@ -59,20 +59,11 @@ class BinanceExchange(BaseExchange):
             if not (order.quantity is None and order.quoteOrderQty is None):
                 return True
 
-        elif order.orderType == 'STOP_LOSS':
+        elif order.orderType in ['STOP_LOSS', 'TAKE_PROFIT']:
             if not (order.quantity is None or order.stopPrice is None):
                 return True
 
-        elif order.orderType == 'STOP_LOSS_LIMIT':
-            if not (
-                    order.timeInForce is None or order.quantity is None or order.price is None or order.stopPrice is None):
-                return True
-
-        elif order.orderType == 'TAKE_PROFIT':
-            if not (order.quantity is None or order.stopPrice is None):
-                return True
-
-        elif order.orderType == 'TAKE_PROFIT_LIMIT':
+        elif order.orderType in ['STOP_LOSS_LIMIT', 'TAKE_PROFIT_LIMIT']:
             if not (
                     order.timeInForce is None or order.quantity is None or order.price is None or order.stopPrice is None):
                 return True
@@ -104,23 +95,23 @@ class BinanceExchange(BaseExchange):
         if order.newOrderRespType not in [None, 'ACK', 'RESULT']:
             return False
 
-        if order.closePosition not in [True, False]:
+        if order.closePosition not in [None, True, False]:
             return False
 
-        if not order.callbackRate is None:
+        if order.callbackRate is not None:
             if not (0.1 <= order.callbackRate <= 5):
                 return False
 
-        if order.priceProtect not in [True, False]:
+        if order.priceProtect not in [None, True, False]:
             return False
 
-        if order.closePosition == True and order.quantity is not None:
+        if order.closePosition is True and order.quantity is not None:
             return False
 
-        if order.reduceOnly not in [True, False]:
+        if order.reduceOnly not in [None, True, False]:
             return False
 
-        if order.closePosition == True and order.reduceOnly is True:
+        if order.closePosition is True and order.reduceOnly is True:
             return False
 
         if order.orderType == 'LIMIT':
@@ -496,7 +487,7 @@ class BinanceExchange(BaseExchange):
         return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):
-        return self.futuresClient.change_initial_leverage(symbol=symbol, leverage=leverage)
+        return self.futuresClient.change_initial_leverage(symbol=symbol, leverage=leverage).toDict()
 
     def changeMarginType(self, symbol, marginType):
         if marginType not in ['ISOLATED', 'CROSSED']:
@@ -543,3 +534,12 @@ class BinanceExchange(BaseExchange):
                 return self.futuresClient.get_recent_trades_list(symbol=symbol)
             else:
                 return self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit)
+
+    def setMarginType(self, symbol, marginType):
+        if marginType not in ['ISOLATED', 'CROSSED']:
+            raise ValueError('marginType was not correctly specified, should be either ISOLATED or CROSSED')
+
+        return self.futuresClient.change_margin_type(symbol, marginType)
+
+    def getPositionInfo(self, symbol=None):
+        return self.futuresClient.get_position_v2(symbol)
