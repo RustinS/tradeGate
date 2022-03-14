@@ -92,8 +92,8 @@ def testFuturesTpSlLimitOrder(getGates):
         if gate.exchangeName.lower() != 'binance':
             continue
         try:
-            result = gate.makeSlTpLimitFuturesOrder('BTCUSDT', 'BUY', 1, 38880, 39000, 38700, 20, marginType='ISOLATED')
-            print('\nResult of batch ordering from {} exchange: {}'.format(gate.exchangeName, result))
+            result = gate.makeSlTpLimitFuturesOrder('BTCUSDT', 'BUY', 1, 39020, 39500, 38500, 10, marginType='ISOLATED')
+            print('\nResult of TP-SL-Limit ordering from {} exchange: {}'.format(gate.exchangeName, result))
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
         except Exception:
             assert False, 'Problem in making new SL-TP-Limit order in {} exchange'.format(gate.exchangeName)

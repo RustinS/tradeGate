@@ -36,6 +36,8 @@ class BinanceExchange(BaseExchange):
         self.timeIndexesInCandleData = [0, 6]
         self.desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
 
+        self.subFutureClient = None
+
     @staticmethod
     def isOrderDataValid(order: DataHelpers.OrderData):
         if order.orderType not in ['LIMIT', 'MARKET', 'STOP_LOSS', 'STOP_LOSS_LIMIT', 'TAKE_PROFIT',
@@ -511,7 +513,7 @@ class BinanceExchange(BaseExchange):
             if limit is None:
                 return self.client.depth(symbol)
             else:
-                return self.clinet.depth(symbol, limit=limit)
+                return self.client.depth(symbol, limit=limit)
         else:
             if limit is None:
                 return self.futuresClient.get_order_book(symbol=symbol)

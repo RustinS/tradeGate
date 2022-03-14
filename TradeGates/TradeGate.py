@@ -1,3 +1,5 @@
+import threading
+
 from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
 from Watchers.futureOrderWatchers import watchFuturesLimitTrigger
@@ -208,9 +210,11 @@ class TradeGate:
         order = self.makeFuturesOrder(mainOrder)
 
         print('Main order sent')
-        watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, tpSlOrderSide=tpSlOrderSide,
-                                 takeProfit=takeProfit, stopLoss=stopLoss)
-
+        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss}
+        watcherThread = threading.Thread(target=watchFuturesLimitTrigger,
+                                         args=(self, symbol, order['orderId'], True, False, params))
+        watcherThread.start()
+        # watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, params)
         return order
 
     def getPositionInfo(self, symbol=None):
