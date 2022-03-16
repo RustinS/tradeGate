@@ -88,10 +88,10 @@ class BybitExchange(BaseExchange):
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         if futures:
             tradeHistory = self.futuresSession.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
-            return BybitHelpers.getMyTradeHistory(tradeHistory['result']['data'], futures=True)
+            return BybitHelpers.getMyTradeHistoryOut(tradeHistory['result']['data'], futures=True)
         else:
             tradeHistory = self.spotSession.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
-            return BybitHelpers.getMyTradeHistory(tradeHistory['result'])
+            return BybitHelpers.getMyTradeHistoryOut(tradeHistory['result'])
 
     def testSpotOrder(self, orderData):
         pass
@@ -158,8 +158,13 @@ class BybitExchange(BaseExchange):
     def getSymbolAveragePrice(self, symbol):
         pass
 
-    def getSymbolTickerPrice(self, symbol):
-        pass
+    def getSymbolTickerPrice(self, symbol, futures=False):
+        if futures:
+            symbolInfo = self.futuresSession.latest_information_for_symbol(symbol=symbol)['result']
+            return float(symbolInfo[0]['last_price'])
+        else:
+            symbolInfo = self.spotSession.latest_information_for_symbol(symbol=symbol)
+            return float(symbolInfo['result']['lastPrice'])
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
@@ -202,4 +207,25 @@ class BybitExchange(BaseExchange):
         pass
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
+        if futures:
+            if limit is not None and limit > 0:
+                limit = 1000 if limit > 1000 else limit
+            else:
+                limit = 500
+
+            recentTrades = self.futuresSession.public_trading_records(symbol=symbol, limit=limit)['result']
+            return BybitHelpers.getRecentTradeHistoryOut(recentTrades, futures=True)
+        else:
+            if limit is not None and limit > 0:
+                limit = 60 if limit > 60 else limit
+            else:
+                limit = 60
+
+            recentTrades = self.spotSession.public_trading_records(symbol=symbol, limit=limit)['result']
+            return BybitHelpers.getRecentTradeHistoryOut(recentTrades)
+
+    def setMarginType(self, symbol, marginType):
+        pass
+
+    def getPositionInfo(self, symbol=None):
         pass

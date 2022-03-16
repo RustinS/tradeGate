@@ -93,8 +93,8 @@ class TradeGate:
     def getSymbolAveragePrice(self, symbol):
         return self.exchange.getSymbolAveragePrice(symbol)
 
-    def getSymbolTickerPrice(self, symbol):
-        return self.exchange.getSymbolTickerPrice(symbol)
+    def getSymbolTickerPrice(self, symbol, futures=False):
+        return self.exchange.getSymbolTickerPrice(symbol, futures)
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):

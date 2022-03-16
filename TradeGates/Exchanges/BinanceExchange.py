@@ -28,9 +28,10 @@ class BinanceExchange(BaseExchange):
         else:
             self.client = Spot(key=credentials['spot']['key'], secret=credentials['spot']['secret'])
             self.futuresClient = RequestClient(api_key=credentials['futures']['key'],
-                                               secret_key=credentials['futures']['secret'])
+                                               secret_key=credentials['futures']['secret'],
+                                               url='https://fapi.binance.com')
 
-        self.timeIntervlas = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w',
+        self.timeIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w',
                               '1M']
 
         self.timeIndexesInCandleData = [0, 6]
@@ -392,7 +393,7 @@ class BinanceExchange(BaseExchange):
         except Exception:
             return None
 
-    def getSymbolTickerPrice(self, symbol):
+    def getSymbolTickerPrice(self, symbol, futures=False):
         try:
             return self.client.ticker_price(symbol)['price']
         except Exception:
@@ -400,7 +401,7 @@ class BinanceExchange(BaseExchange):
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
-        if not interval in self.timeIntervlas:
+        if not interval in self.timeIntervals:
             raise Exception('Time interval is not valid.')
 
         if futures:

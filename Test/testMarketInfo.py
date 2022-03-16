@@ -1,5 +1,4 @@
 import json
-from TradeGates.TradeGate import TradeGate
 import logging
 
 import pytest
@@ -27,7 +26,7 @@ def getGates():
 def testTradingFees(getGates):
     for gate in getGates:
         tradingFees = gate.getTradingFees()
-        # print('\nTrading fees from {} exchange: {}'.format(gate.exchangeName, tradingFees))
+        print('\nTrading fees from {} exchange: {}'.format(gate.exchangeName, tradingFees))
 
         assert tradingFees is not None, 'Problem in fetching trading fees from {} exchange.'.format(gate.exchangeName)
 
@@ -44,13 +43,15 @@ def testAveragePrice(getGates):
 def testRecentTrades(getGates):
     for gate in getGates:
         symbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT')
-        print('\nBTCUSDT latest Price from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice))
+        print('\nBTCUSDT recent trades from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice[0]))
 
         assert symbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(
             gate.exchangeName)
 
         futuresSymbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT', futures=True)
-        print('\nBTCUSDT futures latest Price from {} exchange: {}'.format(gate.exchangeName, futuresSymbolRecentPrice))
+        print(
+            '\nBTCUSDT futures recent trades from {} exchange: {}'.format(gate.exchangeName,
+                                                                          futuresSymbolRecentPrice[0]))
 
         assert futuresSymbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(
             gate.exchangeName)
@@ -60,6 +61,13 @@ def testTickerPrice(getGates):
     for gate in getGates:
         symbolTickerPrice = gate.getSymbolTickerPrice('BTCUSDT')
         print('\nBTCUSDT ticker Price from {} exchange: {}'.format(gate.exchangeName, symbolTickerPrice))
+
+        assert symbolTickerPrice is not None, 'Problem in fetching symbol ticker price from {} exchange.'.format(
+            gate.exchangeName)
+
+        symbolTickerPrice = gate.getSymbolTickerPrice('BTCUSDT', futures=True)
+        print('\nBTCUSDT ticker price from futures market of {} exchange: {}'.format(gate.exchangeName,
+                                                                                     symbolTickerPrice))
 
         assert symbolTickerPrice is not None, 'Problem in fetching symbol ticker price from {} exchange.'.format(
             gate.exchangeName)

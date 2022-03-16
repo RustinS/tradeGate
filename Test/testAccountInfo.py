@@ -70,8 +70,8 @@ def testTradeHistory(getGates):
                      'commissionAsset', 'time',
                      'isBuyer', 'isMaker', 'isBestMatch']
 
+        errorMessage = 'Bad fetch trade history interface for {} exchange,'.format(gate.exchangeName)
         try:
-            errorMessage = 'Bad fetch trade history interface for {} exchange,'.format(gate.exchangeName)
             if not gate.exchangeName == 'Binance':
                 interface.append('exchangeSpecific')
                 if not sorted(list(tradeHistory[0].keys())) == sorted(interface):

@@ -17,5 +17,15 @@ class Trade:
         result.quoteQty = json_data.get_float("quoteQty")
         result.time = json_data.get_int("time")
         result.isBuyerMaker = json_data.get_boolean("isBuyerMaker")
-        
+
         return result
+
+    def toDict(self):
+        return {
+            'id': self.id,
+            'price': self.price,
+            'qty': self.qty,
+            'quoteQty': self.quoteQty,
+            'time': self.time,
+            'isBuyerMaker': self.isBuyerMaker,
+        }

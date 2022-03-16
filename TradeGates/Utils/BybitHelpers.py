@@ -3,29 +3,19 @@ def getBalanceOut(data, single=False, futures=False):
         outData = []
         if not futures:
             for asset in data:
-                coinData = {}
-                coinData['asset'] = asset['coin']
-                coinData['free'] = asset['free']
-                coinData['locked'] = asset['locked']
-                coinData['exchangeSpecific'] = asset
+                coinData = {'asset': asset['coin'], 'free': asset['free'], 'locked': asset['locked'],
+                            'exchangeSpecific': asset}
                 outData.append(coinData)
             return outData
         else:
             for key, value in data.items():
-                coinData = {}
-                coinData['asset'] = key
-                coinData['free'] = value['available_balance']
-                coinData['locked'] = value['used_margin']
-                coinData['exchangeSpecific'] = value
+                coinData = {'asset': key, 'free': value['available_balance'], 'locked': value['used_margin'],
+                            'exchangeSpecific': value}
                 outData.append(coinData)
             return outData
     else:
         if not futures:
-            outData = {}
-            outData['asset'] = data['coin']
-            outData['free'] = data['free']
-            outData['locked'] = data['locked']
-            outData['exchangeSpecific'] = data
+            outData = {'asset': data['coin'], 'free': data['free'], 'locked': data['locked'], 'exchangeSpecific': data}
             return outData
         else:
             outData = {}
@@ -38,23 +28,46 @@ def getBalanceOut(data, single=False, futures=False):
             return outData
 
 
-def getMyTradeHistory(data, futures=False):
+def getMyTradeHistoryOut(data, futures=False):
+    outData = []
     if futures:
-        outData = []
         for history in data:
-            outData.append({'symbol': history['symbol'], 'id': history['exec_id'], 'orderId': history['order_id'],
-                            'orderListId': history['order_link_id'], 'price': history['price'],
-                            'qty': history['order_qty'],
-                            'quoteQty': str(float(history['price']) * float(history['order_qty'])),
-                            'commission': None, 'commissionAsset': None, 'time': history['trade_time_ms'],
-                            'isBuyer': None, 'isMaker': None, 'isBestMatch': None, 'exchangeSpecific': history})
+            outData.append(
+                {'symbol': history['symbol'], 'id': history['exec_id'], 'orderId': history['order_id'],
+                 'orderListId': history['order_link_id'], 'price': history['price'],
+                 'qty': history['order_qty'],
+                 'quoteQty': str(float(history['price']) * float(history['order_qty'])),
+                 'commission': None, 'commissionAsset': None, 'time': history['trade_time_ms'],
+                 'isBuyer': None, 'isMaker': None, 'isBestMatch': None, 'exchangeSpecific': history}
+            )
     else:
-        outData = []
         for history in data:
-            outData.append({'symbol': history['symbol'], 'id': history['id'], 'orderId': history['orderId'],
-                            'orderListId': -1, 'price': history['price'], 'qty': history['qty'],
-                            'quoteQty': str(float(history['price']) * float(history['qty'])),
-                            'commission': history['commission'], 'commissionAsset': history['commissionAsset'],
-                            'time': history['time'], 'isBuyer': history['isBuyer'], 'isMaker': history['isMaker'],
-                            'isBestMatch': None, 'exchangeSpecific': history})
+            outData.append(
+                {'symbol': history['symbol'], 'id': history['id'], 'orderId': history['orderId'],
+                 'orderListId': -1, 'price': history['price'], 'qty': history['qty'],
+                 'quoteQty': str(float(history['price']) * float(history['qty'])),
+                 'commission': history['commission'], 'commissionAsset': history['commissionAsset'],
+                 'time': history['time'], 'isBuyer': history['isBuyer'], 'isMaker': history['isMaker'],
+                 'isBestMatch': None, 'exchangeSpecific': history}
+            )
+    return outData
+
+
+def getRecentTradeHistoryOut(data, futures=False):
+    outData = []
+    if futures:
+        for datum in data:
+            outData.append({
+                'id': datum['id'], 'price': datum['price'], 'qty': datum['qty'],
+                'quoteQty': str(float(datum['qty'] * datum['price'])),
+                'time': datum['trade_time_ms'], 'isBuyerMaker': None, 'isBestMatch': None, 'exchangeSpecific': datum
+            })
+    else:
+        for datum in data:
+            outData.append({
+                'id': None, 'price': datum['price'], 'qty': datum['qty'],
+                'quoteQty': str(float(datum['qty'] * datum['price'])),
+                'time': datum['time'], 'isBuyerMaker': datum['isBuyerMaker'], 'isBestMatch': None,
+                'exchangeSpecific': datum
+            })
     return outData

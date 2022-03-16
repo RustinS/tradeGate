@@ -73,7 +73,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getSymbolTickerPrice(self, symbol):
+    def getSymbolTickerPrice(self, symbol, futures=False):
         pass
 
     @abstractmethod
@@ -131,4 +131,12 @@ class BaseExchange(ABC):
 
     @abstractmethod
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
+        pass
+
+    @abstractmethod
+    def setMarginType(self, symbol, marginType):
+        pass
+
+    @abstractmethod
+    def getPositionInfo(self, symbol=None):
         pass
