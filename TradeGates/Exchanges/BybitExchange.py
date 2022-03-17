@@ -170,8 +170,11 @@ class BybitExchange(BaseExchange):
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
         pass
 
-    def getExchangeTime(self):
-        pass
+    def getExchangeTime(self, futures=False):
+        if futures:
+            return self.futuresSession.server_time()['time_now']
+        else:
+            return int(self.spotSession.server_time()['result']['serverTime'])
 
     def getSymbol24hTicker(self, symbol):
         pass

@@ -95,5 +95,9 @@ def testKlines(getGates):
 def testExchangeTime(getGates):
     for gate in getGates:
         exchangeTime = gate.getExchangeTime()
-        print('\nExchange time from {} exchange: {}'.format(gate.exchangeName, exchangeTime))
+        print('\nExchange time from spot market of {} exchange: {}'.format(gate.exchangeName, exchangeTime))
+        assert exchangeTime is not None, 'Problem in fetching exchange time from {} exchange.'.format(gate.exchangeName)
+
+        exchangeTime = gate.getExchangeTime(futures=True)
+        print('\nExchange time from futures market of {} exchange: {}'.format(gate.exchangeName, exchangeTime))
         assert exchangeTime is not None, 'Problem in fetching exchange time from {} exchange.'.format(gate.exchangeName)

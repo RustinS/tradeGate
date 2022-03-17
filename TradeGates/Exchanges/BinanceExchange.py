@@ -444,9 +444,12 @@ class BinanceExchange(BaseExchange):
         else:
             return data
 
-    def getExchangeTime(self):
+    def getExchangeTime(self, futures=False):
         try:
-            return self.client.time()
+            if not futures:
+                return self.client.time()['serverTime']
+            else:
+                return self.futuresClient.get_servertime()
         except Exception:
             return None
 

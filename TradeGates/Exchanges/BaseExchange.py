@@ -82,7 +82,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getExchangeTime(self):
+    def getExchangeTime(self, futures=False):
         pass
 
     @abstractmethod

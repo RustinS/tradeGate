@@ -101,8 +101,8 @@ class TradeGate:
         return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, blvtnav,
                                              convertDateTime, doClean, toCleanDataframe)
 
-    def getExchangeTime(self):
-        return self.exchange.getExchangeTime()
+    def getExchangeTime(self, futures=False):
+        return self.exchange.getExchangeTime(futures)
 
     def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
                                   reduceOnly=None, price=None, newClientOrderId=None,
