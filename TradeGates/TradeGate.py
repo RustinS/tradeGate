@@ -90,9 +90,6 @@ class TradeGate:
     def getTradingFees(self):
         return self.exchange.getTradingFees()
 
-    def getSymbolAveragePrice(self, symbol):
-        return self.exchange.getSymbolAveragePrice(symbol)
-
     def getSymbolTickerPrice(self, symbol, futures=False):
         return self.exchange.getSymbolTickerPrice(symbol, futures)
 

@@ -387,12 +387,6 @@ class BinanceExchange(BaseExchange):
         except Exception:
             return None
 
-    def getSymbolAveragePrice(self, symbol):
-        try:
-            return self.client.avg_price(symbol)
-        except Exception:
-            return None
-
     def getSymbolTickerPrice(self, symbol, futures=False):
         try:
             return self.client.ticker_price(symbol)['price']

@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime
 
+import pandas as pd
 from pybit import HTTP
 
 from BaseExchange import BaseExchange
@@ -28,6 +30,11 @@ class PyBitHTTP(HTTP):
 
 
 class BybitExchange(BaseExchange):
+    timeIndexesInCandleData = [0, 6]
+    desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
+
+    timeIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d', '1w', '1M']
+
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         self.apiKey = credentials['spot']['key']
         self.secret = credentials['spot']['secret']
@@ -43,9 +50,6 @@ class BybitExchange(BaseExchange):
             self.spotSession = PyBitHTTP("https://api.bybit.com", api_key=self.apiKey, api_secret=self.secret,
                                          spot=True)
             self.futuresSession = PyBitHTTP("https://api.bybit.com", api_key=self.apiKey, api_secret=self.secret)
-
-        self.timeIndexesInCandleData = [0, 6]
-        self.desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
 
         self.futuresSymbols = []
         for symbol in self.futuresSession.query_symbol()['result']:
@@ -67,6 +71,66 @@ class BybitExchange(BaseExchange):
     @staticmethod
     def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
         pass
+
+    @staticmethod
+    def convertIntervalToFuturesKlines(interval):
+        if interval == '1m':
+            return 1
+        elif interval == '3m':
+            return 3
+        elif interval == '5m':
+            return 5
+        elif interval == '15m':
+            return 15
+        elif interval == '30m':
+            return 30
+        elif interval == '1h':
+            return 60
+        elif interval == '2h':
+            return 120
+        elif interval == '4h':
+            return 240
+        elif interval == '6h':
+            return 360
+        elif interval == '12h':
+            return 720
+        elif interval == '1d':
+            return 'D'
+        elif interval == '1w':
+            return 'W'
+        elif interval == '1M':
+            return 'M'
+
+    @staticmethod
+    def getIntervalInSeconds(interval):
+        if interval not in BybitExchange.timeIntervals:
+            raise ValueError('Incorrect time interval specified')
+        if interval == '1m':
+            return 60
+        elif interval == '3m':
+            return 3 * 60
+        elif interval == '5m':
+            return 5 * 60
+        elif interval == '15m':
+            return 15 * 60
+        elif interval == '30m':
+            return 30 * 60
+        elif interval == '1h':
+            return 60 * 60
+        elif interval == '2h':
+            return 120 * 60
+        elif interval == '4h':
+            return 240 * 60
+        elif interval == '6h':
+            return 360 * 60
+        elif interval == '12h':
+            return 720 * 60
+        elif interval == '1d':
+            return 86400
+        elif interval == '1w':
+            return 7 * 86400
+        elif interval == '1M':
+            return 30 * 86400
 
     def getBalance(self, asset='', futures=False):
         if futures:
@@ -155,9 +219,6 @@ class BybitExchange(BaseExchange):
     def getTradingFees(self):
         pass
 
-    def getSymbolAveragePrice(self, symbol):
-        pass
-
     def getSymbolTickerPrice(self, symbol, futures=False):
         if futures:
             symbolInfo = self.futuresSession.latest_information_for_symbol(symbol=symbol)['result']
@@ -168,7 +229,80 @@ class BybitExchange(BaseExchange):
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
-        pass
+        if not interval in self.timeIntervals:
+            raise Exception('Time interval is not valid.')
+
+        if futures:
+            futuresInterval = self.convertIntervalToFuturesKlines(interval)
+            data = []
+            if limit is not None:
+                if limit > 200:
+                    limit = 200
+                elif limit < 1:
+                    limit = 1
+            else:
+                limit = 200
+
+            if startTime is None:
+                startTimestamp = int(datetime.now().timestamp() - self.getIntervalInSeconds(interval) * limit)
+            else:
+                startTimestamp = int(startTime.timestamp)
+
+            candles = self.futuresSession.query_kline(symbol=symbol, interval=futuresInterval, from_time=startTimestamp,
+                                                      limit=limit)
+
+            for candle in candles['result']:
+                dataArray = [float(candle['open_time']), float(candle['open']), float(candle['high']),
+                             float(candle['low']), float(candle['close']), float(candle['volume']),
+                             int(candle['open_time']) + self.getIntervalInSeconds(interval), None, None, None, None]
+                data.append(dataArray)
+        else:
+            if startTime is not None:
+                startTimestamp = startTime.timestamp() * 1000
+            else:
+                startTimestamp = None
+
+            if endTime is not None:
+                endTimestamp = endTime.timestamp() * 1000
+            else:
+                endTimestamp = None
+
+            if limit is not None:
+                if limit > 1000:
+                    limit = 1000
+                elif limit < 1:
+                    limit = 1
+
+            data = self.spotSession.query_kline(symbol=symbol, interval=interval, startTime=startTimestamp,
+                                                endTime=endTimestamp, limit=limit)['result']
+
+            for datum in data:
+                for idx in range(len(datum)):
+                    if idx in self.timeIndexesInCandleData:
+                        continue
+                    datum[idx] = float(datum[idx])
+
+        if convertDateTime or toCleanDataframe:
+            for datum in data:
+                for idx in self.timeIndexesInCandleData:
+                    if futures:
+                        datum[idx] = datetime.fromtimestamp(float(datum[idx]))
+                    else:
+                        datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
+
+        if doClean or toCleanDataframe:
+            outArray = []
+            for datum in data:
+                outArray.append([datum[index] for index in self.desiredCandleDataIndexes])
+
+            if toCleanDataframe:
+                df = pd.DataFrame(outArray,
+                                  columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
+                df.set_index('date', inplace=True)
+                return df
+            return outArray
+        else:
+            return data
 
     def getExchangeTime(self, futures=False):
         if futures:

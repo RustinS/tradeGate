@@ -69,10 +69,6 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getSymbolAveragePrice(self, symbol):
-        pass
-
-    @abstractmethod
     def getSymbolTickerPrice(self, symbol, futures=False):
         pass
 

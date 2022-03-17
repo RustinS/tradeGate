@@ -31,15 +31,6 @@ def testTradingFees(getGates):
         assert tradingFees is not None, 'Problem in fetching trading fees from {} exchange.'.format(gate.exchangeName)
 
 
-def testAveragePrice(getGates):
-    for gate in getGates:
-        symbolAveragePrice = gate.getSymbolAveragePrice('BTCUSDT')
-        # print('\nBTCUSDT average Price from {} exchange: {}'.format(gate.exchangeName, symbolAveragePrice))
-
-        assert symbolAveragePrice is not None, 'Problem in fetching symbol average price from {} exchange.'.format(
-            gate.exchangeName)
-
-
 def testRecentTrades(getGates):
     for gate in getGates:
         symbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT')
@@ -76,7 +67,7 @@ def testTickerPrice(getGates):
 def testKlines(getGates):
     for gate in getGates:
         # print('\nBTCUSDT candles: {}'.format(gate.getSymbolKlines('BTCUSDT', '1m', limit=10)))
-        spotData = gate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=False, doClean=True, convertDateTime=True)
+        spotData = gate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=False, toCleanDataframe=True)
         assert spotData is not None, 'Problem in fetching spot market candle data from {} exchange.'.format(
             gate.exchangeName)
         assert len(spotData) == 10, 'Length of spot market candle data is incorrect from {} exchange.'.format(
@@ -90,6 +81,9 @@ def testKlines(getGates):
 
         assert futuresData.shape == (10, 7), '7 columns were excpected, but failed from {} exchange.'.format(
             gate.exchangeName)
+
+        print('\n\n{}:\n'.format(gate.exchangeName))
+        print(futuresData.head())
 
 
 def testExchangeTime(getGates):
