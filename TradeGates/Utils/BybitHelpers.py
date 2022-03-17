@@ -66,7 +66,7 @@ def getRecentTradeHistoryOut(data, futures=False):
         for datum in data:
             outData.append({
                 'id': None, 'price': datum['price'], 'qty': datum['qty'],
-                'quoteQty': str(float(datum['qty'] * datum['price'])),
+                'quoteQty': str(float(datum['qty']) * float(datum['price'])),
                 'time': datum['time'], 'isBuyerMaker': datum['isBuyerMaker'], 'isBestMatch': None,
                 'exchangeSpecific': datum
             })
