@@ -29,7 +29,7 @@ def testNewTestOrder(getGates):
                                               price=49500)
             assert res is not None, 'Problem in testing making order from {} exchange'.format(gate.exchangeName)
         except Exception as e:
-            assert False, str(e)
+            assert False, 'From {} exchange : {}'.format(gate.exchangeName, str(e))
 
 
 def testNewTestOrderBadOrderType(getGates):
@@ -56,7 +56,7 @@ def testNewOrder(getGates):
 
 def testGetOrders(getGates):
     for gate in getGates:
-        orders = gate.getSymbolOrders('BTCUSDT', futures=True)
+        orders = gate.getSymbolOrders('BTCUSDT', futures=False)
         print('\nGetting order history for BTCUSDT symbol from {}: {}'.format(gate.exchangeName, orders[0]))
 
         assert orders is not None, 'Problem in getting list of all orders from {} exchange.'.format(gate.exchangeName)
@@ -65,10 +65,12 @@ def testGetOrders(getGates):
 def testGetOpenOrders(getGates):
     for gate in getGates:
         openOrders = gate.getOpenOrders()
+        print('\nGetting all symbols open orders list from {} exchange: {}'.format(gate.exchangeName, openOrders))
         assert openOrders is not None, 'Problem in getting list of open orders without symbol from {} exchange.'.format(
             gate.exchangeName)
 
         symbolOpenOrders = gate.getOpenOrders('BTCUSDT')
+        print('\nGetting BTCUSDT open orders list from {} exchange: {}'.format(gate.exchangeName, openOrders))
         assert symbolOpenOrders is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(
             gate.exchangeName)
 
@@ -91,7 +93,7 @@ def testGetOrder(getGates):
         assert order['orderId'] == result[
             'orderId'], 'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
 
-        gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
+        # gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
 
 
 def testCancelingAllOpenOrders(getGates):

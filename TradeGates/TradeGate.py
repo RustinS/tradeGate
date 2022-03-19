@@ -61,9 +61,6 @@ class TradeGate:
         if newClientOrderId is not None:
             currOrder.setNewClientOrderId(newClientOrderId)
 
-        if not self.exchange.isOrderDataValid(currOrder):
-            raise ValueError('Incomplete data provided.')
-
         self.exchange.testSpotOrder(currOrder)
 
         return currOrder
@@ -150,8 +147,7 @@ class TradeGate:
         if recvWindow is not None:
             currOrder.setRecvWindow(recvWindow)
 
-        if not self.exchange.isFuturesOrderDataValid(currOrder):
-            raise ValueError('Incomplete data provided.')
+        self.exchange.testFuturesOrder(currOrder)
 
         return currOrder
 

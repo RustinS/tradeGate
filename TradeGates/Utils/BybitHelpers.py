@@ -71,3 +71,33 @@ def getRecentTradeHistoryOut(data, futures=False):
                 'exchangeSpecific': datum
             })
     return outData
+
+
+def getOpenOrdersOut(data, futures=False):
+    outData = []
+    if futures:
+        pass
+    else:
+        for datum in data:
+            outData.append({
+                'symbol': datum['symbol'],
+                'orderId': datum['orderId'],
+                'orderListId': None,
+                'clientOrderId': datum['orderLinkId'],
+                'price': datum['price'],
+                'origQty': datum['origQty'],
+                'executedQty': datum['executedQty'],
+                'cummulativeQuoteQty': datum['cummulativeQuoteQty'],
+                'status': datum['status'],
+                'timeInForce': datum['timeInForce'],
+                'type': datum['type'],
+                'side': datum['side'],
+                'stopPrice': datum['stopPrice'],
+                'icebergQty': datum['icebergQty'],
+                'time': datum['time'],
+                'updateTime': datum['updateTime'],
+                'isWorking': datum['isWorking'],
+                'origQuoteOrderQty': None,
+                'exchangeSpecific': datum
+            })
+    return outData

@@ -1,10 +1,11 @@
 import logging
+import warnings
 from datetime import datetime
 
 import pandas as pd
 from pybit import HTTP
 
-from BaseExchange import BaseExchange
+from Exchanges.BaseExchange import BaseExchange
 from Utils import DataHelpers, BybitHelpers
 
 
@@ -32,6 +33,8 @@ class PyBitHTTP(HTTP):
 class BybitExchange(BaseExchange):
     timeIndexesInCandleData = [0, 6]
     desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
+    spotOrderTypes = ['LIMIT', 'MARKET', 'LIMIT_MAKER']
+    spotTimeInForces = ['GTC', 'FOK', 'IOC']
 
     timeIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d', '1w', '1M']
 
@@ -57,16 +60,43 @@ class BybitExchange(BaseExchange):
                 self.futuresSymbols.append(symbol['name'])
 
     @staticmethod
-    def isOrderDataValid(order: DataHelpers.OrderData):
-        pass
+    def isOrderDataValid(orderData: DataHelpers.OrderData):
+        if orderData.symbol is None or orderData.quantity is None or orderData.side is None \
+                or orderData.orderType is None:
+            raise ValueError('Missing mandatory fields.')
+
+        if orderData.orderType not in BybitExchange.spotOrderTypes:
+            raise ValueError('Order type not correctly specified. Available order types for spot market: {}'.format(
+                BybitExchange.spotOrderTypes))
+
+        if orderData.side not in ['BUY', 'SELL']:
+            raise ValueError('Order side can only be \'BUY\' or \'SELL\'')
+
+        if orderData.timeInForce not in BybitExchange.spotTimeInForces:
+            raise ValueError(
+                'Time-in-force not correctly specified. Available time-in-force for spot market: {}'.format(
+                    BybitExchange.spotTimeInForces))
+
+        if orderData.orderType in ['LIMIT', 'LIMIT_MAKER'] and orderData.price is None:
+            raise ValueError('Price must be specified for limit orders.')
 
     @staticmethod
     def isFuturesOrderDataValid(order: DataHelpers.futuresOrderData):
         pass
 
     @staticmethod
-    def getOrderAsDict(order: DataHelpers.OrderData):
-        pass
+    def getSpotOrderAsDict(order: DataHelpers.OrderData):
+        params = {
+            'symbol': order.symbol,
+            'qty': order.quantity,
+            'side': order.side,
+            'type': order.orderType,
+            'timeInForce': order.timeInForce,
+            'price': order.price,
+            'orderLinkId': order.newClientOrderId
+        }
+
+        return params
 
     @staticmethod
     def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
@@ -157,11 +187,20 @@ class BybitExchange(BaseExchange):
             tradeHistory = self.spotSession.user_trade_records(symbol=symbol, limit=limit, fromId=fromId)
             return BybitHelpers.getMyTradeHistoryOut(tradeHistory['result'])
 
-    def testSpotOrder(self, orderData):
-        pass
+    def testSpotOrder(self, orderData: DataHelpers.OrderData):
+        self.isOrderDataValid(orderData)
+
+        if orderData.icebergQty is not None or orderData.newOrderRespType is not None \
+                or orderData.quoteOrderQty is not None or orderData.recvWindow is not None \
+                or orderData.stopPrice is not None:
+            warnings.warn('Some of the given parameters have no use in ByBit exchange.')
+
+        return orderData
 
     def makeSpotOrder(self, orderData):
-        pass
+        orderParams = self.getSpotOrderAsDict(orderData)
+
+        return self.spotSession.place_active_order(**orderParams)['result']
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         if futures:
@@ -204,8 +243,15 @@ class BybitExchange(BaseExchange):
                                                            endtime=endTime, limit=limit)
             return history['result']
 
-    def getOpenOrders(self, symbol=None):
-        pass
+    def getOpenOrders(self, symbol=None, futures=False):
+        if futures:
+            pass
+        else:
+            if symbol is None:
+                openOrders = self.spotSession.query_active_order()['result']
+            else:
+                openOrders = self.spotSession.query_active_order(symbol=symbol)['result']
+            return BybitHelpers.getOpenOrdersOut(openOrders)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         pass
@@ -214,7 +260,17 @@ class BybitExchange(BaseExchange):
         pass
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
-        pass
+        if futures:
+            pass
+        else:
+            if orderId is not None:
+                order = self.spotSession.get_active_order(orderId=orderId)['result']
+            elif localOrderId is not None:
+                order = self.spotSession.get_active_order(orderLinkId=localOrderId)['result']
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+
+            return order
 
     def getTradingFees(self):
         pass
@@ -314,6 +370,9 @@ class BybitExchange(BaseExchange):
         pass
 
     def getAllSymbolFuturesOrders(self, symbol):
+        pass
+
+    def testFuturesOrder(self, futuresOrderData):
         pass
 
     def makeFuturesOrder(self, futuresOrderData):

@@ -20,7 +20,7 @@ class BaseExchange(ABC):
 
     @staticmethod
     @abstractmethod
-    def getOrderAsDict(order: DataHelpers.OrderData):
+    def getSpotOrderAsDict(order: DataHelpers.OrderData):
         pass
 
     @staticmethod
@@ -87,6 +87,10 @@ class BaseExchange(ABC):
 
     @abstractmethod
     def getAllSymbolFuturesOrders(self, symbol):
+        pass
+
+    @abstractmethod
+    def testFuturesOrder(self, futuresOrderData):
         pass
 
     @abstractmethod

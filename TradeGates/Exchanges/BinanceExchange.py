@@ -7,7 +7,7 @@ import pandas as pd
 from binance.error import ClientError
 from binance.spot import Spot
 
-from BaseExchange import BaseExchange
+from Exchanges.BaseExchange import BaseExchange
 from Utils import DataHelpers
 from binance_f import RequestClient
 from binance_f.model.balance import Balance
@@ -138,7 +138,7 @@ class BinanceExchange(BaseExchange):
                 return True
 
     @staticmethod
-    def getOrderAsDict(order: DataHelpers.OrderData):
+    def getSpotOrderAsDict(order: DataHelpers.OrderData):
         if order.timestamp is None:
             raise Exception('Timestamp must be set')
 
@@ -274,8 +274,11 @@ class BinanceExchange(BaseExchange):
             return None
 
     def testSpotOrder(self, orderData):
+        if not self.isOrderDataValid(orderData):
+            raise ValueError('Incomplete data provided.')
+
         orderData.setTimestamp()
-        params = self.getOrderAsDict(orderData)
+        params = self.getSpotOrderAsDict(orderData)
 
         try:
             response = self.client.new_order_test(**params)
@@ -289,7 +292,7 @@ class BinanceExchange(BaseExchange):
             )
 
     def makeSpotOrder(self, orderData):
-        params = self.getOrderAsDict(orderData)
+        params = self.getSpotOrderAsDict(orderData)
 
         try:
             response = self.client.new_order(**params)
@@ -455,6 +458,11 @@ class BinanceExchange(BaseExchange):
 
     def getAllSymbolFuturesOrders(self, symbol):
         return self.futuresClient.get_all_orders(symbol=symbol)
+
+    def testFuturesOrder(self, futuresOrderData):
+        if not self.isFuturesOrderDataValid(futuresOrderData):
+            raise ValueError('Incomplete data provided.')
+        return futuresOrderData
 
     def makeFuturesOrder(self, futuresOrderData):
         params = self.getFuturesOrderAsDict(futuresOrderData)
