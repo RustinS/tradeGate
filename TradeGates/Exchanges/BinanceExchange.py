@@ -170,7 +170,7 @@ class BinanceExchange(BaseExchange):
             params['icebergQty'] = order.icebergQty
 
         if not order.newClientOrderId is None:
-            params['newOrderRespType'] = order.newOrderRespType
+            params['newClientOrderId'] = order.newClientOrderId
 
         if not order.recvWindow is None:
             params['recvWindow'] = order.recvWindow
@@ -294,16 +294,9 @@ class BinanceExchange(BaseExchange):
     def makeSpotOrder(self, orderData):
         params = self.getSpotOrderAsDict(orderData)
 
-        try:
-            response = self.client.new_order(**params)
-            logging.info(response)
-            return response
-        except ClientError as error:
-            logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.status_code, error.error_code, error.error_message
-                )
-            )
+        response = self.client.new_order(**params)
+        logging.info(response)
+        return response
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         try:

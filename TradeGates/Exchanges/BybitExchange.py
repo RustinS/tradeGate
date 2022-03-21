@@ -29,6 +29,19 @@ class PyBitHTTP(HTTP):
         else:
             raise NotImplementedError('Not implemented for futures market.')
 
+    def get_active_order_spot(self, **kwargs):
+        if self.spot is True:
+            suffix = '/spot/v1/order'
+
+            return self._submit_request(
+                method='GET',
+                path=self.endpoint + suffix,
+                query=kwargs,
+                auth=True
+            )
+        else:
+            raise NotImplementedError('Not implemented for futures market.')
+
 
 class BybitExchange(BaseExchange):
     timeIndexesInCandleData = [0, 6]
@@ -200,7 +213,7 @@ class BybitExchange(BaseExchange):
     def makeSpotOrder(self, orderData):
         orderParams = self.getSpotOrderAsDict(orderData)
 
-        return self.spotSession.place_active_order(**orderParams)['result']
+        return BybitHelpers.getMakeSpotOrderOut(self.spotSession.place_active_order(**orderParams)['result'])
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         if futures:
@@ -264,13 +277,19 @@ class BybitExchange(BaseExchange):
             pass
         else:
             if orderId is not None:
-                order = self.spotSession.get_active_order(orderId=orderId)['result']
+                try:
+                    order = self.spotSession.get_active_order(orderId=orderId)['result'][0]
+                except Exception as e:
+                    raise Exception('Problem in fetching order from bybit.')
             elif localOrderId is not None:
-                order = self.spotSession.get_active_order(orderLinkId=localOrderId)['result']
+                try:
+                    order = self.spotSession.get_active_order(orderLinkId=localOrderId)['result'][0]
+                except Exception as e:
+                    raise Exception('Problem in fetching order from bybit.')
             else:
                 raise Exception('Specify either order Id in the exchange or local Id sent with the order')
 
-            return order
+            return BybitHelpers.getOrderOut(order)
 
     def getTradingFees(self):
         pass

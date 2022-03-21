@@ -73,6 +73,55 @@ def getRecentTradeHistoryOut(data, futures=False):
     return outData
 
 
+def getMakeSpotOrderOut(data):
+    return {
+        'symbol': data['symbol'],
+        'orderId': data['orderId'],
+        'orderListId': -1,
+        'clientOrderId': data['orderLinkId'],
+        'transactTime': data['transactTime'],
+        'price': data['price'],
+        'origQty': data['origQty'],
+        'executedQty': data['executedQty'],
+        'cummulativeQuoteQty': None,
+        'status': data['status'],
+        'timeInForce': data['timeInForce'],
+        'type': data['type'],
+        'side': data['side'],
+        'fills': None,
+        'exchangeSpecific': data
+    }
+
+
+def getOrderOut(data, futures=False):
+    if futures:
+        False
+    else:
+        print(data)
+
+        return {
+            'symbol': data['symbol'],
+            'orderId': data['orderId'],
+            'orderListId': -1,
+            'clientOrderId': data['orderLinkId'],
+            'price': data['price'],
+            'origQty': data['origQty'],
+            'executedQty': data['executedQty'],
+            'cummulativeQuoteQty': data['cummulativeQuoteQty'],
+            'status': data['status'],
+            'timeInForce': data['timeInForce'],
+            'type': data['type'],
+            'side': data['side'],
+            'stopPrice': data['stopPrice'],
+            'icebergQty': data['icebergQty'],
+            'time': data['time'],
+            'updateTime': data['updateTime'],
+            'isWorking': data['isWorking'],
+            'origQuoteOrderQty': None,
+            'exchangeSpecific': data
+        }
+
+
 def getOpenOrdersOut(data, futures=False):
     outData = []
     if futures:

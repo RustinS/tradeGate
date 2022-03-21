@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 import pytest
 
@@ -78,20 +79,23 @@ def testGetOpenOrders(getGates):
 def testGetOrder(getGates):
     for gate in getGates:
         try:
-            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=32000,
-                                                        timeInForce='GTC')
+            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.02, price=34000,
+                                                        timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order from {} exchange: {}'.format(gate.exchangeName, str(e))
 
+        print('Submitted order on {} exchange: {}'.format(gate.exchangeName, result))
+
         order = gate.getOrder('BTCUSDT', orderId=result['orderId'])
-        assert order['clientOrderId'] == result[
-            'clientOrderId'], 'Fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(
-            gate.exchangeName)
+        assert order['clientOrderId'] == result['clientOrderId'], \
+            'Fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(gate.exchangeName)
+        print('Correct \'clientOrderId\'.')
 
         order = gate.getOrder('BTCUSDT', localOrderId=result['clientOrderId'])
-        assert order['orderId'] == result[
-            'orderId'], 'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
+        assert order['orderId'] == result['orderId'], \
+            'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
+        print('Correct \'orderId\'.')
 
         # gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
 
