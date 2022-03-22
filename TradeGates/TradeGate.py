@@ -185,7 +185,7 @@ class TradeGate:
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity, enterPrice, takeProfit, stopLoss, leverage,
-                                  marginType):
+                                  marginType, cancelDelayMin):
         setLeverageResult = self.changeInitialLeverage(symbol, leverage)
 
         if not (setLeverageResult['leverage'] == leverage):
@@ -196,6 +196,10 @@ class TradeGate:
         except BinanceApiException as e:
             pass
 
+        cancelIfNotOpened = True if cancelDelayMin is not None else False
+
+        doPutTpSl = True if takeProfit is not None or stopLoss is not None else False
+
         tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
 
         mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=quantity,
@@ -203,9 +207,11 @@ class TradeGate:
         order = self.makeFuturesOrder(mainOrder)
 
         print('Main order sent')
-        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss}
+        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
+                  'cancelDelayMin': cancelDelayMin}
+        
         watcherThread = threading.Thread(target=watchFuturesLimitTrigger,
-                                         args=(self, symbol, order['orderId'], True, False, params))
+                                         args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened, params))
         watcherThread.start()
         # watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, params)
         return order

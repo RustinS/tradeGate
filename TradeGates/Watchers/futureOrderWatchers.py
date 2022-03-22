@@ -7,8 +7,10 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
             raise ValueError('Must specify \'tpSlOrderSide\' and \'stopLoss\' and \'takeProfit\'')
 
     if cancelIfNotOpened:
-        if 'timeFrame' not in params.keys() or 'delayNum' not in params.keys():
-            raise ValueError('Must specify \'timeFrame\' and \'delayNum\'')
+        if 'cancelDelayMin' not in params.keys():
+            raise ValueError('Must specify \'cancelDelayMin\'')
+        delayTimeSec = float(params['cancelDelayMin']) * 60
+        startDelayTime = time.time()
 
     print('Watching order')
     while True:
@@ -36,6 +38,10 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
                 break
         elif order['status'] == 'CANCELED':
             break
+
+        if cancelIfNotOpened:
+            if time.time() - startDelayTime > delayTimeSec:
+                gate.cancelOrder(symbol, orderId=orderId, futures=True)
 
     print('Watching position')
     while True:
