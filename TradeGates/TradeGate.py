@@ -185,10 +185,10 @@ class TradeGate:
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
-                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None, cancelDelayMin=None):
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None, cancelDelaySec=None):
 
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
-        stepQuantity = len(symbolInfo['precisionStep']) - 2
+        stepQuantity = len(str(symbolInfo['precisionStep'])) - 2
 
         if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
             raise Exception('Specify either quantity or quoteQuantity and not both')
@@ -206,7 +206,7 @@ class TradeGate:
         except BinanceApiException as e:
             pass
 
-        cancelIfNotOpened = True if cancelDelayMin is not None else False
+        cancelIfNotOpened = True if cancelDelaySec is not None else False
 
         doPutTpSl = True if takeProfit is not None or stopLoss is not None else False
 
@@ -218,7 +218,7 @@ class TradeGate:
 
         print('Main order sent')
         params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
-                  'cancelDelayMin': cancelDelayMin}
+                  'cancelDelaySec': cancelDelaySec}
 
         watcherThread = threading.Thread(target=watchFuturesLimitTrigger,
                                          args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened, params))
