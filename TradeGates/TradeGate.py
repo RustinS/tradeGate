@@ -1,4 +1,4 @@
-import threading
+import multiprocessing
 
 from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
@@ -220,9 +220,10 @@ class TradeGate:
         params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
                   'cancelDelaySec': cancelDelaySec}
 
-        watcherThread = threading.Thread(target=watchFuturesLimitTrigger,
-                                         args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened, params))
-        watcherThread.start()
+        watcherProc = multiprocessing.Process(target=watchFuturesLimitTrigger,
+                                              args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened,
+                                                    params))
+        watcherProc.start()
         # watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, params)
         return order
 
