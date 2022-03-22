@@ -267,7 +267,12 @@ class BybitExchange(BaseExchange):
             return BybitHelpers.getOpenOrdersOut(openOrders)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
-        pass
+        if futures:
+            pass
+        else:
+            result = self.spotSession.batch_fast_cancel_active_order(symbol=symbol,
+                                                                     orderTypes="LIMIT,LIMIT_MAKER,MARKET")
+            return result['result']['success']
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         pass
@@ -278,12 +283,12 @@ class BybitExchange(BaseExchange):
         else:
             if orderId is not None:
                 try:
-                    order = self.spotSession.get_active_order(orderId=orderId)['result'][0]
+                    order = self.spotSession.get_active_order_spot(orderId=orderId)['result']
                 except Exception as e:
                     raise Exception('Problem in fetching order from bybit.')
             elif localOrderId is not None:
                 try:
-                    order = self.spotSession.get_active_order(orderLinkId=localOrderId)['result'][0]
+                    order = self.spotSession.get_active_order_spot(orderLinkId=localOrderId)['result']
                 except Exception as e:
                     raise Exception('Problem in fetching order from bybit.')
             else:

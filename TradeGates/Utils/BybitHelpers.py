@@ -97,8 +97,6 @@ def getOrderOut(data, futures=False):
     if futures:
         False
     else:
-        print(data)
-
         return {
             'symbol': data['symbol'],
             'orderId': data['orderId'],
