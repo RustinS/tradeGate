@@ -26,10 +26,10 @@ class OrderData():
 
     def setQuoteOrderQty(self, quoteOrderQty):
         self.quoteOrderQty = quoteOrderQty
-    
+
     def setPrice(self, price):
         self.price = price
-    
+
     def setNewClientOrderId(self, newClientOrderId):
         self.newClientOrderId = newClientOrderId
 
@@ -38,16 +38,17 @@ class OrderData():
 
     def setIcebergQty(self, icebergQty):
         self.icebergQty = icebergQty
-    
+
     def setNewOrderRespType(self, newOrderRespType):
         self.newOrderRespType = newOrderRespType
 
     def setRecvWindow(self, recvWindow):
         self.recvWindow = recvWindow
-    
+
     def setTimestamp(self):
         self.timestamp = time.time()
-        
+
+
 class futuresOrderData():
     def __init__(self, symbol, side, orderType):
         self.symbol = symbol
@@ -68,6 +69,7 @@ class futuresOrderData():
         self.priceProtect = None
         self.newOrderRespType = None
         self.recvWindow = None
+        self.extraParams = None
 
     def setPositionSide(self, positionSide):
         self.positionSide = positionSide
@@ -80,10 +82,10 @@ class futuresOrderData():
 
     def setReduceOnly(self, reduceOnly):
         self.reduceOnly = reduceOnly
-    
+
     def setPrice(self, price):
         self.price = price
-    
+
     def setNewClientOrderId(self, newClientOrderId):
         self.newClientOrderId = newClientOrderId
 
@@ -104,10 +106,12 @@ class futuresOrderData():
 
     def setPriceProtect(self, priceProtect):
         self.priceProtect = priceProtect
-    
+
     def setNewOrderRespType(self, newOrderRespType):
         self.newOrderRespType = newOrderRespType
 
     def setRecvWindow(self, recvWindow):
         self.recvWindow = recvWindow
-        
+
+    def setExtraParams(self, extraParams):
+        self.extraParams = extraParams

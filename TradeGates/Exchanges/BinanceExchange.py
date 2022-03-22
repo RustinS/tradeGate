@@ -14,6 +14,18 @@ from binance_f.model.balance import Balance
 
 
 class BinanceExchange(BaseExchange):
+    timeIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w',
+                     '1M']
+
+    timeIndexesInCandleData = [0, 6]
+    desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
+
+    spotOrderTypes = ['LIMIT', 'MARKET', 'STOP_LOSS', 'STOP_LOSS_LIMIT', 'TAKE_PROFIT',
+                      'TAKE_PROFIT_LIMIT', 'LIMIT_MAKER']
+
+    futuresOrderTypes = ['LIMIT', 'MARKET', 'STOP', 'STOP_MARKET', 'TAKE_PROFIT', 'TAKE_PROFIT_MARKET',
+                         'TRAILING_STOP_MARKET']
+
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         self.credentials = credentials
         self.sandbox = sandbox
@@ -31,18 +43,11 @@ class BinanceExchange(BaseExchange):
                                                secret_key=credentials['futures']['secret'],
                                                url='https://fapi.binance.com')
 
-        self.timeIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w',
-                              '1M']
-
-        self.timeIndexesInCandleData = [0, 6]
-        self.desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
-
         self.subFutureClient = None
 
     @staticmethod
     def isOrderDataValid(order: DataHelpers.OrderData):
-        if order.orderType not in ['LIMIT', 'MARKET', 'STOP_LOSS', 'STOP_LOSS_LIMIT', 'TAKE_PROFIT',
-                                   'TAKE_PROFIT_LIMIT', 'LIMIT_MAKER']:
+        if order.orderType not in BinanceExchange.spotOrderTypes:
             return False
 
         if order.side not in ['BUY', 'SELL']:
@@ -82,8 +87,7 @@ class BinanceExchange(BaseExchange):
         if order.side not in ['BUY', 'SELL']:
             return False
 
-        if order.orderType not in ['LIMIT', 'MARKET', 'STOP', 'STOP_MARKET', 'TAKE_PROFIT', 'TAKE_PROFIT_MARKET',
-                                   'TRAILING_STOP_MARKET']:
+        if order.orderType not in BinanceExchange.futuresOrderTypes:
             return False
 
         if order.positionSide not in [None, 'BOTH', 'LONG', 'SHORT']:
@@ -391,7 +395,7 @@ class BinanceExchange(BaseExchange):
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
-        if not interval in self.timeIntervals:
+        if not interval in BinanceExchange.timeIntervals:
             raise Exception('Time interval is not valid.')
 
         if futures:
@@ -411,19 +415,19 @@ class BinanceExchange(BaseExchange):
 
             for datum in data:
                 for idx in range(len(datum)):
-                    if idx in self.timeIndexesInCandleData:
+                    if idx in BinanceExchange.timeIndexesInCandleData:
                         continue
                     datum[idx] = float(datum[idx])
 
         if convertDateTime or toCleanDataframe:
             for datum in data:
-                for idx in self.timeIndexesInCandleData:
+                for idx in BinanceExchange.timeIndexesInCandleData:
                     datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
 
         if doClean or toCleanDataframe:
             outArray = []
             for datum in data:
-                outArray.append([datum[index] for index in self.desiredCandleDataIndexes])
+                outArray.append([datum[index] for index in BinanceExchange.desiredCandleDataIndexes])
 
             if toCleanDataframe:
                 df = pd.DataFrame(outArray,

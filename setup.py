@@ -13,10 +13,10 @@ except OSError as e:
 
 setuptools.setup(
     name="TradeGate-Beta",  # This is the name of the package
-    version="0.1.05-beta02",
+    version="0.1.05-beta03",
     author="Rustin Soraki",  # Full name of the author
     description="A Trading Gateway",
-    long_description=long_description,  # Long description read from the the readme file
+    long_description=long_description,  # Long description read from the readme file
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(where='TradeGates'),  # List of all python modules to be installed
     classifiers=[

@@ -65,6 +65,14 @@ def testFuturesSingleCoinBalance(getGates):
             assert False, 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)
 
 
+def testCreatingFuturesOrder(getGates):
+    for gate in getGates:
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)
+        print('\nTest creating futures order in {} exchange: {}'.format(gate.exchangeName, futuresOrderData))
+        assert futuresOrderData is not None, 'Problem in creating futures order in {} exchange.'.format(
+            gate.exchangeName)
+
+
 def testFuturesOrder(getGates):
     for gate in getGates:
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'MARKET', quantity=0.002)

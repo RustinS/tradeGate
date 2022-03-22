@@ -102,7 +102,7 @@ class TradeGate:
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None):
+                                  recvWindow=None, extraParams=None):
         currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
 
         if positionSide is not None:
@@ -146,6 +146,9 @@ class TradeGate:
 
         if recvWindow is not None:
             currOrder.setRecvWindow(recvWindow)
+
+        if extraParams is not None:
+            currOrder.setExtraParams(extraParams)
 
         self.exchange.testFuturesOrder(currOrder)
 

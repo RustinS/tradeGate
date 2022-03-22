@@ -46,8 +46,12 @@ class PyBitHTTP(HTTP):
 class BybitExchange(BaseExchange):
     timeIndexesInCandleData = [0, 6]
     desiredCandleDataIndexes = [0, 1, 2, 3, 4, 5, 6, 8]
+
     spotOrderTypes = ['LIMIT', 'MARKET', 'LIMIT_MAKER']
     spotTimeInForces = ['GTC', 'FOK', 'IOC']
+
+    futuresOrderTypes = ['MARKET', 'LIMIT', 'STOP_MARKET', 'STOP_LIMIT']
+    futuresTimeInForces = {'GTC': 'GoodTillCancel', 'IOC': 'ImmediateOrCancel', 'FIK': 'FillOrKill', 'PO': 'PostOnly'}
 
     timeIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d', '1w', '1M']
 
@@ -94,8 +98,54 @@ class BybitExchange(BaseExchange):
             raise ValueError('Price must be specified for limit orders.')
 
     @staticmethod
-    def isFuturesOrderDataValid(order: DataHelpers.futuresOrderData):
-        pass
+    def isFuturesOrderDataValid(orderData: DataHelpers.futuresOrderData):
+        if orderData.symbol is None:
+            raise ValueError('Specify symbol.')
+        if orderData.quantity is None:
+            raise ValueError('Specify quantity.')
+        if orderData.side is None:
+            raise ValueError('Specify order side.')
+        if orderData.orderType is None:
+            raise ValueError('Specify order type.')
+        if orderData.timeInForce is None:
+            raise ValueError('Specify timeInForce.')
+        if orderData.closePosition is None:
+            raise ValueError('Specify closePosition.')
+        if orderData.reduceOnly is None:
+            raise ValueError('Specify reduceOnly.')
+
+        if orderData.orderType not in BybitExchange.futuresOrderTypes:
+            raise ValueError('Bad order type specified. Available order types for futures: {}'.format(
+                BybitExchange.futuresOrderTypes))
+
+        if orderData.orderType.startswith('STOP'):
+            if 'basePrice' not in orderData.extraParams.keys():
+                raise ValueError('Specify \'basePrice\' in \'extraParams\'')
+            if orderData.stopPrice is None:
+                raise ValueError('Specify \'stopPrice\'.')
+
+        if 'LIMIT' in orderData.orderType and orderData.price is None:
+            raise ValueError('Specify \'price\' for limit orders.')
+
+        if orderData.timeInForce not in BybitExchange.futuresTimeInForces.keys() and \
+                orderData.timeInForce not in BybitExchange.futuresTimeInForces.values():
+            raise ValueError('\'timeInForce\' is not correct.')
+
+        if orderData.extraParams is not None:
+            if 'triggerBy' in orderData.extraParams.keys() \
+                    and orderData.extraParams['tpTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
+                raise ValueError('\'triggerBy\' was not correctly specified.')
+
+            if 'tpTriggerBy' in orderData.extraParams.keys() \
+                    and orderData.extraParams['tpTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
+                raise ValueError('\'tpTriggerBy\' was not correctly specified.')
+
+            if 'slTriggerBy' in orderData.extraParams.keys() \
+                    and orderData.extraParams['slTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
+                raise ValueError('\'slTriggerBy\' was not correctly specified.')
+
+            if 'positionIdx' in orderData.extraParams.keys() and orderData.extraParams['positionIdx'] not in [0, 1, 2]:
+                raise ValueError('\'positionIdx\' was not correctly specified.')
 
     @staticmethod
     def getSpotOrderAsDict(order: DataHelpers.OrderData):
@@ -406,7 +456,18 @@ class BybitExchange(BaseExchange):
         pass
 
     def testFuturesOrder(self, futuresOrderData):
-        pass
+        if futuresOrderData.timeInForce is None:
+            futuresOrderData.timeInForce = 'GoodTillCancel'
+
+        if futuresOrderData.closePosition is None:
+            futuresOrderData.closePosition = False
+
+        if futuresOrderData.reduceOnly is None:
+            futuresOrderData.reduceOnly = False
+
+        self.isFuturesOrderDataValid(futuresOrderData)
+
+        return futuresOrderData
 
     def makeFuturesOrder(self, futuresOrderData):
         pass
