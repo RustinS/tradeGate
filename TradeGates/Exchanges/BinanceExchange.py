@@ -384,10 +384,10 @@ class BinanceExchange(BaseExchange):
             return None
 
     def getSymbolTickerPrice(self, symbol, futures=False):
-        try:
-            return self.client.ticker_price(symbol)['price']
-        except Exception:
-            return None
+        if futures:
+            return self.futuresClient.get_symbol_price_ticker(symbol=symbol)[0].price
+        else:
+            return float(self.client.ticker_price(symbol)['price'])
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
@@ -553,22 +553,43 @@ class BinanceExchange(BaseExchange):
 
             for sym in exchangeInfo.symbols:
                 if sym.symbol == symbol:
+                    filterUsedNum = 0
                     for filter in sym.filters:
                         if filter['filterType'] == 'LOT_SIZE':
                             minQuantity = float(filter['minQty'])
+                            stepQuantity = float(filter['stepSize'])
                             minQuoteQuantity = tickerPrice * minQuantity
 
-                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity}
+                            filterUsedNum += 1
+
+                        if filter['filterType'] == 'PRICE_FILTER':
+                            stepPrice = filter['tickSize']
+                            filterUsedNum += 1
+
+                        if filterUsedNum == 2:
+                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
+                                    'precisionStep': stepQuantity, 'stepPrice': stepPrice}
             return None
         else:
             exchangeInfo = self.client.exchange_info()
 
             for sym in exchangeInfo['symbols']:
                 if sym['symbol'] == symbol:
+                    filterUsedNum = 0
                     for filter in sym['filters']:
                         if filter['filterType'] == 'LOT_SIZE':
                             minQuantity = float(filter['minQty'])
+                            stepQuantity = float(filter['stepSize'])
                             minQuoteQuantity = tickerPrice * minQuantity
 
-                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity}
+                            filterUsedNum += 1
+
+                        if filter['filterType'] == 'PRICE_FILTER':
+                            stepPrice = filter['tickSize']
+
+                            filterUsedNum += 1
+
+                        if filterUsedNum == 2:
+                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
+                                    'precisionStep': stepQuantity, 'stepPrice': stepPrice}
             return None

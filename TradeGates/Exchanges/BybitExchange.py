@@ -458,3 +458,6 @@ class BybitExchange(BaseExchange):
 
     def getPositionInfo(self, symbol=None):
         pass
+
+    def getSymbolMinTrade(self, symbol, futures=False):
+        pass

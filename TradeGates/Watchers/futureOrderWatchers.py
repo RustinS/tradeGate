@@ -25,12 +25,12 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
                 takeProfit = params['takeProfit']
 
                 stopLossOrder = gate.createAndTestFuturesOrder(symbol, orderSide, 'STOP_MARKET',
-                                                               stopPrice=stopLoss, closePosition=True,
+                                                               stopPrice=str(stopLoss), closePosition=True,
                                                                priceProtect=True, workingType='MARK_PRICE',
                                                                timeInForce='GTC')
 
                 takeProfitOrder = gate.createAndTestFuturesOrder(symbol, orderSide, 'TAKE_PROFIT_MARKET',
-                                                                 closePosition=True, stopPrice=takeProfit,
+                                                                 stopPrice=str(takeProfit), closePosition=True,
                                                                  priceProtect=True, workingType='MARK_PRICE',
                                                                  timeInForce='GTC')
                 result = gate.makeBatchFuturesOrder([stopLossOrder, takeProfitOrder])

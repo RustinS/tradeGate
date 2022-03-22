@@ -187,16 +187,19 @@ class TradeGate:
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None, cancelDelayMin=None):
 
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+        stepQuantity = len(symbolInfo['precisionStep']) - 2
+
         if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
             raise Exception('Specify either quantity or quoteQuantity and not both')
 
         if quantity is None:
-            quantity = quoteQuantity / enterPrice
+            quantity = round(quoteQuantity / enterPrice, stepQuantity)
 
-        setLeverageResult = self.changeInitialLeverage(symbol, leverage)
+            setLeverageResult = self.changeInitialLeverage(symbol, leverage)
 
-        if not (setLeverageResult['leverage'] == leverage):
-            raise ConnectionError('Could not change leverage.')
+            if not (setLeverageResult['leverage'] == leverage):
+                raise ConnectionError('Could not change leverage.')
 
         try:
             self.exchange.setMarginType(symbol, marginType)
@@ -209,8 +212,8 @@ class TradeGate:
 
         tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
 
-        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=quantity,
-                                                   price=enterPrice, timeInForce='GTC')
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
+                                                   price=str(enterPrice), timeInForce='GTC')
         order = self.makeFuturesOrder(mainOrder)
 
         print('Main order sent')

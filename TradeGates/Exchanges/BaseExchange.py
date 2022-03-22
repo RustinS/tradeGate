@@ -140,3 +140,7 @@ class BaseExchange(ABC):
     @abstractmethod
     def getPositionInfo(self, symbol=None):
         pass
+
+    @abstractmethod
+    def getSymbolMinTrade(self, symbol, futures=False):
+        pass
