@@ -148,3 +148,7 @@ def getOpenOrdersOut(data, futures=False):
                 'exchangeSpecific': datum
             })
     return outData
+
+
+def cancelOrderOut(data, futures=False):
+    pass

@@ -275,7 +275,16 @@ class BybitExchange(BaseExchange):
             return result['result']['success']
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
-        pass
+        if futures:
+            pass
+        else:
+            if orderId is not None:
+                result = self.spotSession.cancel_active_order(orderId=orderId)
+            elif localOrderId is not None:
+                result = self.spotSession.cancel_active_order(orderLinkId=localOrderId)
+            else:
+                raise ValueError('Must specify either \'orderId\' or \'localOrderId\'')
+            return result['result']
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:

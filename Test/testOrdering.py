@@ -97,7 +97,7 @@ def testGetOrder(getGates):
             'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
         print('Correct \'orderId\'.')
 
-        # gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
+        gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
 
 
 def testCancelingAllOpenOrders(getGates):
@@ -112,22 +112,26 @@ def testCancelingOrder(getGates):
     for gate in getGates:
         try:
             verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000,
-                                                        timeInForce='GTC')
+                                                        timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
 
         result = gate.cancelOrder(symbol='BTCUSDT', orderId=result['orderId'])
+        result = gate.getOrder(symbol='BTCUSDT', orderId=result['orderId'])
+
         assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(
             gate.exchangeName)
 
         try:
             verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000,
-                                                        timeInForce='GTC')
+                                                        timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
 
         result = gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'])
+        result = gate.getOrder(symbol='BTCUSDT', orderId=result['orderId'])
+
         assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(
             gate.exchangeName)
