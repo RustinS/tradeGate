@@ -545,13 +545,30 @@ class BinanceExchange(BaseExchange):
     def getPositionInfo(self, symbol=None):
         return self.futuresClient.get_position_v2(symbol)
 
-    def symbolInfo(self, symbol, futures=False):
+    def getSymbolMinTrade(self, symbol, futures=False):
+        tickerPrice = self.getSymbolTickerPrice(symbol, futures=futures)
+
         if futures:
             exchangeInfo = self.futuresClient.get_exchange_information()
+
+            for sym in exchangeInfo.symbols:
+                if sym.symbol == symbol:
+                    for filter in sym.filters:
+                        if filter['filterType'] == 'LOT_SIZE':
+                            minQuantity = float(filter['minQty'])
+                            minQuoteQuantity = tickerPrice * minQuantity
+
+                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity}
+            return None
         else:
             exchangeInfo = self.client.exchange_info()
 
-        for sym in exchangeInfo['symbols']:
-            if sym['symbol'] == symbol:
-                return sym
-        return None
+            for sym in exchangeInfo['symbols']:
+                if sym['symbol'] == symbol:
+                    for filter in sym['filters']:
+                        if filter['filterType'] == 'LOT_SIZE':
+                            minQuantity = float(filter['minQty'])
+                            minQuoteQuantity = tickerPrice * minQuantity
+
+                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity}
+            return None

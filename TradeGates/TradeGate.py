@@ -184,15 +184,15 @@ class TradeGate:
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
 
-    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity, quoteQuantity, enterPrice, takeProfit, stopLoss,
-                                  leverage, marginType, cancelDelayMin):
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None, cancelDelayMin=None):
 
         if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
             raise Exception('Specify either quantity or quoteQuantity and not both')
 
         if quantity is None:
             quantity = quoteQuantity / enterPrice
-            
+
         setLeverageResult = self.changeInitialLeverage(symbol, leverage)
 
         if not (setLeverageResult['leverage'] == leverage):
@@ -225,3 +225,6 @@ class TradeGate:
 
     def getPositionInfo(self, symbol=None):
         return self.exchange.getPositionInfo(symbol)
+
+    def getSymbolMinTrade(self, symbol, futures=False):
+        return self.exchange.getSymbolMinTrade(symbol, futures)
