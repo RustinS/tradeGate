@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 @pytest.fixture
 def getGates():
     gates = []
-    with open('../config.json') as f:
+    with open('./config.json') as f:
         config = json.load(f)
 
     for key in config.keys():

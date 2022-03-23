@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 @pytest.fixture
 def getGates():
     gates = []
-    with open('../config.json') as f:
+    with open('./config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
@@ -25,7 +25,7 @@ def getGates():
 def testFullBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance()
-        print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        # print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
         assert balance is not None, 'Problem in fetching balance from {} exchange.'.format(gate.exchangeName)
 
         errorMessage = 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
