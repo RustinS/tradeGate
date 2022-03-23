@@ -31,5 +31,38 @@
                 }
             }
         }
+    },
+    "ByBit": 
+    {
+        "exchangeName": "ByBit",
+        "credentials": 
+        {
+            "main": 
+            {
+                "futures": 
+                {
+                    "key": "",
+                    "secret": ""
+                },
+                "spot": 
+                {
+                    "key": "",
+                    "secret": ""
+                }
+            },
+            "test": 
+            {
+                "futures": 
+                {
+                    "key": "hS9QpUAQWqsM5QXCZV",
+                    "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
+                },
+                "spot": 
+                {
+                    "key": "hS9QpUAQWqsM5QXCZV",
+                    "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
+                }
+            }
+        }
     }
 }

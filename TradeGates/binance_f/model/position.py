@@ -14,7 +14,6 @@ class Position:
         self.isolatedMargin = 0.0
         self.positionSide = ""
 
-
     @staticmethod
     def json_parse(json_data):
         result = Position()
@@ -31,3 +30,19 @@ class Position:
         result.isolatedMargin = json_data.get_float("isolatedMargin")
         result.positionSide = json_data.get_string("positionSide")
         return result
+
+    def toDict(self):
+        return {
+            'entryPrice': self.entryPrice,
+            'isAutoAddMargin': self.isAutoAddMargin,
+            'leverage': self.leverage,
+            'maxNotionalValue': self.maxNotionalValue,
+            'liquidationPrice': self.liquidationPrice,
+            'markPrice': self.markPrice,
+            'positionAmt': self.positionAmt,
+            'symbol': self.symbol,
+            'unrealizedProfit': self.unrealizedProfit,
+            'marginType': self.marginType,
+            'isolatedMargin': self.isolatedMargin,
+            'positionSide': self.positionSide,
+        }

@@ -1,8 +1,12 @@
-from Exchanges import BinanceExchange
+import multiprocessing
+
+from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
+from Watchers.futureOrderWatchers import watchFuturesLimitTrigger
+from binance_f.exception.binanceapiexception import BinanceApiException
 
 
-class TradeGate():
+class TradeGate:
     def __init__(self, configDict, sandbox=False):
         self.exchangeName = configDict['exchangeName']
         exchangeClass = self.getCorrectExchange(self.exchangeName)
@@ -20,44 +24,42 @@ class TradeGate():
     def getBalance(self, asset='', futures=False):
         return self.exchange.getBalance(asset, futures)
 
-    def getSymbolTradeHistory(self, symbol):
-        return self.exchange.SymbolTradeHistory(symbol)
-
     @staticmethod
     def getCorrectExchange(exchangeName):
-        if exchangeName == 'Binance':
+        if exchangeName.lower() == 'binance':
             return BinanceExchange.BinanceExchange
+        if exchangeName.lower() == 'bybit':
+            return BybitExchange.BybitExchange
 
-    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None, stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
-                            newClientOrderId=None):
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
+                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                               newClientOrderId=None):
+
         currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
 
-        if not quantity is None:
+        if quantity is not None:
             currOrder.setQuantity(quantity)
 
-        if not price is None:
+        if price is not None:
             currOrder.setPrice(price)
 
-        if not timeInForce is None:
+        if timeInForce is not None:
             currOrder.setTimeInForce(timeInForce)
 
-        if not stopPrice is None:
+        if stopPrice is not None:
             currOrder.setStopPrice(stopPrice)
 
-        if not icebergQty is None:
+        if icebergQty is not None:
             currOrder.setIcebergQty(icebergQty)
 
-        if not newOrderRespType is None:
+        if newOrderRespType is not None:
             currOrder.setNewOrderRespType(newOrderRespType)
-        
-        if not recvWindow is None:
+
+        if recvWindow is not None:
             currOrder.setRecvWindow(recvWindow)
 
-        if not newClientOrderId is None:
+        if newClientOrderId is not None:
             currOrder.setNewClientOrderId(newClientOrderId)
-
-        if not self.exchange.isOrderDataValid(currOrder):
-            raise Exception('Incomplete data provided.')
 
         self.exchange.testSpotOrder(currOrder)
 
@@ -66,10 +68,11 @@ class TradeGate():
     def makeSpotOrder(self, orderData):
         return self.exchange.makeSpotOrder(orderData)
 
-    def getSymbolOrders(self, symbol, futures=False):
-        return self.exchange.getSymbolOrders(symbol, futures)
+    def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
+        return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime,
+                                             endTime=endTime, limit=limit)
 
-    def getOpenOrders(self, symbol=None, futures=False):
+    def getOpenOrders(self, symbol, futures=False):
         return self.exchange.getOpenOrders(symbol, futures)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
@@ -84,85 +87,89 @@ class TradeGate():
     def getTradingFees(self):
         return self.exchange.getTradingFees()
 
-    def getSymbolAveragePrice(self, symbol):
-        return self.exchange.getSymbolAveragePrice(symbol)
+    def getSymbolTickerPrice(self, symbol, futures=False):
+        return self.exchange.getSymbolTickerPrice(symbol, futures)
 
-    def getSymbolTickerPrice(self, symbol):
-        return self.exchange.getSymbolTickerPrice(symbol)
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
+                        convertDateTime=False, doClean=False, toCleanDataframe=False):
+        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, blvtnav,
+                                             convertDateTime, doClean, toCleanDataframe)
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False, convertDateTime=False, doClean=False, toCleanDataframe=False):
-        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, BLVTNAV, convertDateTime, doClean, toCleanDataframe)
+    def getExchangeTime(self, futures=False):
+        return self.exchange.getExchangeTime(futures)
 
-    def getExchangeTime(self):
-        return self.exchange.getExchangeTime()
-
-    def getSymbolFuturesOrders(self, symbol):
-        return self.exchange.getSymbolFuturesOrders(symbol)
-
-    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None, reduceOnly=False, price=None, newClientOrderId=None,
-                                    stopPrice=None, closePosition=False, activationPrice=None, callbackRate=None, workingType=None, priceProtect=False, newOrderRespType=None,
-                                    recvWindow=None):
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
+                                  recvWindow=None, extraParams=None):
+        if extraParams is None:
+            extraParams = {}
         currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
 
-        if not positionSide is None:
+        if positionSide is not None:
             currOrder.setPositionSide(positionSide)
-        
-        if not timeInForce is None:
+
+        if timeInForce is not None:
             currOrder.setTimeInForce(timeInForce)
 
-        if not quantity is None:
+        if quantity is not None:
             currOrder.setQuantity(quantity)
 
-        if not reduceOnly is None:
+        if reduceOnly is not None:
             currOrder.setReduceOnly(reduceOnly)
 
-        if not price is None:
+        if price is not None:
             currOrder.setPrice(price)
 
-        if not newClientOrderId is None:
+        if newClientOrderId is not None:
             currOrder.setNewClientOrderId(newClientOrderId)
 
-        if not stopPrice is None:
+        if stopPrice is not None:
             currOrder.setStopPrice(stopPrice)
 
-        if not closePosition is None:
+        if closePosition is not None:
             currOrder.setClosePosition(closePosition)
 
-        if not activationPrice is None:
+        if activationPrice is not None:
             currOrder.setActivationPrice(activationPrice)
 
-        if not callbackRate is None:
+        if callbackRate is not None:
             currOrder.setCallbackRate(callbackRate)
 
-        if not workingType is None:
+        if workingType is not None:
             currOrder.setWorkingType(workingType)
 
-        if not priceProtect is None:
+        if priceProtect is not None:
             currOrder.setPriceProtect(priceProtect)
 
-        if not newOrderRespType is None:
+        if newOrderRespType is not None:
             currOrder.setNewOrderRespType(newOrderRespType)
-        
-        if not recvWindow is None:
+
+        if recvWindow is not None:
             currOrder.setRecvWindow(recvWindow)
 
-        if not self.exchange.isFuturesOrderDataValid(currOrder):
-            raise Exception('Incomplete data provided.')
+        if extraParams is not None:
+            currOrder.setExtraParams(extraParams)
+
+        self.exchange.testFuturesOrder(currOrder)
 
         return currOrder
 
     def makeFuturesOrder(self, futuresOrderData):
         return self.exchange.makeFuturesOrder(futuresOrderData)
 
+    def makeBatchFuturesOrder(self, batchOrders):
+        return self.exchange.makeBatchFuturesOrder(batchOrders)
 
-    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
+    def cancelAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         return self.exchange.cancellAllSymbolFuturesOrdersWithCountDown(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):
         return self.exchange.changeInitialLeverage(symbol, leverage)
 
-    def changeMarginType(self, symbol, marginType):
-        return self.exchange.changeMarginType(symbol, marginType)
+    def changeMarginType(self, symbol, marginType, params=None):
+        return self.exchange.changeMarginType(symbol, marginType, params)
 
     def changePositionMargin(self, symbol, amount, marginType):
         return self.exchange.changePositionMargin(symbol, amount, marginType)
@@ -179,5 +186,54 @@ class TradeGate():
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
 
-    def SymbolTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
-        return self.exchange.SymbolTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
+    def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+        return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
+
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None, cancelDelaySec=None):
+
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+        stepQuantity = len(str(symbolInfo['precisionStep'])) - 2
+
+        if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
+            raise Exception('Specify either quantity or quoteQuantity and not both')
+
+        if quantity is None:
+            quantity = round(quoteQuantity / enterPrice, stepQuantity)
+
+            setLeverageResult = self.changeInitialLeverage(symbol, leverage)
+
+            if not (setLeverageResult['leverage'] == leverage):
+                raise ConnectionError('Could not change leverage.')
+
+        try:
+            self.exchange.setMarginType(symbol, marginType)
+        except BinanceApiException as e:
+            pass
+
+        cancelIfNotOpened = True if cancelDelaySec is not None else False
+
+        doPutTpSl = True if takeProfit is not None or stopLoss is not None else False
+
+        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
+
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
+                                                   price=str(enterPrice), timeInForce='GTC')
+        order = self.makeFuturesOrder(mainOrder)
+
+        print('Main order sent')
+        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
+                  'cancelDelaySec': cancelDelaySec}
+
+        watcherProc = multiprocessing.Process(target=watchFuturesLimitTrigger,
+                                              args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened,
+                                                    params))
+        watcherProc.start()
+        # watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, params)
+        return order
+
+    def getPositionInfo(self, symbol=None):
+        return self.exchange.getPositionInfo(symbol)
+
+    def getSymbolMinTrade(self, symbol, futures=False):
+        return self.exchange.getSymbolMinTrade(symbol, futures)
