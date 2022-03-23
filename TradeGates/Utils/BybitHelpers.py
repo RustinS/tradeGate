@@ -1,3 +1,7 @@
+import datetime
+import time
+
+
 def getBalanceOut(data, single=False, futures=False):
     if not single:
         outData = []
@@ -152,3 +156,62 @@ def getOpenOrdersOut(data, futures=False):
 
 def cancelOrderOut(data, futures=False):
     pass
+
+
+def futuresOrderOut(data, isConditional=False):
+    if isConditional:
+        return {
+            'symbol': data['symbol'],
+            'orderId': data['stop_order_id'],
+            'clientOrderId': data['order_link_id'],
+            'transactTime': time.mktime(
+                datetime.datetime.strptime(data['created_time'], '%Y-%m-%dT%H:%M:%SZ').timetuple()),
+            'price': data['price'],
+            'origQty': data['qty'],
+            'executedQty': 0.0,
+            'cummulativeQuoteQty': 0.0,
+            'status': data['order_status'],
+            'timeInForce': data['time_in_force'],
+            'type': data['order_type'],
+            'side': data['side'],
+            'extraData': {
+                'reduceOnly': data['reduce_only'],
+                'stopPrice': data['trigger_price'],
+                'workingType': data['trigger_by'],
+                'avgPrice': 0.0,
+                'origType': data['order_type'],
+                'positionSide': None,
+                'activatePrice': None,
+                'priceRate': None,
+                'closePosition': data['close_on_trigger'],
+            },
+            'exchangeSpecific': data
+        }
+    else:
+        return {
+            'symbol': data['symbol'],
+            'orderId': data['order_id'],
+            'clientOrderId': data['order_link_id'],
+            'transactTime': time.mktime(
+                datetime.datetime.strptime(data['created_time'], '%Y-%m-%dT%H:%M:%SZ').timetuple()),
+            'price': data['price'],
+            'origQty': data['qty'],
+            'executedQty': data['cum_exec_qty'],
+            'cummulativeQuoteQty': data['cum_exec_value'],
+            'status': data['order_status'],
+            'timeInForce': data['time_in_force'],
+            'type': data['order_type'],
+            'side': data['side'],
+            'extraData': {
+                'reduceOnly': data['reduce_only'],
+                'stopPrice': 0.0,
+                'workingType': None,
+                'avgPrice': 0.0,
+                'origType': data['order_type'],
+                'positionSide': None,
+                'activatePrice': None,
+                'priceRate': None,
+                'closePosition': data['close_on_trigger'],
+            },
+            'exchangeSpecific': data
+        }

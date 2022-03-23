@@ -72,7 +72,7 @@ class TradeGate:
         return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime,
                                              endTime=endTime, limit=limit)
 
-    def getOpenOrders(self, symbol=None, futures=False):
+    def getOpenOrders(self, symbol, futures=False):
         return self.exchange.getOpenOrders(symbol, futures)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
@@ -103,6 +103,8 @@ class TradeGate:
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
                                   recvWindow=None, extraParams=None):
+        if extraParams is None:
+            extraParams = {}
         currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
 
         if positionSide is not None:

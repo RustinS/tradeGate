@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 import pytest
 
@@ -107,35 +108,18 @@ def testFuturesTpSlLimitOrder(getGates):
             assert False, 'Problem in making new SL-TP-Limit order in {} exchange'.format(gate.exchangeName)
 
 
-def testCancelingAllFuturesOpenOrders(getGates):
-    for gate in getGates:
-        result = gate.cancelAllSymbolFuturesOpenOrders('BTCUSDT')
-
-        print('\nFuture order canceling in [] exchange: {}'.format(gate.exchangeName, result))
-        assert result is not None, 'Problem in canceling all futures orders in {} exchange.'.format(gate.exchangeName)
-
-
 def testGetFuturesOpenOrders(getGates):
     for gate in getGates:
-        if gate.exchangeName.lower() != 'binance':
-            continue
-        openOrders = gate.getOpenOrders(futures=True)
-
-        print('\nOpen orders from {} exchange: {}'.format(gate.exchangeName, openOrders))
-
-        assert openOrders is not None, 'Problem in getting list of open orders without symbol from {} exchange.'.format(
-            gate.exchangeName)
-
         symbolOpenOrders = gate.getOpenOrders('BTCUSDT', futures=True)
-        assert symbolOpenOrders is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(
-            gate.exchangeName)
+
+        print('\n\'BTCUSDT\' open orders from {} exchange: {}'.format(gate.exchangeName, symbolOpenOrders))
+
+        assert symbolOpenOrders is not None, \
+            'Problem in getting list of open orders with symbol from {} exchange.'.format(gate.exchangeName)
 
 
 def testGetPositionInformation(getGates):
     for gate in getGates:
-        if gate.exchangeName.lower() != 'binance':
-            continue
-
         openPosition = gate.getPositionInfo('BTCUSDT')
 
         print('\nOpen position information from {} exchange: {}'.format(gate.exchangeName, openPosition))
@@ -146,10 +130,8 @@ def testGetPositionInformation(getGates):
 
 def testGetFutureOrder(getGates):
     for gate in getGates:
-        if gate.exchangeName.lower() != 'binance':
-            continue
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=40000,
-                                                          timeInForce='GTC')
+                                                          timeInForce='GTC', newClientOrderId=str(int(time.time())))
         result = gate.makeFuturesOrder(futuresOrderData)
         order = gate.getOrder('BTCUSDT', orderId=result['orderId'], futures=True)
 
@@ -167,8 +149,8 @@ def testGetFutureOrder(getGates):
 
 def testCancelingAllFuturesOpenOrders(getGates):
     for gate in getGates:
-        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000,
-                                                          quantity=0.002)
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'LIMIT', price=35000, quantity=0.002,
+                                                          timeInForce='GTC')
         gate.makeFuturesOrder(futuresOrderData)
 
         gate.cancelAllSymbolOpenOrders('BTCUSDT', futures=True)
@@ -180,7 +162,7 @@ def testCancelingAllFuturesOpenOrders(getGates):
 def testCancelingOrder(getGates):
     for gate in getGates:
         futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000,
-                                                          quantity=0.002)
+                                                          quantity=0.002, newClientOrderId=str(int(time.time())))
         result = gate.makeFuturesOrder(futuresOrderData)
 
         result = gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'], futures=True)

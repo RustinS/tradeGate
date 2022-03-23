@@ -49,7 +49,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getOpenOrders(self, symbol=None):
+    def getOpenOrders(self, symbol, futures=False):
         pass
 
     @abstractmethod

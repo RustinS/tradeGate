@@ -119,6 +119,8 @@ class BybitExchange(BaseExchange):
                 BybitExchange.futuresOrderTypes))
 
         if orderData.orderType.startswith('STOP'):
+            if orderData.extraParams is None:
+                raise ValueError('Specify \'basePrice\' in \'extraParams\'')
             if 'basePrice' not in orderData.extraParams.keys():
                 raise ValueError('Specify \'basePrice\' in \'extraParams\'')
             if orderData.stopPrice is None:
@@ -163,7 +165,62 @@ class BybitExchange(BaseExchange):
 
     @staticmethod
     def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
-        pass
+        if 'STOP' in order.orderType:
+            params = {
+                'side': order.side.lower().title(),
+                'symbol': order.symbol,
+                'order_type': 'Market' if order.orderType == 'STOP_MARKET' else 'Limit',
+                'qty': order.quantity,
+                'price': order.price,
+                'base_price': order.extraParams['basePrice'],
+                'stop_px': order.stopPrice,
+
+                'time_in_force': order.timeInForce if order.timeInForce in BybitExchange.futuresTimeInForces.values()
+                else BybitExchange.futuresTimeInForces[order.timeInForce],
+
+                'close_on_trigger': order.closePosition,
+                'reduce_only': order.reduceOnly
+            }
+
+            if 'triggerBy' in order.extraParams.keys():
+                params['trigger_by'] = order.extraParams['triggerBy']
+
+        else:
+            params = {
+                'side': order.side.lower().title(),
+                'symbol': order.symbol,
+                'order_type': order.orderType.lower().title(),
+                'qty': order.quantity,
+
+                'time_in_force': order.timeInForce if order.timeInForce in BybitExchange.futuresTimeInForces.values()
+                else BybitExchange.futuresTimeInForces[order.timeInForce],
+
+                'close_on_trigger': order.closePosition,
+                'reduce_only': order.reduceOnly
+            }
+
+        if order.price is not None:
+            params['price'] = order.price
+
+        if order.newClientOrderId is not None:
+            params['order_link_id'] = order.newClientOrderId
+
+        if 'takeProfit' in order.extraParams.keys():
+            params['take_profit'] = order.extraParams['takeProfit']
+
+        if 'stopLoss' in order.extraParams.keys():
+            params['stop_loss'] = order.extraParams['stopLoss']
+
+        if 'tpTriggerBy' in order.extraParams.keys():
+            params['tp_trigger_by'] = order.extraParams['tpTriggerBy']
+
+        if 'slTriggerBy' in order.extraParams.keys():
+            params['sl_trigger_by'] = order.extraParams['slTriggerBy']
+
+        if 'positionIdx' in order.extraParams.keys():
+            params['position_idx'] = order.extraParams['positionIdx']
+
+        return params
 
     @staticmethod
     def convertIntervalToFuturesKlines(interval):
@@ -306,9 +363,19 @@ class BybitExchange(BaseExchange):
                                                            endtime=endTime, limit=limit)
             return history['result']
 
-    def getOpenOrders(self, symbol=None, futures=False):
+    def getOpenOrders(self, symbol, futures=False):
         if futures:
-            pass
+            openOrders = []
+
+            openActiveOrders = self.futuresSession.query_active_order(symbol=symbol)
+            for activeOrder in openActiveOrders['result']:
+                openOrders.append(BybitHelpers.futuresOrderOut(activeOrder))
+
+            openConditionalOrders = self.futuresSession.query_conditional_order(symbol=symbol)
+            for conditionalOrder in openConditionalOrders['result']:
+                openOrders.append(BybitHelpers.futuresOrderOut(conditionalOrder, isConditional=True))
+
+            return openOrders
         else:
             if symbol is None:
                 openOrders = self.spotSession.query_active_order()['result']
@@ -318,7 +385,12 @@ class BybitExchange(BaseExchange):
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         if futures:
-            pass
+            canceledOrdersIds = []
+            result = self.futuresSession.cancel_all_active_orders(symbol=symbol)
+            canceledOrdersIds.append(result['result'])
+
+            result = self.futuresSession.cancel_all_conditional_orders(symbol=symbol)
+            canceledOrdersIds.append(result['result'])
         else:
             result = self.spotSession.batch_fast_cancel_active_order(symbol=symbol,
                                                                      orderTypes="LIMIT,LIMIT_MAKER,MARKET")
@@ -338,7 +410,26 @@ class BybitExchange(BaseExchange):
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:
-            pass
+            if orderId is not None:
+                try:
+                    order = self.futuresSession.query_active_order(symbol=symbol, order_id=orderId)
+                except Exception as e:
+                    try:
+                        order = self.futuresSession.query_conditional_order(symbol=symbol, order_id=orderId)
+                    except Exception as e:
+                        raise Exception('Problem in fetching order from bybit: {}'.format(str(e)))
+            elif localOrderId is not None:
+                try:
+                    order = self.futuresSession.query_active_order(symbol=symbol, order_link_id=localOrderId)
+                except Exception as e:
+                    try:
+                        order = self.futuresSession.query_conditional_order(symbol=symbol, order_link_id=localOrderId)
+                    except Exception as e:
+                        raise Exception('Problem in fetching order from bybit: {}'.format(str(e)))
+            else:
+                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+
+            return BybitHelpers.futuresOrderOut(order['result'])
         else:
             if orderId is not None:
                 try:
@@ -469,11 +560,38 @@ class BybitExchange(BaseExchange):
 
         return futuresOrderData
 
-    def makeFuturesOrder(self, futuresOrderData):
-        pass
+    def makeFuturesOrder(self, futuresOrderData: DataHelpers.futuresOrderData):
+        orderParams = BybitExchange.getFuturesOrderAsDict(futuresOrderData)
+
+        if 'STOP' in futuresOrderData.orderType:
+            result = self.futuresSession.place_conditional_order(**orderParams)
+            return BybitHelpers.futuresOrderOut(result['result'], isConditional=True)
+        else:
+            result = self.futuresSession.place_active_order(**orderParams)
+            return BybitHelpers.futuresOrderOut(result['result'])
 
     def makeBatchFuturesOrder(self, futuresOrderDatas):
-        pass
+        batchOrders = []
+        batchConditionalOrders = []
+        for order in futuresOrderDatas:
+            orderAsDict = self.getFuturesOrderAsDict(order)
+
+            if 'STOP' in order.orderType:
+                batchConditionalOrders.append(order)
+            else:
+                batchOrders.append(orderAsDict)
+
+        results = []
+        if len(batchConditionalOrders) > 0:
+            putResults = self.futuresSession.place_conditional_order_bulk(batchConditionalOrders)
+            for result in putResults:
+                results.append(BybitHelpers.futuresOrderOut(result['result'], isConditional=True))
+        if len(batchOrders) > 0:
+            putResults = self.futuresSession.place_active_order_bulk(batchOrders)
+            for result in putResults:
+                results.append(BybitHelpers.futuresOrderOut(result['result']))
+
+        return results
 
     def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         pass
@@ -518,7 +636,8 @@ class BybitExchange(BaseExchange):
         pass
 
     def getPositionInfo(self, symbol=None):
-        pass
+        result = self.futuresSession.my_position(symbol=symbol)
+        return result['result']
 
     def getSymbolMinTrade(self, symbol, futures=False):
         pass

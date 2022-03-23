@@ -316,7 +316,7 @@ class BinanceExchange(BaseExchange):
         except Exception:
             return None
 
-    def getOpenOrders(self, symbol=None, futures=False):
+    def getOpenOrders(self, symbol, futures=False):
         try:
             if not futures:
                 return self.client.get_open_orders(symbol, timestamp=time.time())
@@ -464,15 +464,8 @@ class BinanceExchange(BaseExchange):
     def makeFuturesOrder(self, futuresOrderData):
         params = self.getFuturesOrderAsDict(futuresOrderData)
 
-        try:
-            response = self.futuresClient.post_order(**params)
-            return response.toDict()
-        except ClientError as error:
-            logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.status_code, error.error_code, error.error_message
-                )
-            )
+        response = self.futuresClient.post_order(**params)
+        return response.toDict()
 
     def makeBatchFuturesOrder(self, futuresOrderDatas):
         batchOrders = []
