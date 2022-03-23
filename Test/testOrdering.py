@@ -58,20 +58,15 @@ def testNewOrder(getGates):
 def testGetOrders(getGates):
     for gate in getGates:
         orders = gate.getSymbolOrders('BTCUSDT', futures=False)
-        print('\nGetting order history for BTCUSDT symbol from {}: {}'.format(gate.exchangeName, orders[0]))
+        # print('\nGetting order history for BTCUSDT symbol from {}: {}'.format(gate.exchangeName, orders[0]))
 
         assert orders is not None, 'Problem in getting list of all orders from {} exchange.'.format(gate.exchangeName)
 
 
 def testGetOpenOrders(getGates):
     for gate in getGates:
-        openOrders = gate.getOpenOrders()
-        print('\nGetting all symbols open orders list from {} exchange: {}'.format(gate.exchangeName, openOrders))
-        assert openOrders is not None, 'Problem in getting list of open orders without symbol from {} exchange.'.format(
-            gate.exchangeName)
-
         symbolOpenOrders = gate.getOpenOrders('BTCUSDT')
-        print('\nGetting BTCUSDT open orders list from {} exchange: {}'.format(gate.exchangeName, openOrders))
+        # print('\nGetting BTCUSDT open orders list from {} exchange: {}'.format(gate.exchangeName, symbolOpenOrders))
         assert symbolOpenOrders is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(
             gate.exchangeName)
 
@@ -85,17 +80,17 @@ def testGetOrder(getGates):
         except Exception as e:
             assert False, 'Problem in making order from {} exchange: {}'.format(gate.exchangeName, str(e))
 
-        print('Submitted order on {} exchange: {}'.format(gate.exchangeName, result))
+        # print('Submitted order on {} exchange: {}'.format(gate.exchangeName, result))
 
         order = gate.getOrder('BTCUSDT', orderId=result['orderId'])
         assert order['clientOrderId'] == result['clientOrderId'], \
             'Fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(gate.exchangeName)
-        print('Correct \'clientOrderId\'.')
+        # print('Correct \'clientOrderId\'.')
 
         order = gate.getOrder('BTCUSDT', localOrderId=result['clientOrderId'])
         assert order['orderId'] == result['orderId'], \
             'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
-        print('Correct \'orderId\'.')
+        # print('Correct \'orderId\'.')
 
         gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
 

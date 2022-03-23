@@ -25,7 +25,7 @@ def getGates():
 def testFullBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance()
-        # print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
+        print('\nFull Balance from {} exchange: {}'.format(gate.exchangeName, balance))
         assert balance is not None, 'Problem in fetching balance from {} exchange.'.format(gate.exchangeName)
 
         errorMessage = 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
@@ -44,7 +44,7 @@ def testSingleCoinBalance(getGates):
     for gate in getGates:
         balance = gate.getBalance('BTC')
         # print('\nSingle coin balance from {} exchange: {}'.format(gate.exchangeName, balance))
-        assert balance is not None, 'Problem in fetching single coin balance from {} exchange.'.fomrat(
+        assert balance is not None, 'Problem in fetching single coin balance from {} exchange.'.format(
             gate.exchangeName)
 
         errorMessage = 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)

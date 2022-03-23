@@ -297,7 +297,12 @@ class BybitExchange(BaseExchange):
                 for coin in assets:
                     if asset == coin['coin']:
                         return BybitHelpers.getBalanceOut(coin, single=True)
-                return None
+
+                try:
+                    self.futuresSession.get_wallet_balance(coin=asset)
+                    return BybitHelpers.makeDummyBalance(asset)
+                except Exception as e:
+                    raise ValueError('Coin not found.')
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         if futures:

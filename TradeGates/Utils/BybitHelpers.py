@@ -18,6 +18,7 @@ def getBalanceOut(data, single=False, futures=False):
                 outData.append(coinData)
             return outData
     else:
+        print('\n\n\n\n{}\n\n\n\n'.format(data))
         if not futures:
             outData = {'asset': data['coin'], 'free': data['free'], 'locked': data['locked'], 'exchangeSpecific': data}
             return outData
@@ -215,3 +216,12 @@ def futuresOrderOut(data, isConditional=False):
             },
             'exchangeSpecific': data
         }
+
+
+def makeDummyBalance(asset):
+    return {
+        'asset': asset,
+        'free': str(0.0),
+        'locked': str(0.0),
+        'exchangeSpecific': {}
+    }
