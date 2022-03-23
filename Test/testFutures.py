@@ -161,10 +161,12 @@ def testCancelingAllFuturesOpenOrders(getGates):
 
 def testCancelingOrder(getGates):
     for gate in getGates:
-        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'TAKE_PROFIT_MARKET', stopPrice=35000,
-                                                          quantity=0.002, newClientOrderId=str(int(time.time())))
+        futuresOrderData = gate.createAndTestFuturesOrder('BTCUSDT', 'BUY', 'LIMIT', price=35000, quantity=0.002,
+                                                          timeInForce='GTC', newClientOrderId=str(int(time.time())))
         result = gate.makeFuturesOrder(futuresOrderData)
 
-        result = gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'], futures=True)
-        assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders from {} exchnage.'.format(
-            gate.exchangeName)
+        gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'], futures=True)
+
+        result = gate.getOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'], futures=True)
+        assert result['status'] in ['CANCELED', 'Cancelled'], \
+            'Problem in canceling specified Open Orders from {} exchange.'.format(gate.exchangeName)

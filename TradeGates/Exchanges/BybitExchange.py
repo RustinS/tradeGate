@@ -398,7 +398,26 @@ class BybitExchange(BaseExchange):
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:
-            pass
+            if orderId is not None:
+                try:
+                    result = self.futuresSession.cancel_active_order(symbol=symbol, order_id=orderId)
+                except Exception as e:
+                    try:
+                        result = self.futuresSession.cancel_conditional_order(symbol=symbol, order_id=orderId)
+                    except Exception as e:
+                        raise Exception('Problem in canceling order in bybit: {}'.format(str(e)))
+            elif localOrderId is not None:
+                try:
+                    result = self.futuresSession.cancel_active_order(symbol=symbol, order_link_id=localOrderId)
+                except Exception as e:
+                    try:
+                        result = self.futuresSession.cancel_conditional_order(symbol=symbol, order_link_id=localOrderId)
+                    except Exception as e:
+                        raise Exception('Problem in canceling order in bybit: {}'.format(str(e)))
+            else:
+                raise ValueError('Must specify either \'orderId\' or \'localOrderId\'')
+
+            return result['result']
         else:
             if orderId is not None:
                 result = self.spotSession.cancel_active_order(orderId=orderId)
