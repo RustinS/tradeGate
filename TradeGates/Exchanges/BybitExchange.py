@@ -567,9 +567,6 @@ class BybitExchange(BaseExchange):
     def getSymbol24hTicker(self, symbol):
         pass
 
-    def getAllSymbolFuturesOrders(self, symbol):
-        pass
-
     def testFuturesOrder(self, futuresOrderData):
         if futuresOrderData.timeInForce is None:
             futuresOrderData.timeInForce = 'GoodTillCancel'
@@ -617,26 +614,40 @@ class BybitExchange(BaseExchange):
 
         return results
 
-    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
-        pass
-
     def changeInitialLeverage(self, symbol, leverage):
-        pass
+        return self.futuresSession.set_leverage(symbol=symbol, leverage=leverage)['result']
 
-    def changeMarginType(self, symbol, marginType):
-        pass
+    def changeMarginType(self, symbol, marginType, params):
+        try:
+            buyLeverage = params['buyLeverage']
+            sellLeverage = params['sellLeverage']
+            if marginType.upper() == 'ISOLATED':
+                isIsolated = True
+            elif marginType.upper() == 'CROSS':
+                isIsolated = False
+            else:
+                raise ValueError('Margin type must either be \'ISOLATED\' or \'CROSS\'.')
+        except Exception as e:
+            raise ValueError('Must specify \'buyLeverage\' and \'sellLeverage\' in \'params')
 
-    def changePositionMargin(self, symbol, amount, marginType):
-        pass
+        self.futuresSession.cross_isolated_margin_switch(symbol=symbol, is_isolated=isIsolated,
+                                                         buy_leverage=buyLeverage, sell_leverage=sellLeverage)
+        return True
+
+    def changePositionMargin(self, symbol, amount, marginType=None):
+        return self.futuresSession.change_margin(symbol=symbol, margin=amount)['result']
 
     def getPosition(self):
-        pass
+        return self.futuresSession.my_position()['result']
 
     def spotBestBidAsks(self, symbol=None):
-        pass
+        return self.spotSession.best_bid_ask_price(symbol=symbol)['result']
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
-        pass
+        if futures:
+            return self.futuresSession.orderbook(symbol=symbol)['result']
+        else:
+            return self.spotSession.orderbook(symbol=symbol)['result']
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         if futures:
@@ -656,12 +667,37 @@ class BybitExchange(BaseExchange):
             recentTrades = self.spotSession.public_trading_records(symbol=symbol, limit=limit)['result']
             return BybitHelpers.getRecentTradeHistoryOut(recentTrades)
 
-    def setMarginType(self, symbol, marginType):
-        pass
-
     def getPositionInfo(self, symbol=None):
         result = self.futuresSession.my_position(symbol=symbol)
         return result['result']
 
     def getSymbolMinTrade(self, symbol, futures=False):
-        pass
+        symbolTickerPrice = self.getSymbolTickerPrice(symbol=symbol, futures=futures)
+
+        minQuantity = None
+        minQuoteQuantity = None
+        stepQuantity = None
+        stepPrice = None
+        
+        if futures:
+            symbolInfos = self.futuresSession.query_symbol()['result']
+
+            for symbolInfo in symbolInfos:
+                if symbolInfo['name'] == symbol:
+                    minQuantity = float(symbolInfo['lot_size_filter']['min_trading_qty'])
+                    minQuoteQuantity = symbolTickerPrice * minQuantity
+                    stepQuantity = float(symbolInfo['lot_size_filter']['qty_step'])
+                    stepPrice = symbolInfo['price_filter']['tick_size']
+
+        else:
+            symbolInfos = self.spotSession.query_symbol()['result']
+
+            for symbolInfo in symbolInfos:
+                if symbolInfo['name'] == symbol:
+                    minQuantity = float(symbolInfo['minTradeQuantity'])
+                    minQuoteQuantity = float(symbolInfo['minTradeAmount'])
+                    stepQuantity = float(symbolInfo['basePrecision'])
+                    stepPrice = symbolInfo['minPricePrecision']
+
+        return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
+                'precisionStep': stepQuantity, 'stepPrice': stepPrice}

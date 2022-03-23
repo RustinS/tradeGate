@@ -168,8 +168,8 @@ class TradeGate:
     def changeInitialLeverage(self, symbol, leverage):
         return self.exchange.changeInitialLeverage(symbol, leverage)
 
-    def changeMarginType(self, symbol, marginType):
-        return self.exchange.changeMarginType(symbol, marginType)
+    def changeMarginType(self, symbol, marginType, params=None):
+        return self.exchange.changeMarginType(symbol, marginType, params)
 
     def changePositionMargin(self, symbol, amount, marginType):
         return self.exchange.changePositionMargin(symbol, amount, marginType)

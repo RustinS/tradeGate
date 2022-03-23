@@ -86,10 +86,6 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getAllSymbolFuturesOrders(self, symbol):
-        pass
-
-    @abstractmethod
     def testFuturesOrder(self, futuresOrderData):
         pass
 
@@ -102,19 +98,15 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
-        pass
-
-    @abstractmethod
     def changeInitialLeverage(self, symbol, leverage):
         pass
 
     @abstractmethod
-    def changeMarginType(self, symbol, marginType):
+    def changeMarginType(self, symbol, marginType, params):
         pass
 
     @abstractmethod
-    def changePositionMargin(self, symbol, amount, marginType):
+    def changePositionMargin(self, symbol, amount, marginType=None):
         pass
 
     @abstractmethod
@@ -131,10 +123,6 @@ class BaseExchange(ABC):
 
     @abstractmethod
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
-        pass
-
-    @abstractmethod
-    def setMarginType(self, symbol, marginType):
         pass
 
     @abstractmethod

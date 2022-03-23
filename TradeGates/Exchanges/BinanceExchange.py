@@ -453,9 +453,6 @@ class BinanceExchange(BaseExchange):
         except Exception:
             return None
 
-    def getAllSymbolFuturesOrders(self, symbol):
-        return self.futuresClient.get_all_orders(symbol=symbol)
-
     def testFuturesOrder(self, futuresOrderData):
         if not self.isFuturesOrderDataValid(futuresOrderData):
             raise ValueError('Incomplete data provided.')
@@ -487,16 +484,17 @@ class BinanceExchange(BaseExchange):
     def changeInitialLeverage(self, symbol, leverage):
         return self.futuresClient.change_initial_leverage(symbol=symbol, leverage=leverage).toDict()
 
-    def changeMarginType(self, symbol, marginType):
+    def changeMarginType(self, symbol, marginType, params=None):
         if marginType not in ['ISOLATED', 'CROSSED']:
             raise ValueError('Margin type specified is not acceptable')
 
         return self.futuresClient.change_margin_type(symbol=symbol, marginType=marginType)
 
-    def changePositionMargin(self, symbol, amount, marginType):
-        if marginType not in [1, 2]:
-            raise ValueError('Bad type specified.')
-        self.futuresClient.change_position_margin(symbol=symbol, amount=amount, type=marginType)
+    def changePositionMargin(self, symbol, amount, marginType=None):
+        if marginType not in ['ISOLATED', 'CROSSED']:
+            raise ValueError('marginType was not correctly specified, should be either ISOLATED or CROSSED')
+
+        return self.futuresClient.change_margin_type(symbol, marginType)
 
     def getPosition(self):
         return self.futuresClient.get_position()
@@ -532,12 +530,6 @@ class BinanceExchange(BaseExchange):
                 return self.futuresClient.get_recent_trades_list(symbol=symbol)
             else:
                 return self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit)
-
-    def setMarginType(self, symbol, marginType):
-        if marginType not in ['ISOLATED', 'CROSSED']:
-            raise ValueError('marginType was not correctly specified, should be either ISOLATED or CROSSED')
-
-        return self.futuresClient.change_margin_type(symbol, marginType)
 
     def getPositionInfo(self, symbol=None):
         return self.futuresClient.get_position_v2(symbol)
