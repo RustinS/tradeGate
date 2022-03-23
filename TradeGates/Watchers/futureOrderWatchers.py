@@ -20,6 +20,7 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
         if cancelIfNotOpened:
             if time.time() - startDelayTime > delayTimeSec:
                 gate.cancelOrder(symbol, orderId=orderId, futures=True)
+                break
 
         if order['status'] == 'NEW':
             continue
