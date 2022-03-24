@@ -1,10 +1,10 @@
 import json
 import logging
 import time
+from abc import abstractmethod
 from datetime import datetime
 
 import pandas as pd
-from binance.error import ClientError
 from binance.spot import Spot
 
 from Exchanges.BaseExchange import BaseExchange
@@ -144,49 +144,42 @@ class BinanceExchange(BaseExchange):
     @staticmethod
     def getSpotOrderAsDict(order: DataHelpers.OrderData):
         if order.timestamp is None:
-            raise Exception('Timestamp must be set')
+            raise ValueError('Timestamp must be set')
 
-        params = {}
-        params['symbol'] = order.symbol
-        params['side'] = order.side
-        params['type'] = order.orderType
-        params['timestamp'] = order.timestamp
+        params = {'symbol': order.symbol, 'side': order.side, 'type': order.orderType, 'timestamp': order.timestamp}
 
-        if not order.timeInForce is None:
+        if order.timeInForce is not None:
             params['timeInForce'] = order.timeInForce
 
-        if not order.quantity is None:
+        if order.quantity is not None:
             params['quantity'] = order.quantity
 
-        if not order.quoteOrderQty is None:
+        if order.quoteOrderQty is not None:
             params['quoteOrderQty'] = order.quoteOrderQty
 
-        if not order.price is None:
+        if order.price is not None:
             params['price'] = order.price
 
-        if not order.newOrderRespType is None:
+        if order.newOrderRespType is not None:
             params['newOrderRespType'] = order.newOrderRespType
 
-        if not order.stopPrice is None:
+        if order.stopPrice is not None:
             params['stopPrice'] = order.stopPrice
 
-        if not order.icebergQty is None:
+        if order.icebergQty is not None:
             params['icebergQty'] = order.icebergQty
 
-        if not order.newClientOrderId is None:
+        if order.newClientOrderId is not None:
             params['newClientOrderId'] = order.newClientOrderId
 
-        if not order.recvWindow is None:
+        if order.recvWindow is not None:
             params['recvWindow'] = order.recvWindow
 
         return params
 
     @staticmethod
     def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData, allStr=False):
-        params = {}
-        params['symbol'] = order.symbol
-        params['side'] = order.side
-        params['ordertype'] = order.orderType
+        params = {'symbol': order.symbol, 'side': order.side, 'ordertype': order.orderType}
 
         if order.positionSide is not None:
             params['positionSide'] = order.positionSide
@@ -262,7 +255,6 @@ class BinanceExchange(BaseExchange):
                     if balance['asset'] == asset:
                         return balance
                 return Balance.makeFreeBalance(asset)
-            return None
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         try:
@@ -284,16 +276,8 @@ class BinanceExchange(BaseExchange):
         orderData.setTimestamp()
         params = self.getSpotOrderAsDict(orderData)
 
-        try:
-            response = self.client.new_order_test(**params)
-            logging.info(response)
-            return response
-        except ClientError as error:
-            logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.status_code, error.error_code, error.error_message
-                )
-            )
+        response = self.client.new_order_test(**params)
+        return response
 
     def makeSpotOrder(self, orderData):
         params = self.getSpotOrderAsDict(orderData)
@@ -350,36 +334,38 @@ class BinanceExchange(BaseExchange):
                 return results
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        errorMessage = 'Specify either order Id in the exchange or local Id sent with the order'
         if not futures:
-            if not orderId is None:
+            if orderId is not None:
                 return self.client.cancel_order(symbol, orderId=orderId, timestamp=time.time())
-            elif not localOrderId is None:
+            elif localOrderId is not None:
                 return self.client.cancel_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
             else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+                raise ValueError(errorMessage)
         else:
-            if not orderId is None:
+            if orderId is not None:
                 return self.futuresClient.cancel_order(symbol, orderId=orderId).toDict()
-            elif not localOrderId is None:
+            elif localOrderId is not None:
                 return self.futuresClient.cancel_order(symbol, origClientOrderId=localOrderId).toDict()
             else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+                raise ValueError(errorMessage)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        errorMessage = 'Specify either order Id in the exchange or local Id sent with the order'
         if not futures:
-            if not orderId is None:
+            if orderId is not None:
                 return self.client.get_order(symbol, orderId=orderId, timestamp=time.time())
-            elif not localOrderId is None:
+            elif localOrderId is not None:
                 return self.client.get_order(symbol, origClientOrderId=localOrderId, timestamp=time.time())
             else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+                raise ValueError(errorMessage)
         else:
-            if not orderId is None:
+            if orderId is not None:
                 return self.futuresClient.get_order(symbol, orderId=orderId).toDict()
-            elif not localOrderId is None:
+            elif localOrderId is not None:
                 return self.futuresClient.get_order(symbol, origClientOrderId=localOrderId).toDict()
             else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+                raise ValueError(errorMessage)
 
     def getTradingFees(self):
         try:
@@ -393,50 +379,69 @@ class BinanceExchange(BaseExchange):
         else:
             return float(self.client.ticker_price(symbol)['price'])
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False,
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
-        if not interval in BinanceExchange.timeIntervals:
-            raise Exception('Time interval is not valid.')
+        if interval not in BinanceExchange.timeIntervals:
+            raise ValueError('Time interval is not valid.')
 
         if futures:
-            data = []
-            if BLVTNAV:
-                candles = self.futuresClient.get_blvt_nav_candlestick_data(symbol=symbol, interval=interval,
-                                                                           startTime=startTime, endTime=endTime,
-                                                                           limit=limit)
-            else:
-                candles = self.futuresClient.get_candlestick_data(symbol=symbol, interval=interval, startTime=startTime,
-                                                                  endTime=endTime, limit=limit)
-
-            for candle in candles:
-                data.append(candle.toArray())
+            data = self._getFuturesSymbolKlines(blvtnav, endTime, interval, limit, startTime, symbol)
         else:
-            data = self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
-
-            for datum in data:
-                for idx in range(len(datum)):
-                    if idx in BinanceExchange.timeIndexesInCandleData:
-                        continue
-                    datum[idx] = float(datum[idx])
+            data = self._getSpotSymbolKlines(endTime, interval, limit, startTime, symbol)
 
         if convertDateTime or toCleanDataframe:
-            for datum in data:
-                for idx in BinanceExchange.timeIndexesInCandleData:
-                    datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
+            self._convertDate(data)
 
         if doClean or toCleanDataframe:
-            outArray = []
-            for datum in data:
-                outArray.append([datum[index] for index in BinanceExchange.desiredCandleDataIndexes])
+            finalDataArray = self._getDesiredOnlyCols(data)
 
             if toCleanDataframe:
-                df = pd.DataFrame(outArray,
-                                  columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
-                df.set_index('date', inplace=True)
-                return df
-            return outArray
+                return self._convertToPandas(finalDataArray)
+            return finalDataArray
         else:
             return data
+
+    def _getSpotSymbolKlines(self, endTime, interval, limit, startTime, symbol):
+        data = self.client.klines(symbol, interval, startTime=startTime, endTime=endTime, limit=limit)
+        for datum in data:
+            for idx in range(len(datum)):
+                if idx in BinanceExchange.timeIndexesInCandleData:
+                    continue
+                datum[idx] = float(datum[idx])
+        return data
+
+    def _getFuturesSymbolKlines(self, blvtnav, endTime, interval, limit, startTime, symbol):
+        data = []
+        if blvtnav:
+            candles = self.futuresClient.get_blvt_nav_candlestick_data(symbol=symbol, interval=interval,
+                                                                       startTime=startTime, endTime=endTime,
+                                                                       limit=limit)
+        else:
+            candles = self.futuresClient.get_candlestick_data(symbol=symbol, interval=interval, startTime=startTime,
+                                                              endTime=endTime, limit=limit)
+        for candle in candles:
+            data.append(candle.toArray())
+        return data
+
+    @staticmethod
+    def _getDesiredOnlyCols(data):
+        finalDataArray = []
+        for datum in data:
+            finalDataArray.append([datum[index] for index in BinanceExchange.desiredCandleDataIndexes])
+        return finalDataArray
+
+    @staticmethod
+    def _convertToPandas(outArray):
+        df = pd.DataFrame(outArray,
+                          columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
+        df.set_index('date', inplace=True)
+        return df
+
+    @staticmethod
+    def _convertDate(data):
+        for datum in data:
+            for idx in BinanceExchange.timeIndexesInCandleData:
+                datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
 
     def getExchangeTime(self, futures=False):
         try:
@@ -465,6 +470,13 @@ class BinanceExchange(BaseExchange):
         return response.toDict()
 
     def makeBatchFuturesOrder(self, futuresOrderDatas):
+        batchOrders = self._makeBatchOrderData(futuresOrderDatas)
+
+        orderResults = self.futuresClient.post_batch_order(batchOrders)
+
+        return [order.toDict() for order in orderResults]
+
+    def _makeBatchOrderData(self, futuresOrderDatas):
         batchOrders = []
         for order in futuresOrderDatas:
             orderAsDict = self.getFuturesOrderAsDict(order, allStr=True)
@@ -473,10 +485,7 @@ class BinanceExchange(BaseExchange):
             orderJSON = json.dumps(orderAsDict)
 
             batchOrders.append(orderJSON)
-
-        orderResults = self.futuresClient.post_batch_order(batchOrders)
-
-        return [order.toDict() for order in orderResults]
+        return batchOrders
 
     def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
@@ -542,43 +551,27 @@ class BinanceExchange(BaseExchange):
 
             for sym in exchangeInfo.symbols:
                 if sym.symbol == symbol:
-                    filterUsedNum = 0
-                    for filter in sym.filters:
-                        if filter['filterType'] == 'LOT_SIZE':
-                            minQuantity = float(filter['minQty'])
-                            stepQuantity = float(filter['stepSize'])
-                            minQuoteQuantity = tickerPrice * minQuantity
-
-                            filterUsedNum += 1
-
-                        if filter['filterType'] == 'PRICE_FILTER':
-                            stepPrice = filter['tickSize']
-                            filterUsedNum += 1
-
-                        if filterUsedNum == 2:
-                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
-                                    'precisionStep': stepQuantity, 'stepPrice': stepPrice}
+                    symbolFilters = sym.filters
+                    return self._extractParamsFromFilters(symbolFilters, tickerPrice)
             return None
         else:
             exchangeInfo = self.client.exchange_info()
 
             for sym in exchangeInfo['symbols']:
                 if sym['symbol'] == symbol:
-                    filterUsedNum = 0
-                    for filter in sym['filters']:
-                        if filter['filterType'] == 'LOT_SIZE':
-                            minQuantity = float(filter['minQty'])
-                            stepQuantity = float(filter['stepSize'])
-                            minQuoteQuantity = tickerPrice * minQuantity
-
-                            filterUsedNum += 1
-
-                        if filter['filterType'] == 'PRICE_FILTER':
-                            stepPrice = filter['tickSize']
-
-                            filterUsedNum += 1
-
-                        if filterUsedNum == 2:
-                            return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
-                                    'precisionStep': stepQuantity, 'stepPrice': stepPrice}
+                    symbolFilters = sym['filters']
+                    return self._extractParamsFromFilters(symbolFilters, tickerPrice)
             return None
+
+    @abstractmethod
+    def _extractParamsFromFilters(self, symbolFilters, tickerPrice):
+        params = {}
+        for filter in symbolFilters:
+            if filter['filterType'] == 'LOT_SIZE':
+                params['minQuantity'] = float(filter['minQty'])
+                params['stepQuantity'] = float(filter['stepSize'])
+                params['minQuoteQuantity'] = tickerPrice * params['minQuantity']
+
+            if filter['filterType'] == 'PRICE_FILTER':
+                params['stepPrice'] = filter['tickSize']
+        return params

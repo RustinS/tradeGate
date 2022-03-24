@@ -31,35 +31,73 @@ class TradeGate:
         if exchangeName.lower() == 'bybit':
             return BybitExchange.BybitExchange
 
+    @staticmethod
+    def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
+                         stopPrice, symbol, timeInForce):
+        currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
+        if quantity is not None:
+            currOrder.setQuantity(quantity)
+        if price is not None:
+            currOrder.setPrice(price)
+        if timeInForce is not None:
+            currOrder.setTimeInForce(timeInForce)
+        if stopPrice is not None:
+            currOrder.setStopPrice(stopPrice)
+        if icebergQty is not None:
+            currOrder.setIcebergQty(icebergQty)
+        if newOrderRespType is not None:
+            currOrder.setNewOrderRespType(newOrderRespType)
+        if recvWindow is not None:
+            currOrder.setRecvWindow(recvWindow)
+        if newClientOrderId is not None:
+            currOrder.setNewClientOrderId(newClientOrderId)
+        return currOrder
+
+    @staticmethod
+    def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams, newClientOrderId,
+                            newOrderRespType, orderType, positionSide, price, priceProtect, quantity, recvWindow,
+                            reduceOnly, side, stopPrice, symbol, timeInForce, workingType):
+        if extraParams is None:
+            extraParams = {}
+        currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
+        if positionSide is not None:
+            currOrder.setPositionSide(positionSide)
+        if timeInForce is not None:
+            currOrder.setTimeInForce(timeInForce)
+        if quantity is not None:
+            currOrder.setQuantity(quantity)
+        if reduceOnly is not None:
+            currOrder.setReduceOnly(reduceOnly)
+        if price is not None:
+            currOrder.setPrice(price)
+        if newClientOrderId is not None:
+            currOrder.setNewClientOrderId(newClientOrderId)
+        if stopPrice is not None:
+            currOrder.setStopPrice(stopPrice)
+        if closePosition is not None:
+            currOrder.setClosePosition(closePosition)
+        if activationPrice is not None:
+            currOrder.setActivationPrice(activationPrice)
+        if callbackRate is not None:
+            currOrder.setCallbackRate(callbackRate)
+        if workingType is not None:
+            currOrder.setWorkingType(workingType)
+        if priceProtect is not None:
+            currOrder.setPriceProtect(priceProtect)
+        if newOrderRespType is not None:
+            currOrder.setNewOrderRespType(newOrderRespType)
+        if recvWindow is not None:
+            currOrder.setRecvWindow(recvWindow)
+        if extraParams is not None:
+            currOrder.setExtraParams(extraParams)
+        return currOrder
+
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
                                stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
                                newClientOrderId=None):
 
-        currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
-
-        if quantity is not None:
-            currOrder.setQuantity(quantity)
-
-        if price is not None:
-            currOrder.setPrice(price)
-
-        if timeInForce is not None:
-            currOrder.setTimeInForce(timeInForce)
-
-        if stopPrice is not None:
-            currOrder.setStopPrice(stopPrice)
-
-        if icebergQty is not None:
-            currOrder.setIcebergQty(icebergQty)
-
-        if newOrderRespType is not None:
-            currOrder.setNewOrderRespType(newOrderRespType)
-
-        if recvWindow is not None:
-            currOrder.setRecvWindow(recvWindow)
-
-        if newClientOrderId is not None:
-            currOrder.setNewClientOrderId(newClientOrderId)
+        currOrder = self.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity,
+                                          recvWindow, side, stopPrice, symbol, timeInForce)
 
         self.exchange.testSpotOrder(currOrder)
 
@@ -103,54 +141,10 @@ class TradeGate:
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
                                   recvWindow=None, extraParams=None):
-        if extraParams is None:
-            extraParams = {}
-        currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
-
-        if positionSide is not None:
-            currOrder.setPositionSide(positionSide)
-
-        if timeInForce is not None:
-            currOrder.setTimeInForce(timeInForce)
-
-        if quantity is not None:
-            currOrder.setQuantity(quantity)
-
-        if reduceOnly is not None:
-            currOrder.setReduceOnly(reduceOnly)
-
-        if price is not None:
-            currOrder.setPrice(price)
-
-        if newClientOrderId is not None:
-            currOrder.setNewClientOrderId(newClientOrderId)
-
-        if stopPrice is not None:
-            currOrder.setStopPrice(stopPrice)
-
-        if closePosition is not None:
-            currOrder.setClosePosition(closePosition)
-
-        if activationPrice is not None:
-            currOrder.setActivationPrice(activationPrice)
-
-        if callbackRate is not None:
-            currOrder.setCallbackRate(callbackRate)
-
-        if workingType is not None:
-            currOrder.setWorkingType(workingType)
-
-        if priceProtect is not None:
-            currOrder.setPriceProtect(priceProtect)
-
-        if newOrderRespType is not None:
-            currOrder.setNewOrderRespType(newOrderRespType)
-
-        if recvWindow is not None:
-            currOrder.setRecvWindow(recvWindow)
-
-        if extraParams is not None:
-            currOrder.setExtraParams(extraParams)
+        currOrder = self.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
+                                             newClientOrderId, newOrderRespType, orderType, positionSide, price,
+                                             priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice, symbol,
+                                             timeInForce, workingType)
 
         self.exchange.testFuturesOrder(currOrder)
 
@@ -195,35 +189,14 @@ class TradeGate:
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
         stepQuantity = len(str(symbolInfo['precisionStep'])) - 2
 
-        if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
-            raise Exception('Specify either quantity or quoteQuantity and not both')
+        quantity = self._getQuantity(enterPrice, quantity, quoteQuantity, stepQuantity)
+        self._setLeverage(leverage, symbol)
+        self._setMarginType(marginType, symbol)
+        cancelIfNotOpened, doPutTpSl, params = self._setTpSlParams(cancelDelaySec, orderSide, stopLoss, takeProfit)
 
-        if quantity is None:
-            quantity = round(quoteQuantity / enterPrice, stepQuantity)
-
-            setLeverageResult = self.changeInitialLeverage(symbol, leverage)
-
-            if not (setLeverageResult['leverage'] == leverage):
-                raise ConnectionError('Could not change leverage.')
-
-        try:
-            self.exchange.setMarginType(symbol, marginType)
-        except BinanceApiException as e:
-            pass
-
-        cancelIfNotOpened = True if cancelDelaySec is not None else False
-
-        doPutTpSl = True if takeProfit is not None or stopLoss is not None else False
-
-        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
-
-        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
-                                                   price=str(enterPrice), timeInForce='GTC')
-        order = self.makeFuturesOrder(mainOrder)
+        order = self.testAndMakeFuturesOrder(enterPrice, orderSide, quantity, symbol)
 
         print('Main order sent')
-        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
-                  'cancelDelaySec': cancelDelaySec}
 
         watcherProc = multiprocessing.Process(target=watchFuturesLimitTrigger,
                                               args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened,
@@ -231,6 +204,40 @@ class TradeGate:
         watcherProc.start()
         # watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, params)
         return order
+
+    @staticmethod
+    def _getQuantity(enterPrice, quantity, quoteQuantity, stepQuantity):
+        if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
+            raise ValueError('Specify either quantity or quoteQuantity and not both')
+        if quantity is None:
+            quantity = round(quoteQuantity / enterPrice, stepQuantity)
+        return quantity
+
+    def testAndMakeFuturesOrder(self, enterPrice, orderSide, quantity, symbol):
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
+                                                   price=str(enterPrice), timeInForce='GTC')
+        order = self.makeFuturesOrder(mainOrder)
+        return order
+
+    @staticmethod
+    def _setTpSlParams(cancelDelaySec, orderSide, stopLoss, takeProfit):
+        cancelIfNotOpened = True if cancelDelaySec is not None else False
+        doPutTpSl = True if takeProfit is not None or stopLoss is not None else False
+        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
+        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
+                  'cancelDelaySec': cancelDelaySec}
+        return cancelIfNotOpened, doPutTpSl, params
+
+    def _setMarginType(self, marginType, symbol):
+        try:
+            self.exchange.setMarginType(symbol, marginType)
+        except BinanceApiException:
+            pass
+
+    def _setLeverage(self, leverage, symbol):
+        setLeverageResult = self.changeInitialLeverage(symbol, leverage)
+        if not (setLeverageResult['leverage'] == leverage):
+            raise ConnectionError('Could not change leverage.')
 
     def getPositionInfo(self, symbol=None):
         return self.exchange.getPositionInfo(symbol)

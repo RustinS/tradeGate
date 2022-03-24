@@ -301,7 +301,7 @@ class BybitExchange(BaseExchange):
                 try:
                     self.futuresSession.get_wallet_balance(coin=asset)
                     return BybitHelpers.makeDummyBalance(asset)
-                except Exception as e:
+                except Exception:
                     raise ValueError('Coin not found.')
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
@@ -410,7 +410,7 @@ class BybitExchange(BaseExchange):
                     try:
                         result = self.futuresSession.cancel_conditional_order(symbol=symbol, order_id=orderId)
                     except Exception as e:
-                        raise Exception('Problem in canceling order in bybit: {}'.format(str(e)))
+                        raise RuntimeError('Problem in canceling order in bybit: {}'.format(str(e)))
             elif localOrderId is not None:
                 try:
                     result = self.futuresSession.cancel_active_order(symbol=symbol, order_link_id=localOrderId)
@@ -418,7 +418,7 @@ class BybitExchange(BaseExchange):
                     try:
                         result = self.futuresSession.cancel_conditional_order(symbol=symbol, order_link_id=localOrderId)
                     except Exception as e:
-                        raise Exception('Problem in canceling order in bybit: {}'.format(str(e)))
+                        raise RuntimeError('Problem in canceling order in bybit: {}'.format(str(e)))
             else:
                 raise ValueError('Must specify either \'orderId\' or \'localOrderId\'')
 
@@ -441,7 +441,7 @@ class BybitExchange(BaseExchange):
                     try:
                         order = self.futuresSession.query_conditional_order(symbol=symbol, order_id=orderId)
                     except Exception as e:
-                        raise Exception('Problem in fetching order from bybit: {}'.format(str(e)))
+                        raise RuntimeError('Problem in fetching order from bybit: {}'.format(str(e)))
             elif localOrderId is not None:
                 try:
                     order = self.futuresSession.query_active_order(symbol=symbol, order_link_id=localOrderId)
@@ -449,9 +449,9 @@ class BybitExchange(BaseExchange):
                     try:
                         order = self.futuresSession.query_conditional_order(symbol=symbol, order_link_id=localOrderId)
                     except Exception as e:
-                        raise Exception('Problem in fetching order from bybit: {}'.format(str(e)))
+                        raise RuntimeError('Problem in fetching order from bybit: {}'.format(str(e)))
             else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+                raise ValueError('Specify either order Id in the exchange or local Id sent with the order')
 
             return BybitHelpers.futuresOrderOut(order['result'])
         else:
@@ -459,19 +459,19 @@ class BybitExchange(BaseExchange):
                 try:
                     order = self.spotSession.get_active_order_spot(orderId=orderId)['result']
                 except Exception as e:
-                    raise Exception('Problem in fetching order from bybit.')
+                    raise RuntimeError('Problem in fetching order from bybit.')
             elif localOrderId is not None:
                 try:
                     order = self.spotSession.get_active_order_spot(orderLinkId=localOrderId)['result']
                 except Exception as e:
-                    raise Exception('Problem in fetching order from bybit.')
+                    raise RuntimeError('Problem in fetching order from bybit.')
             else:
-                raise Exception('Specify either order Id in the exchange or local Id sent with the order')
+                raise ValueError('Specify either order Id in the exchange or local Id sent with the order')
 
             return BybitHelpers.getOrderOut(order)
 
     def getTradingFees(self):
-        pass
+        raise NotImplementedError()
 
     def getSymbolTickerPrice(self, symbol, futures=False):
         if futures:
@@ -483,80 +483,95 @@ class BybitExchange(BaseExchange):
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
-        if not interval in self.timeIntervals:
-            raise Exception('Time interval is not valid.')
+        if interval not in self.timeIntervals:
+            raise ValueError('Time interval is not valid.')
 
         if futures:
-            futuresInterval = self.convertIntervalToFuturesKlines(interval)
-            data = []
-            if limit is not None:
-                if limit > 200:
-                    limit = 200
-                elif limit < 1:
-                    limit = 1
-            else:
-                limit = 200
-
-            if startTime is None:
-                startTimestamp = int(datetime.now().timestamp() - self.getIntervalInSeconds(interval) * limit)
-            else:
-                startTimestamp = int(startTime.timestamp)
-
-            candles = self.futuresSession.query_kline(symbol=symbol, interval=futuresInterval, from_time=startTimestamp,
-                                                      limit=limit)
-
-            for candle in candles['result']:
-                dataArray = [float(candle['open_time']), float(candle['open']), float(candle['high']),
-                             float(candle['low']), float(candle['close']), float(candle['volume']),
-                             int(candle['open_time']) + self.getIntervalInSeconds(interval), None, None, None, None]
-                data.append(dataArray)
+            data = self._getFuturesSymbolKlines(interval, limit, startTime, symbol)
         else:
-            if startTime is not None:
-                startTimestamp = startTime.timestamp() * 1000
-            else:
-                startTimestamp = None
-
-            if endTime is not None:
-                endTimestamp = endTime.timestamp() * 1000
-            else:
-                endTimestamp = None
-
-            if limit is not None:
-                if limit > 1000:
-                    limit = 1000
-                elif limit < 1:
-                    limit = 1
-
-            data = self.spotSession.query_kline(symbol=symbol, interval=interval, startTime=startTimestamp,
-                                                endTime=endTimestamp, limit=limit)['result']
-
-            for datum in data:
-                for idx in range(len(datum)):
-                    if idx in self.timeIndexesInCandleData:
-                        continue
-                    datum[idx] = float(datum[idx])
+            data = self._getSpotSymbolKlines(endTime, interval, limit, startTime, symbol)
 
         if convertDateTime or toCleanDataframe:
-            for datum in data:
-                for idx in self.timeIndexesInCandleData:
-                    if futures:
-                        datum[idx] = datetime.fromtimestamp(float(datum[idx]))
-                    else:
-                        datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
+            self._convertDate(data, futures)
 
         if doClean or toCleanDataframe:
-            outArray = []
-            for datum in data:
-                outArray.append([datum[index] for index in self.desiredCandleDataIndexes])
+            finalDataArray = self._getDesiredOnlyCols(data)
 
             if toCleanDataframe:
-                df = pd.DataFrame(outArray,
-                                  columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
-                df.set_index('date', inplace=True)
-                return df
-            return outArray
+                return self._convertToPandas(finalDataArray)
+            return finalDataArray
         else:
             return data
+
+    @staticmethod
+    def _getDesiredOnlyCols(data):
+        finalDataArray = []
+        for datum in data:
+            finalDataArray.append([datum[index] for index in BybitExchange.desiredCandleDataIndexes])
+        return finalDataArray
+
+    @staticmethod
+    def _convertToPandas(finalDataArray):
+        df = pd.DataFrame(finalDataArray,
+                          columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
+        df.set_index('date', inplace=True)
+        return df
+
+    @staticmethod
+    def _convertDate(data, futures):
+        for datum in data:
+            for idx in BybitExchange.timeIndexesInCandleData:
+                if futures:
+                    datum[idx] = datetime.fromtimestamp(float(datum[idx]))
+                else:
+                    datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
+
+    def _getSpotSymbolKlines(self, endTime, interval, limit, startTime, symbol):
+        if startTime is not None:
+            startTimestamp = startTime.timestamp() * 1000
+        else:
+            startTimestamp = None
+        if endTime is not None:
+            endTimestamp = endTime.timestamp() * 1000
+        else:
+            endTimestamp = None
+
+        if limit is not None:
+            if limit > 1000:
+                limit = 1000
+            elif limit < 1:
+                limit = 1
+        data = self.spotSession.query_kline(symbol=symbol, interval=interval, startTime=startTimestamp,
+                                            endTime=endTimestamp, limit=limit)['result']
+        for datum in data:
+            for idx in range(len(datum)):
+                if idx in self.timeIndexesInCandleData:
+                    continue
+                datum[idx] = float(datum[idx])
+        return data
+
+    def _getFuturesSymbolKlines(self, interval, limit, startTime, symbol):
+        futuresInterval = self.convertIntervalToFuturesKlines(interval)
+        data = []
+        if limit is not None:
+            if limit > 200:
+                limit = 200
+            elif limit < 1:
+                limit = 1
+        else:
+            limit = 200
+        if startTime is None:
+            startTimestamp = int(datetime.now().timestamp() - self.getIntervalInSeconds(interval) * limit)
+        else:
+            startTimestamp = int(startTime.timestamp)
+        candles = self.futuresSession.query_kline(symbol=symbol, interval=futuresInterval, from_time=startTimestamp,
+                                                  limit=limit)
+        for candle in candles['result']:
+            dataArray = [float(candle['open_time']), float(candle['open']), float(candle['high']),
+                         float(candle['low']), float(candle['close']), float(candle['volume']),
+                         int(candle['open_time']) + self.getIntervalInSeconds(interval), None, None, None, None]
+            data.append(dataArray)
+        return data
 
     def getExchangeTime(self, futures=False):
         if futures:
@@ -565,7 +580,7 @@ class BybitExchange(BaseExchange):
             return int(self.spotSession.server_time()['result']['serverTime'])
 
     def getSymbol24hTicker(self, symbol):
-        pass
+        raise NotImplementedError()
 
     def testFuturesOrder(self, futuresOrderData):
         if futuresOrderData.timeInForce is None:
@@ -627,7 +642,7 @@ class BybitExchange(BaseExchange):
                 isIsolated = False
             else:
                 raise ValueError('Margin type must either be \'ISOLATED\' or \'CROSS\'.')
-        except Exception as e:
+        except Exception:
             raise ValueError('Must specify \'buyLeverage\' and \'sellLeverage\' in \'params')
 
         self.futuresSession.cross_isolated_margin_switch(symbol=symbol, is_isolated=isIsolated,
@@ -678,7 +693,7 @@ class BybitExchange(BaseExchange):
         minQuoteQuantity = None
         stepQuantity = None
         stepPrice = None
-        
+
         if futures:
             symbolInfos = self.futuresSession.query_symbol()['result']
 
