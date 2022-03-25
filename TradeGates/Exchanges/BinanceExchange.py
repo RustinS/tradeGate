@@ -1,14 +1,11 @@
 import json
 import logging
 import time
-from abc import abstractmethod
-from datetime import datetime
 
-import pandas as pd
 from binance.spot import Spot
 
 from Exchanges.BaseExchange import BaseExchange
-from Utils import DataHelpers
+from TradeGates.Utils import BinanceHelpers
 from binance_f import RequestClient
 from binance_f.model.balance import Balance
 
@@ -44,190 +41,6 @@ class BinanceExchange(BaseExchange):
                                                url='https://fapi.binance.com')
 
         self.subFutureClient = None
-
-    @staticmethod
-    def isOrderDataValid(order: DataHelpers.OrderData):
-        if order.orderType not in BinanceExchange.spotOrderTypes:
-            return False
-
-        if order.side not in ['BUY', 'SELL']:
-            return False
-
-        if order.newOrderRespType not in [None, 'ACK', 'RESULT', 'FULL']:
-            return False
-
-        if order.timeInForce not in [None, 'GTC', 'IOC', 'FOK']:
-            return False
-
-        if order.orderType == 'LIMIT':
-            if not (order.timeInForce is None or order.quantity is None or order.price is None):
-                return True
-
-        elif order.orderType == 'MARKET':
-            if not (order.quantity is None and order.quoteOrderQty is None):
-                return True
-
-        elif order.orderType in ['STOP_LOSS', 'TAKE_PROFIT']:
-            if not (order.quantity is None or order.stopPrice is None):
-                return True
-
-        elif order.orderType in ['STOP_LOSS_LIMIT', 'TAKE_PROFIT_LIMIT']:
-            if not (
-                    order.timeInForce is None or order.quantity is None or order.price is None or order.stopPrice is None):
-                return True
-
-        elif order.orderType == 'LIMIT_MAKER':
-            if not (order.quantity is None or order.price is None):
-                return True
-
-        return False
-
-    @staticmethod
-    def isFuturesOrderDataValid(order: DataHelpers.futuresOrderData):
-        if order.side not in ['BUY', 'SELL']:
-            return False
-
-        if order.orderType not in BinanceExchange.futuresOrderTypes:
-            return False
-
-        if order.positionSide not in [None, 'BOTH', 'LONG', 'SHORT']:
-            return False
-
-        if order.timeInForce not in [None, 'GTC', 'IOC', 'FOK', 'GTX']:
-            return False
-
-        if order.workingType not in [None, 'MARK_PRICE', 'CONTRACT_PRICE']:
-            return False
-
-        if order.newOrderRespType not in [None, 'ACK', 'RESULT']:
-            return False
-
-        if order.closePosition not in [None, True, False]:
-            return False
-
-        if order.callbackRate is not None:
-            if not (0.1 <= order.callbackRate <= 5):
-                return False
-
-        if order.priceProtect not in [None, True, False]:
-            return False
-
-        if order.closePosition is True and order.quantity is not None:
-            return False
-
-        if order.reduceOnly not in [None, True, False]:
-            return False
-
-        if order.closePosition is True and order.reduceOnly is True:
-            return False
-
-        if order.orderType == 'LIMIT':
-            if not (order.timeInForce is None or order.quantity is None or order.price is None):
-                return True
-
-        elif order.orderType == 'MARKET':
-            if order.quantity is not None:
-                return True
-
-        elif order.orderType in ['STOP', 'TAKE_PROFIT']:
-            if not (order.quantity is None or order.price is None or order.stopPrice is None):
-                return True
-
-        elif order.orderType in ['STOP_MARKET', 'TAKE_PROFIT_MARKET']:
-            if order.stopPrice is not None:
-                return True
-
-        elif order.orderType == 'TRAILING_STOP_MARKET':
-            if order.callbackRate is not None:
-                return True
-
-    @staticmethod
-    def getSpotOrderAsDict(order: DataHelpers.OrderData):
-        if order.timestamp is None:
-            raise ValueError('Timestamp must be set')
-
-        params = {'symbol': order.symbol, 'side': order.side, 'type': order.orderType, 'timestamp': order.timestamp}
-
-        if order.timeInForce is not None:
-            params['timeInForce'] = order.timeInForce
-
-        if order.quantity is not None:
-            params['quantity'] = order.quantity
-
-        if order.quoteOrderQty is not None:
-            params['quoteOrderQty'] = order.quoteOrderQty
-
-        if order.price is not None:
-            params['price'] = order.price
-
-        if order.newOrderRespType is not None:
-            params['newOrderRespType'] = order.newOrderRespType
-
-        if order.stopPrice is not None:
-            params['stopPrice'] = order.stopPrice
-
-        if order.icebergQty is not None:
-            params['icebergQty'] = order.icebergQty
-
-        if order.newClientOrderId is not None:
-            params['newClientOrderId'] = order.newClientOrderId
-
-        if order.recvWindow is not None:
-            params['recvWindow'] = order.recvWindow
-
-        return params
-
-    @staticmethod
-    def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData, allStr=False):
-        params = {'symbol': order.symbol, 'side': order.side, 'ordertype': order.orderType}
-
-        if order.positionSide is not None:
-            params['positionSide'] = order.positionSide
-
-        if order.timeInForce is not None:
-            params['timeInForce'] = order.timeInForce
-
-        if order.quantity is not None:
-            params['quantity'] = order.quantity
-
-        if order.reduceOnly is not None:
-            params['reduceOnly'] = order.reduceOnly
-
-        if order.price is not None:
-            params['price'] = order.price
-
-        if order.newClientOrderId is not None:
-            params['newClientOrderId'] = order.newClientOrderId
-
-        if order.stopPrice is not None:
-            params['stopPrice'] = order.stopPrice
-
-        if order.closePosition is not None:
-            params['closePosition'] = order.closePosition
-
-        if order.activationPrice is not None:
-            params['activationPrice'] = order.activationPrice
-
-        if order.callbackRate is not None:
-            params['callbackRate'] = order.callbackRate
-
-        if order.workingType is not None:
-            params['workingType'] = order.workingType
-
-        if order.priceProtect is not None:
-            params['priceProtect'] = order.priceProtect
-
-        if order.newOrderRespType is not None:
-            params['newOrderRespType'] = order.newOrderRespType
-
-        if order.recvWindow is not None:
-            params['recvWindow'] = order.recvWindow
-
-        if allStr:
-            for key, value in params.items():
-                params[key] = str(value)
-
-        return params
 
     def getBalance(self, asset='', futures=False):
         if not futures:
@@ -270,17 +83,17 @@ class BinanceExchange(BaseExchange):
             return None
 
     def testSpotOrder(self, orderData):
-        if not self.isOrderDataValid(orderData):
+        if not BinanceHelpers.isOrderDataValid(orderData):
             raise ValueError('Incomplete data provided.')
 
         orderData.setTimestamp()
-        params = self.getSpotOrderAsDict(orderData)
+        params = BinanceHelpers.getSpotOrderAsDict(orderData)
 
         response = self.client.new_order_test(**params)
         return response
 
     def makeSpotOrder(self, orderData):
-        params = self.getSpotOrderAsDict(orderData)
+        params = BinanceHelpers.getSpotOrderAsDict(orderData)
 
         response = self.client.new_order(**params)
         logging.info(response)
@@ -390,13 +203,13 @@ class BinanceExchange(BaseExchange):
             data = self._getSpotSymbolKlines(endTime, interval, limit, startTime, symbol)
 
         if convertDateTime or toCleanDataframe:
-            self._convertDate(data)
+            BinanceHelpers.klinesConvertDate(data)
 
         if doClean or toCleanDataframe:
-            finalDataArray = self._getDesiredOnlyCols(data)
+            finalDataArray = BinanceHelpers.getKlinesDesiredOnlyCols(data)
 
             if toCleanDataframe:
-                return self._convertToPandas(finalDataArray)
+                return BinanceHelpers.klinesConvertToPandas(finalDataArray)
             return finalDataArray
         else:
             return data
@@ -423,26 +236,6 @@ class BinanceExchange(BaseExchange):
             data.append(candle.toArray())
         return data
 
-    @staticmethod
-    def _getDesiredOnlyCols(data):
-        finalDataArray = []
-        for datum in data:
-            finalDataArray.append([datum[index] for index in BinanceExchange.desiredCandleDataIndexes])
-        return finalDataArray
-
-    @staticmethod
-    def _convertToPandas(outArray):
-        df = pd.DataFrame(outArray,
-                          columns=['date', 'open', 'high', 'low', 'close', 'volume', 'closeDate', 'tradesNum'])
-        df.set_index('date', inplace=True)
-        return df
-
-    @staticmethod
-    def _convertDate(data):
-        for datum in data:
-            for idx in BinanceExchange.timeIndexesInCandleData:
-                datum[idx] = datetime.fromtimestamp(float(datum[idx]) / 1000)
-
     def getExchangeTime(self, futures=False):
         try:
             if not futures:
@@ -459,12 +252,12 @@ class BinanceExchange(BaseExchange):
             return None
 
     def testFuturesOrder(self, futuresOrderData):
-        if not self.isFuturesOrderDataValid(futuresOrderData):
+        if not BinanceHelpers.isFuturesOrderDataValid(futuresOrderData):
             raise ValueError('Incomplete data provided.')
         return futuresOrderData
 
     def makeFuturesOrder(self, futuresOrderData):
-        params = self.getFuturesOrderAsDict(futuresOrderData)
+        params = BinanceHelpers.getFuturesOrderAsDict(futuresOrderData)
 
         response = self.futuresClient.post_order(**params)
         return response.toDict()
@@ -479,7 +272,7 @@ class BinanceExchange(BaseExchange):
     def _makeBatchOrderData(self, futuresOrderDatas):
         batchOrders = []
         for order in futuresOrderDatas:
-            orderAsDict = self.getFuturesOrderAsDict(order, allStr=True)
+            orderAsDict = BinanceHelpers.getFuturesOrderAsDict(order, allStr=True)
             orderAsDict['type'] = orderAsDict.pop('ordertype')
 
             orderJSON = json.dumps(orderAsDict)
@@ -552,7 +345,7 @@ class BinanceExchange(BaseExchange):
             for sym in exchangeInfo.symbols:
                 if sym.symbol == symbol:
                     symbolFilters = sym.filters
-                    return self._extractParamsFromFilters(symbolFilters, tickerPrice)
+                    return BinanceHelpers.extractSymbolInfoFromFilters(symbolFilters, tickerPrice)
             return None
         else:
             exchangeInfo = self.client.exchange_info()
@@ -560,18 +353,5 @@ class BinanceExchange(BaseExchange):
             for sym in exchangeInfo['symbols']:
                 if sym['symbol'] == symbol:
                     symbolFilters = sym['filters']
-                    return self._extractParamsFromFilters(symbolFilters, tickerPrice)
+                    return BinanceHelpers.extractSymbolInfoFromFilters(symbolFilters, tickerPrice)
             return None
-
-    @abstractmethod
-    def _extractParamsFromFilters(self, symbolFilters, tickerPrice):
-        params = {}
-        for filter in symbolFilters:
-            if filter['filterType'] == 'LOT_SIZE':
-                params['minQuantity'] = float(filter['minQty'])
-                params['stepQuantity'] = float(filter['stepSize'])
-                params['minQuoteQuantity'] = tickerPrice * params['minQuantity']
-
-            if filter['filterType'] == 'PRICE_FILTER':
-                params['stepPrice'] = filter['tickSize']
-        return params

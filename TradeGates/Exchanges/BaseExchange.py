@@ -1,31 +1,9 @@
 from abc import ABC, abstractmethod
 
-from Utils import DataHelpers
-
 
 class BaseExchange(ABC):
     @abstractmethod
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def isOrderDataValid(order: DataHelpers.OrderData):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def isFuturesOrderDataValid(order: DataHelpers.futuresOrderData):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def getSpotOrderAsDict(order: DataHelpers.OrderData):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
         pass
 
     @abstractmethod
@@ -73,7 +51,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, BLVTNAV=False,
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
         pass
 
