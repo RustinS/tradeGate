@@ -220,3 +220,15 @@ def extractSymbolInfoFromFilters(symbolFilters, tickerPrice):
         if symbolFilter['filterType'] == 'PRICE_FILTER':
             params['stepPrice'] = symbolFilter['tickSize']
     return params
+
+
+def makeBatchOrderData(self, futuresOrderDatas):
+    batchOrders = []
+    for order in futuresOrderDatas:
+        orderAsDict = BinanceHelpers.getFuturesOrderAsDict(order, allStr=True)
+        orderAsDict['type'] = orderAsDict.pop('ordertype')
+
+        orderJSON = json.dumps(orderAsDict)
+
+        batchOrders.append(orderJSON)
+    return batchOrders

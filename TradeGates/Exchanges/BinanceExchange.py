@@ -1,4 +1,3 @@
-import json
 import logging
 import time
 
@@ -263,24 +262,13 @@ class BinanceExchange(BaseExchange):
         return response.toDict()
 
     def makeBatchFuturesOrder(self, futuresOrderDatas):
-        batchOrders = self._makeBatchOrderData(futuresOrderDatas)
+        batchOrders = BinanceHelpers.makeBatchOrderData(futuresOrderDatas)
 
         orderResults = self.futuresClient.post_batch_order(batchOrders)
 
         return [order.toDict() for order in orderResults]
 
-    def _makeBatchOrderData(self, futuresOrderDatas):
-        batchOrders = []
-        for order in futuresOrderDatas:
-            orderAsDict = BinanceHelpers.getFuturesOrderAsDict(order, allStr=True)
-            orderAsDict['type'] = orderAsDict.pop('ordertype')
-
-            orderJSON = json.dumps(orderAsDict)
-
-            batchOrders.append(orderJSON)
-        return batchOrders
-
-    def cancellAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
+    def cancelAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
         return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):
