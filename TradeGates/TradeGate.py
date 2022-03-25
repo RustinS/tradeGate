@@ -230,7 +230,7 @@ class TradeGate:
 
     def _setMarginType(self, marginType, symbol):
         try:
-            self.exchange.setMarginType(symbol, marginType)
+            self.exchange.changeMarginType(symbol, marginType)
         except BinanceApiException:
             pass
 
