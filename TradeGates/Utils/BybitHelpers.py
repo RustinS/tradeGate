@@ -3,8 +3,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from TradeGates.Exchanges.BybitExchange import BybitExchange
-from TradeGates.Utils import DataHelpers
+from Utils import DataHelpers
 
 
 def getBalanceOut(data, single=False, futures=False):
@@ -228,79 +227,6 @@ def makeDummyBalance(asset):
     }
 
 
-def isOrderDataValid(orderData: DataHelpers.OrderData):
-    if orderData.symbol is None or orderData.quantity is None or orderData.side is None \
-            or orderData.orderType is None:
-        raise ValueError('Missing mandatory fields.')
-
-    if orderData.orderType not in BybitExchange.spotOrderTypes:
-        raise ValueError('Order type not correctly specified. Available order types for spot market: {}'.format(
-            BybitExchange.spotOrderTypes))
-
-    if orderData.side not in ['BUY', 'SELL']:
-        raise ValueError('Order side can only be \'BUY\' or \'SELL\'')
-
-    if orderData.timeInForce not in BybitExchange.spotTimeInForces:
-        raise ValueError(
-            'Time-in-force not correctly specified. Available time-in-force for spot market: {}'.format(
-                BybitExchange.spotTimeInForces))
-
-    if orderData.orderType in ['LIMIT', 'LIMIT_MAKER'] and orderData.price is None:
-        raise ValueError('Price must be specified for limit orders.')
-
-
-def isFuturesOrderDataValid(orderData: DataHelpers.futuresOrderData):
-    if orderData.symbol is None:
-        raise ValueError('Specify symbol.')
-    if orderData.quantity is None:
-        raise ValueError('Specify quantity.')
-    if orderData.side is None:
-        raise ValueError('Specify order side.')
-    if orderData.orderType is None:
-        raise ValueError('Specify order type.')
-    if orderData.timeInForce is None:
-        raise ValueError('Specify timeInForce.')
-    if orderData.closePosition is None:
-        raise ValueError('Specify closePosition.')
-    if orderData.reduceOnly is None:
-        raise ValueError('Specify reduceOnly.')
-
-    if orderData.orderType not in BybitExchange.futuresOrderTypes:
-        raise ValueError('Bad order type specified. Available order types for futures: {}'.format(
-            BybitExchange.futuresOrderTypes))
-
-    if orderData.orderType.startswith('STOP'):
-        if orderData.extraParams is None:
-            raise ValueError('Specify \'basePrice\' in \'extraParams\'')
-        if 'basePrice' not in orderData.extraParams.keys():
-            raise ValueError('Specify \'basePrice\' in \'extraParams\'')
-        if orderData.stopPrice is None:
-            raise ValueError('Specify \'stopPrice\'.')
-
-    if 'LIMIT' in orderData.orderType and orderData.price is None:
-        raise ValueError('Specify \'price\' for limit orders.')
-
-    if orderData.timeInForce not in BybitExchange.futuresTimeInForces.keys() and \
-            orderData.timeInForce not in BybitExchange.futuresTimeInForces.values():
-        raise ValueError('\'timeInForce\' is not correct.')
-
-    if orderData.extraParams is not None:
-        if 'triggerBy' in orderData.extraParams.keys() \
-                and orderData.extraParams['tpTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
-            raise ValueError('\'triggerBy\' was not correctly specified.')
-
-        if 'tpTriggerBy' in orderData.extraParams.keys() \
-                and orderData.extraParams['tpTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
-            raise ValueError('\'tpTriggerBy\' was not correctly specified.')
-
-        if 'slTriggerBy' in orderData.extraParams.keys() \
-                and orderData.extraParams['slTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
-            raise ValueError('\'slTriggerBy\' was not correctly specified.')
-
-        if 'positionIdx' in orderData.extraParams.keys() and orderData.extraParams['positionIdx'] not in [0, 1, 2]:
-            raise ValueError('\'positionIdx\' was not correctly specified.')
-
-
 def getSpotOrderAsDict(order: DataHelpers.OrderData):
     params = {
         'symbol': order.symbol,
@@ -311,11 +237,10 @@ def getSpotOrderAsDict(order: DataHelpers.OrderData):
         'price': order.price,
         'orderLinkId': order.newClientOrderId
     }
-
     return params
 
 
-def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
+def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData, timeInForceTranslate):
     if 'STOP' in order.orderType:
         params = {
             'side': order.side.lower().title(),
@@ -326,8 +251,8 @@ def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
             'base_price': order.extraParams['basePrice'],
             'stop_px': order.stopPrice,
 
-            'time_in_force': order.timeInForce if order.timeInForce in BybitExchange.futuresTimeInForces.values()
-            else BybitExchange.futuresTimeInForces[order.timeInForce],
+            'time_in_force': order.timeInForce if order.timeInForce in timeInForceTranslate.values()
+            else timeInForceTranslate[order.timeInForce],
 
             'close_on_trigger': order.closePosition,
             'reduce_only': order.reduceOnly
@@ -343,8 +268,8 @@ def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData):
             'order_type': order.orderType.lower().title(),
             'qty': order.quantity,
 
-            'time_in_force': order.timeInForce if order.timeInForce in BybitExchange.futuresTimeInForces.values()
-            else BybitExchange.futuresTimeInForces[order.timeInForce],
+            'time_in_force': order.timeInForce if order.timeInForce in timeInForceTranslate.values()
+            else timeInForceTranslate[order.timeInForce],
 
             'close_on_trigger': order.closePosition,
             'reduce_only': order.reduceOnly
@@ -403,8 +328,8 @@ def convertIntervalToFuturesKlines(interval):
         return 'M'
 
 
-def getIntervalInSeconds(interval):
-    if interval not in BybitExchange.timeIntervals:
+def getIntervalInSeconds(interval, validIntervals):
+    if interval not in validIntervals:
         raise ValueError('Incorrect time interval specified')
     if interval == '1m':
         return 60
@@ -434,10 +359,10 @@ def getIntervalInSeconds(interval):
         return 30 * 86400
 
 
-def getKlinesDesiredOnlyCols(data):
+def getKlinesDesiredOnlyCols(data, desiredIndexes):
     finalDataArray = []
     for datum in data:
-        finalDataArray.append([datum[index] for index in BybitExchange.desiredCandleDataIndexes])
+        finalDataArray.append([datum[index] for index in desiredIndexes])
     return finalDataArray
 
 
@@ -448,9 +373,9 @@ def klinesConvertToPandas(finalDataArray):
     return df
 
 
-def klinesConvertDate(data, futures):
+def klinesConvertDate(data, futures, timeColIdxs):
     for datum in data:
-        for idx in BybitExchange.timeIndexesInCandleData:
+        for idx in timeColIdxs:
             if futures:
                 datum[idx] = datetime.fromtimestamp(float(datum[idx]))
             else:

@@ -12,8 +12,8 @@ except OSError as e:
     print("Error: %s - %s." % (e.filename, e.strerror))
 
 setuptools.setup(
-    name="TradeGate",  # This is the name of the package
-    version="0.2.1",
+    name="TradeGate-Beta",  # This is the name of the package
+    version="0.2.1Beta06",
     author="Rustin Soraki",  # Full name of the author
     description="A Trading Gateway",
     long_description=long_description,  # Long description read from the readme file

@@ -1,8 +1,5 @@
-import multiprocessing
-
 from Exchanges import BinanceExchange, BybitExchange
 from Utils import DataHelpers
-from Watchers.futureOrderWatchers import watchFuturesLimitTrigger
 from binance_f.exception.binanceapiexception import BinanceApiException
 
 
@@ -184,49 +181,51 @@ class TradeGate:
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
-                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None, cancelDelaySec=None):
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
 
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
-        stepQuantity = len(str(symbolInfo['precisionStep'])) - 2
 
-        quantity = self._getQuantity(enterPrice, quantity, quoteQuantity, stepQuantity)
+        quantity = self._getQuantity(enterPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
         self._setLeverage(leverage, symbol)
         self._setMarginType(marginType, symbol)
-        cancelIfNotOpened, doPutTpSl, params = self._setTpSlParams(cancelDelaySec, orderSide, stopLoss, takeProfit)
+        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
 
-        order = self.testAndMakeFuturesOrder(enterPrice, orderSide, quantity, symbol)
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
+                                                   price=str(enterPrice), timeInForce='GTC')
 
-        print('Main order sent')
+        stopLossOrder = self.createAndTestFuturesOrder(symbol, tpSlOrderSide, 'STOP_MARKET',
+                                                       stopPrice=str(stopLoss), closePosition=True,
+                                                       priceProtect=True, workingType='MARK_PRICE',
+                                                       timeInForce='GTC')
 
-        watcherProc = multiprocessing.Process(target=watchFuturesLimitTrigger,
-                                              args=(self, symbol, order['orderId'], doPutTpSl, cancelIfNotOpened,
-                                                    params))
-        watcherProc.start()
-        # watchFuturesLimitTrigger(self, symbol, order['orderId'], True, False, params)
-        return order
+        takeProfitOrder = self.createAndTestFuturesOrder(symbol, tpSlOrderSide, 'TAKE_PROFIT_MARKET',
+                                                         stopPrice=str(takeProfit), closePosition=True,
+                                                         priceProtect=True, workingType='MARK_PRICE',
+                                                         timeInForce='GTC')
+
+        result = self.makeBatchFuturesOrder([mainOrder, stopLossOrder, takeProfitOrder])
+
+        orderIds = {}
+        for order in result:
+            if order['type'] == 'LIMIT':
+                orderIds['mainOrder'] = order['orderId']
+            elif order['type'] == 'STOP_MARKET':
+                orderIds['stopLoss'] = order['orderId']
+            elif order['type'] == 'TAKE_PROFIT_MARKET':
+                orderIds['takeProfit'] = order['orderId']
+
+        return orderIds
 
     @staticmethod
-    def _getQuantity(enterPrice, quantity, quoteQuantity, stepQuantity):
+    def _getQuantity(enterPrice, quantity, quoteQuantity, stepPrecision):
         if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
             raise ValueError('Specify either quantity or quoteQuantity and not both')
         if quantity is None:
-            quantity = round(quoteQuantity / enterPrice, stepQuantity)
+            if float(stepPrecision) > 0.5:
+                quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 3)
+            else:
+                quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 2)
         return quantity
-
-    def testAndMakeFuturesOrder(self, enterPrice, orderSide, quantity, symbol):
-        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
-                                                   price=str(enterPrice), timeInForce='GTC')
-        order = self.makeFuturesOrder(mainOrder)
-        return order
-
-    @staticmethod
-    def _setTpSlParams(cancelDelaySec, orderSide, stopLoss, takeProfit):
-        cancelIfNotOpened = True if cancelDelaySec is not None else False
-        doPutTpSl = True if takeProfit is not None or stopLoss is not None else False
-        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
-        params = {'tpSlOrderSide': tpSlOrderSide, 'takeProfit': takeProfit, 'stopLoss': stopLoss,
-                  'cancelDelaySec': cancelDelaySec}
-        return cancelIfNotOpened, doPutTpSl, params
 
     def _setMarginType(self, marginType, symbol):
         try:

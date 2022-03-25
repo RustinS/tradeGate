@@ -19,7 +19,7 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
 
         if cancelIfNotOpened:
             if time.time() - startDelayTime > delayTimeSec:
-                gate.cancelOrder(symbol, orderId=orderId, futures=True)
+                gate.cancelOrder(symbol=symbol, orderId=orderId, futures=True)
                 break
 
         if order['status'] == 'NEW':
@@ -40,7 +40,7 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
                                                                  priceProtect=True, workingType='MARK_PRICE',
                                                                  timeInForce='GTC')
                 result = gate.makeBatchFuturesOrder([stopLossOrder, takeProfitOrder])
-                print(result)
+                # print(result)
                 break
         elif order['status'] == 'CANCELED':
             break
@@ -53,3 +53,8 @@ def watchFuturesLimitTrigger(gate, symbol, orderId, doPutTpSl, cancelIfNotOpened
         if float(position['entryPrice']) == 0.0:
             gate.cancelAllSymbolOpenOrders(symbol, futures=True)
             break
+
+# if __name__ == '__main__':
+#     print(sys.argv)
+#     time.sleep(3)
+#     with open('helloWorld.txt')

@@ -4,9 +4,104 @@ import time
 from binance.spot import Spot
 
 from Exchanges.BaseExchange import BaseExchange
-from TradeGates.Utils import BinanceHelpers
+from Utils import BinanceHelpers, DataHelpers
 from binance_f import RequestClient
 from binance_f.model.balance import Balance
+
+
+def isOrderDataValid(order: DataHelpers.OrderData):
+    if order.orderType not in BinanceExchange.spotOrderTypes:
+        return False
+
+    if order.side not in ['BUY', 'SELL']:
+        return False
+
+    if order.newOrderRespType not in [None, 'ACK', 'RESULT', 'FULL']:
+        return False
+
+    if order.timeInForce not in [None, 'GTC', 'IOC', 'FOK']:
+        return False
+
+    if order.orderType == 'LIMIT':
+        if not (order.timeInForce is None or order.quantity is None or order.price is None):
+            return True
+
+    elif order.orderType == 'MARKET':
+        if not (order.quantity is None and order.quoteOrderQty is None):
+            return True
+
+    elif order.orderType in ['STOP_LOSS', 'TAKE_PROFIT']:
+        if not (order.quantity is None or order.stopPrice is None):
+            return True
+
+    elif order.orderType in ['STOP_LOSS_LIMIT', 'TAKE_PROFIT_LIMIT']:
+        if not (
+                order.timeInForce is None or order.quantity is None or order.price is None or order.stopPrice is None):
+            return True
+
+    elif order.orderType == 'LIMIT_MAKER':
+        if not (order.quantity is None or order.price is None):
+            return True
+
+    return False
+
+
+def isFuturesOrderDataValid(order: DataHelpers.futuresOrderData):
+    if order.side not in ['BUY', 'SELL']:
+        return False
+
+    if order.orderType not in BinanceExchange.futuresOrderTypes:
+        return False
+
+    if order.positionSide not in [None, 'BOTH', 'LONG', 'SHORT']:
+        return False
+
+    if order.timeInForce not in [None, 'GTC', 'IOC', 'FOK', 'GTX']:
+        return False
+
+    if order.workingType not in [None, 'MARK_PRICE', 'CONTRACT_PRICE']:
+        return False
+
+    if order.newOrderRespType not in [None, 'ACK', 'RESULT']:
+        return False
+
+    if order.closePosition not in [None, True, False]:
+        return False
+
+    if order.callbackRate is not None and not (0.1 <= order.callbackRate <= 5):
+        return False
+
+    if order.priceProtect not in [None, True, False]:
+        return False
+
+    if order.closePosition is True and order.quantity is not None:
+        return False
+
+    if order.reduceOnly not in [None, True, False]:
+        return False
+
+    if order.closePosition is True and order.reduceOnly is True:
+        return False
+
+    if order.orderType == 'LIMIT':
+        if not (order.timeInForce is None or order.quantity is None or order.price is None):
+            return True
+
+    elif order.orderType == 'MARKET':
+        if order.quantity is not None:
+            return True
+
+    elif order.orderType in ['STOP', 'TAKE_PROFIT']:
+        if not (order.quantity is None or order.price is None or order.stopPrice is None):
+            return True
+
+    elif order.orderType in ['STOP_MARKET', 'TAKE_PROFIT_MARKET']:
+        if order.stopPrice is not None:
+            return True
+
+    elif order.orderType == 'TRAILING_STOP_MARKET':
+        if order.callbackRate is not None:
+            return True
 
 
 class BinanceExchange(BaseExchange):
@@ -82,7 +177,7 @@ class BinanceExchange(BaseExchange):
             return None
 
     def testSpotOrder(self, orderData):
-        if not BinanceHelpers.isOrderDataValid(orderData):
+        if not isOrderDataValid(orderData):
             raise ValueError('Incomplete data provided.')
 
         orderData.setTimestamp()
@@ -202,10 +297,10 @@ class BinanceExchange(BaseExchange):
             data = self._getSpotSymbolKlines(endTime, interval, limit, startTime, symbol)
 
         if convertDateTime or toCleanDataframe:
-            BinanceHelpers.klinesConvertDate(data)
+            BinanceHelpers.klinesConvertDate(data, self.timeIndexesInCandleData)
 
         if doClean or toCleanDataframe:
-            finalDataArray = BinanceHelpers.getKlinesDesiredOnlyCols(data)
+            finalDataArray = BinanceHelpers.getKlinesDesiredOnlyCols(data, self.desiredCandleDataIndexes)
 
             if toCleanDataframe:
                 return BinanceHelpers.klinesConvertToPandas(finalDataArray)
@@ -251,7 +346,7 @@ class BinanceExchange(BaseExchange):
             return None
 
     def testFuturesOrder(self, futuresOrderData):
-        if not BinanceHelpers.isFuturesOrderDataValid(futuresOrderData):
+        if not isFuturesOrderDataValid(futuresOrderData):
             raise ValueError('Incomplete data provided.')
         return futuresOrderData
 

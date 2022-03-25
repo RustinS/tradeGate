@@ -1,12 +1,40 @@
-from TradeGates.Exchanges.BaseExchange import BaseExchange
+from Exchanges.BaseExchange import BaseExchange
+
+from kucoin.client import User, Trade, Market
+from kucoin_futures.client import FuturesUser, FuturesTrade, FuturesMarket
 
 
 class KuCoinExchange(BaseExchange):
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
-        pass
+        self.apiKey = credentials['spot']['key']
+        self.secret = credentials['spot']['secret']
+        self.passphrase = credentials['spot']['passphrase']
+        self.sandbox = sandbox
+        self.unifiedInOuts = unifiedInOuts
+
+        if sandbox:
+            self.spotUser = User(key=self.apiKey, secret=self.secret, passphrase=self.passphrase, is_sandbox=True)
+            self.spotTrade = Trade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase, is_sandbox=True)
+            self.spotMarket = Market(key=self.apiKey, secret=self.secret, passphrase=self.passphrase, is_sandbox=True)
+
+            self.futuresUser = FuturesUser(key=self.apiKey, secret=self.secret, passphrase=self.passphrase,
+                                           is_sandbox=True)
+            self.futuresTrade = FuturesTrade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase,
+                                             is_sandbox=True)
+            self.futuresMarket = FuturesMarket(key=self.apiKey, secret=self.secret, passphrase=self.passphrase,
+                                               is_sandbox=True)
+        else:
+            self.spotUser = User(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+            self.spotTrade = Trade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+            self.spotMarket = Market(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+
+            self.futuresUser = FuturesUser(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+            self.futuresTrade = FuturesTrade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+            self.futuresMarket = FuturesMarket(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
 
     def getBalance(self, asset='', futures=False):
-        pass
+        if futures:
+            pass
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         pass

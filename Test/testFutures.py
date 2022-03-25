@@ -96,14 +96,15 @@ def testBatchFuturesOrders(getGates):
             assert False, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
 
 
-@pytest.mark.skip(reason="For Special Purposes")
+# @pytest.mark.skip(reason="For Special Purposes")
 def testFuturesTpSlLimitOrder(getGates):
     for gate in getGates:
         if gate.exchangeName.lower() != 'binance':
             continue
         try:
-            result = gate.makeSlTpLimitFuturesOrder(symbol='BTCUSDT', orderSide='BUY', quantity=1, enterPrice=39020,
-                                                    takeProfit=39500, stopLoss=38500, leverage=10,
+            result = gate.makeSlTpLimitFuturesOrder(symbol='ADAUSDT', orderSide='BUY', quantity=None, quoteQuantity=40,
+                                                    enterPrice=1.1649, takeProfit=1.1473, stopLoss=1.1974,
+                                                    leverage=10,
                                                     marginType='ISOLATED')
             # print('\nResult of TP-SL-Limit ordering from {} exchange: {}'.format(gate.exchangeName, result))
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)

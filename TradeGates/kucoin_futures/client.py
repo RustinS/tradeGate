@@ -4,19 +4,17 @@ from kucoin_futures.user.user import UserData
 from kucoin_futures.ws_token.token import GetToken
 
 
-class Market(MarketData):
+class FuturesMarket(MarketData):
     pass
 
 
-class User(UserData):
+class FuturesUser(UserData):
     pass
 
 
-class Trade(TradeData):
+class FuturesTrade(TradeData):
     pass
 
 
-class WsToken(GetToken):
+class FuturesWsToken(GetToken):
     pass
-
-
