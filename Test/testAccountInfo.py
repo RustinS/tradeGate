@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 @pytest.fixture
 def getGates():
     gates = []
-    with open('./config.json') as f:
+    with open('../config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
@@ -61,8 +61,8 @@ def testSingleCoinBalance(getGates):
 
 def testTradeHistory(getGates):
     for gate in getGates:
-        tradeHistory = gate.symbolAccountTradeHistory('BTCUSDT', futures=True)
-        # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHistory[0]))
+        tradeHistory = gate.symbolAccountTradeHistory('BTCUSDT', futures=False)
+        print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHistory))
 
         assert tradeHistory is not None, 'Problem in fetching trade history from {} exchange.'.format(gate.exchangeName)
 

@@ -709,7 +709,7 @@ class RestApiRequestImpl(object):
             data_list = json_wrapper.convert_2_array()
             for item in data_list.get_items():
                 element = Income.json_parse(item)
-                result.append(element)
+                result.append(element.toDict())
             return result
 
         request.json_parser = parse

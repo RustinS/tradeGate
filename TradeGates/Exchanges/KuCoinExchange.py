@@ -1,4 +1,5 @@
 from Exchanges.BaseExchange import BaseExchange
+from Utils import KuCoinHelpers
 
 from kucoin.client import User, Trade, Market
 from kucoin_futures.client import FuturesUser, FuturesTrade, FuturesMarket
@@ -6,38 +7,58 @@ from kucoin_futures.client import FuturesUser, FuturesTrade, FuturesMarket
 
 class KuCoinExchange(BaseExchange):
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
-        self.apiKey = credentials['spot']['key']
-        self.secret = credentials['spot']['secret']
-        self.passphrase = credentials['spot']['passphrase']
+        self.spotApiKey = credentials['spot']['key']
+        self.spotSecret = credentials['spot']['secret']
+        self.spotPassphrase = credentials['spot']['passphrase']
+
+        self.futuresApiKey = credentials['futures']['key']
+        self.futuresSecret = credentials['futures']['secret']
+        self.futuresPassphrase = credentials['futures']['passphrase']
+
         self.sandbox = sandbox
         self.unifiedInOuts = unifiedInOuts
 
         if sandbox:
-            self.spotUser = User(key=self.apiKey, secret=self.secret, passphrase=self.passphrase, is_sandbox=True)
-            self.spotTrade = Trade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase, is_sandbox=True)
-            self.spotMarket = Market(key=self.apiKey, secret=self.secret, passphrase=self.passphrase, is_sandbox=True)
+            self.spotUser = User(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
+                                 is_sandbox=True)
+            self.spotTrade = Trade(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
+                                   is_sandbox=True)
+            self.spotMarket = Market(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
+                                     is_sandbox=True)
 
-            self.futuresUser = FuturesUser(key=self.apiKey, secret=self.secret, passphrase=self.passphrase,
-                                           is_sandbox=True)
-            self.futuresTrade = FuturesTrade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase,
-                                             is_sandbox=True)
-            self.futuresMarket = FuturesMarket(key=self.apiKey, secret=self.secret, passphrase=self.passphrase,
-                                               is_sandbox=True)
+            self.futuresUser = FuturesUser(key=self.futuresApiKey, secret=self.futuresSecret,
+                                           passphrase=self.futuresPassphrase, is_sandbox=True)
+            self.futuresTrade = FuturesTrade(key=self.futuresApiKey, secret=self.futuresSecret,
+                                             passphrase=self.futuresPassphrase, is_sandbox=True)
+            self.futuresMarket = FuturesMarket(key=self.futuresApiKey, secret=self.futuresSecret,
+                                               passphrase=self.futuresPassphrase, is_sandbox=True)
         else:
-            self.spotUser = User(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
-            self.spotTrade = Trade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
-            self.spotMarket = Market(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+            self.spotUser = User(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase)
+            self.spotTrade = Trade(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase)
+            self.spotMarket = Market(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase)
 
-            self.futuresUser = FuturesUser(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
-            self.futuresTrade = FuturesTrade(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
-            self.futuresMarket = FuturesMarket(key=self.apiKey, secret=self.secret, passphrase=self.passphrase)
+            self.futuresUser = FuturesUser(key=self.futuresApiKey, secret=self.futuresSecret,
+                                           passphrase=self.futuresPassphrase)
+            self.futuresTrade = FuturesTrade(key=self.futuresApiKey, secret=self.futuresSecret,
+                                             passphrase=self.futuresPassphrase)
+            self.futuresMarket = FuturesMarket(key=self.futuresApiKey, secret=self.futuresSecret,
+                                               passphrase=self.futuresPassphrase)
 
-    def getBalance(self, asset='', futures=False):
+    def getBalance(self, asset=None, futures=False):
         if futures:
-            pass
+            raise NotImplementedError()
+        else:
+            if asset is None:
+                return KuCoinHelpers.unifyGetBalanceSpotOut(self.spotUser.get_account_list(currency=asset))
+            else:
+                return KuCoinHelpers.unifyGetBalanceSpotOut(self.spotUser.get_account_list(currency=asset),
+                                                            isSingle=True)
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
-        pass
+        if futures:
+            raise NotImplementedError()
+        else:
+            return self.spotTrade.get_fill_list(tradeType='TRADE', orderId=fromId)
 
     def testSpotOrder(self, orderData):
         pass

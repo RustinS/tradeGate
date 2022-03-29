@@ -561,3 +561,7 @@ class BybitExchange(BaseExchange):
 
         return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
                 'precisionStep': stepQuantity, 'stepPrice': stepPrice}
+
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+        pass

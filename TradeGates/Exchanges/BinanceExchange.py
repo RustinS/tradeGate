@@ -6,6 +6,7 @@ from binance.spot import Spot
 from Exchanges.BaseExchange import BaseExchange
 from Utils import BinanceHelpers, DataHelpers
 from binance_f import RequestClient
+from binance_f.exception.binanceapiexception import BinanceApiException
 from binance_f.model.balance import Balance
 
 
@@ -193,6 +194,32 @@ class BinanceExchange(BaseExchange):
         logging.info(response)
         return response
 
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
+                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                               newClientOrderId=None):
+
+        currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
+                                                 quantity,
+                                                 recvWindow, side, stopPrice, symbol, timeInForce)
+
+        self.testSpotOrder(currOrder)
+
+        return currOrder
+
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
+                                  recvWindow=None, extraParams=None):
+        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
+                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
+                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    symbol, timeInForce, workingType)
+
+        self.testFuturesOrder(currOrder)
+
+        return currOrder
+
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         try:
             if not futures:
@@ -372,8 +399,10 @@ class BinanceExchange(BaseExchange):
     def changeMarginType(self, symbol, marginType, params=None):
         if marginType not in ['ISOLATED', 'CROSSED']:
             raise ValueError('Margin type specified is not acceptable')
-
-        return self.futuresClient.change_margin_type(symbol=symbol, marginType=marginType)
+        try:
+            return self.futuresClient.change_margin_type(symbol=symbol, marginType=marginType)
+        except BinanceApiException:
+            pass
 
     def changePositionMargin(self, symbol, amount, marginType=None):
         if marginType not in ['ISOLATED', 'CROSSED']:
@@ -438,3 +467,63 @@ class BinanceExchange(BaseExchange):
                     symbolFilters = sym['filters']
                     return BinanceHelpers.extractSymbolInfoFromFilters(symbolFilters, tickerPrice)
             return None
+
+    def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
+        return self.futuresClient.get_income_history(symbol=symbol, incomeType=incomeType, startTime=startTime,
+                                                     endTime=endTime, limit=limit)
+
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+
+        quantity = self._getQuantity(enterPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
+        self._setLeverage(leverage, symbol)
+        self.changeMarginType(symbol, marginType)
+        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
+
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=str(quantity),
+                                                   price=str(enterPrice), timeInForce='GTC')
+
+        stopLossOrder = self.createAndTestFuturesOrder(symbol, tpSlOrderSide, 'STOP_MARKET',
+                                                       stopPrice=str(stopLoss), closePosition=True,
+                                                       priceProtect=True, workingType='MARK_PRICE',
+                                                       timeInForce='GTC')
+
+        takeProfitOrder = self.createAndTestFuturesOrder(symbol, tpSlOrderSide, 'TAKE_PROFIT_MARKET',
+                                                         stopPrice=str(takeProfit), closePosition=True,
+                                                         priceProtect=True, workingType='MARK_PRICE',
+                                                         timeInForce='GTC')
+
+        orderingResult = self.makeBatchFuturesOrder([mainOrder, stopLossOrder, takeProfitOrder])
+
+        orderIds = self._getTpSlLimitOrderIds(orderingResult)
+
+        return orderIds
+
+    @staticmethod
+    def _getQuantity(enterPrice, quantity, quoteQuantity, stepPrecision):
+        if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
+            raise ValueError('Specify either quantity or quoteQuantity and not both')
+        if quantity is None:
+            if float(stepPrecision) > 0.5:
+                quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 3)
+            else:
+                quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 2)
+        return quantity
+
+    def _setLeverage(self, leverage, symbol):
+        setLeverageResult = self.changeInitialLeverage(symbol, leverage)
+        if not (setLeverageResult['leverage'] == leverage):
+            raise ConnectionError('Could not change leverage.')
+
+    def _getTpSlLimitOrderIds(self, orderingResult):
+        orderIds = {}
+        for order in orderingResult:
+            if order['type'] == 'LIMIT':
+                orderIds['mainOrder'] = order['orderId']
+            elif order['type'] == 'STOP_MARKET':
+                orderIds['stopLoss'] = order['orderId']
+            elif order['type'] == 'TAKE_PROFIT_MARKET':
+                orderIds['takeProfit'] = order['orderId']
+        return orderIds

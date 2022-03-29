@@ -1,18 +1,19 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 
-import json
-import requests
-import hmac
-import hashlib
 import base64
+import hashlib
+import hmac
+import json
 import time
-from uuid import uuid1
 from urllib.parse import urljoin
+from uuid import uuid1
 
+import requests
 
 try:
     import pkg_resources
+
     version = 'v' + pkg_resources.get_distribution("kucoin-python").version
 except (ModuleNotFoundError, pkg_resources.DistributionNotFound):
     version = 'v1.0.0'
@@ -46,7 +47,7 @@ class KucoinBaseRestApi(object):
         self.passphrase = passphrase
         self.is_v1api = is_v1api
 
-    def _request(self, method, uri, timeout=5, auth=True, params=None):
+    def _request(self, method, uri, timeout=10, auth=True, params=None):
         uri_path = uri
         data_json = ''
         if method in ['GET', 'DELETE']:
@@ -88,7 +89,7 @@ class KucoinBaseRestApi(object):
                     "Content-Type": "application/json",
                     "KC-API-KEY-VERSION": "2"
                 }
-        headers["User-Agent"] = "kucoin-python-sdk/"+version
+        headers["User-Agent"] = "kucoin-python-sdk/" + version
         url = urljoin(self.url, uri)
 
         if method in ['GET', 'DELETE']:

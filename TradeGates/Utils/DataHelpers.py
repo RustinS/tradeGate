@@ -115,3 +115,64 @@ class futuresOrderData():
 
     def setExtraParams(self, extraParams):
         self.extraParams = extraParams
+
+
+def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
+                     stopPrice, symbol, timeInForce):
+    currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
+    if quantity is not None:
+        currOrder.setQuantity(quantity)
+    if price is not None:
+        currOrder.setPrice(price)
+    if timeInForce is not None:
+        currOrder.setTimeInForce(timeInForce)
+    if stopPrice is not None:
+        currOrder.setStopPrice(stopPrice)
+    if icebergQty is not None:
+        currOrder.setIcebergQty(icebergQty)
+    if newOrderRespType is not None:
+        currOrder.setNewOrderRespType(newOrderRespType)
+    if recvWindow is not None:
+        currOrder.setRecvWindow(recvWindow)
+    if newClientOrderId is not None:
+        currOrder.setNewClientOrderId(newClientOrderId)
+    return currOrder
+
+
+def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams, newClientOrderId,
+                        newOrderRespType, orderType, positionSide, price, priceProtect, quantity, recvWindow,
+                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType):
+    if extraParams is None:
+        extraParams = {}
+    currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
+    if positionSide is not None:
+        currOrder.setPositionSide(positionSide)
+    if timeInForce is not None:
+        currOrder.setTimeInForce(timeInForce)
+    if quantity is not None:
+        currOrder.setQuantity(quantity)
+    if reduceOnly is not None:
+        currOrder.setReduceOnly(reduceOnly)
+    if price is not None:
+        currOrder.setPrice(price)
+    if newClientOrderId is not None:
+        currOrder.setNewClientOrderId(newClientOrderId)
+    if stopPrice is not None:
+        currOrder.setStopPrice(stopPrice)
+    if closePosition is not None:
+        currOrder.setClosePosition(closePosition)
+    if activationPrice is not None:
+        currOrder.setActivationPrice(activationPrice)
+    if callbackRate is not None:
+        currOrder.setCallbackRate(callbackRate)
+    if workingType is not None:
+        currOrder.setWorkingType(workingType)
+    if priceProtect is not None:
+        currOrder.setPriceProtect(priceProtect)
+    if newOrderRespType is not None:
+        currOrder.setNewOrderRespType(newOrderRespType)
+    if recvWindow is not None:
+        currOrder.setRecvWindow(recvWindow)
+    if extraParams is not None:
+        currOrder.setExtraParams(extraParams)
+    return currOrder
