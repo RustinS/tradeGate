@@ -1,68 +1,81 @@
 {
-    "Binance": 
-    {
-        "exchangeName": "Binance",
-        "credentials": 
-        {
-            "main": 
-            {
-                "futures": 
-                {
-                    "key": "",
-                    "secret": ""
-                },
-                "spot": 
-                {
-                    "key": "",
-                    "secret": ""
-                }
-            },
-            "test": 
-            {
-                "futures": 
-                {
-                    "key": "b742488869cee733ae288ce5d179f51e9472ad9445c429ecfd5e003815abbeed",
-                    "secret": "4152bdfaf24fb4590b096a74cafac64160f5b3b9f72602e7062c5378703a0708"
-                },
-                "spot": 
-                {
-                    "key": "LTEmSiyJJUpKPade091zRGatGT0lNYGnY7Pecz1plp6f3bLtcowsJ6cJy5XlnTzf",
-                    "secret": "5YoUhU63CDJIHPsE9YVs0Za6y77cUkG3Txg7daxUvWKdRnFgBFjGABnklMVlUsLs"
-                }
-            }
+  "Binance": {
+    "exchangeName": "Binance",
+    "credentials": {
+      "main": {
+        "futures": {
+          "key": "",
+          "secret": ""
+        },
+        "spot": {
+          "key": "",
+          "secret": ""
         }
-    },
-    "ByBit": 
-    {
-        "exchangeName": "ByBit",
-        "credentials": 
-        {
-            "main": 
-            {
-                "futures": 
-                {
-                    "key": "",
-                    "secret": ""
-                },
-                "spot": 
-                {
-                    "key": "",
-                    "secret": ""
-                }
-            },
-            "test": 
-            {
-                "futures": 
-                {
-                    "key": "hS9QpUAQWqsM5QXCZV",
-                    "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
-                },
-                "spot": 
-                {
-                    "key": "hS9QpUAQWqsM5QXCZV",
-                    "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
-                }
-            }
+      },
+      "test": {
+        "futures": {
+          "key": "b742488869cee733ae288ce5d179f51e9472ad9445c429ecfd5e003815abbeed",
+          "secret": "4152bdfaf24fb4590b096a74cafac64160f5b3b9f72602e7062c5378703a0708"
+        },
+        "spot": {
+          "key": "LTEmSiyJJUpKPade091zRGatGT0lNYGnY7Pecz1plp6f3bLtcowsJ6cJy5XlnTzf",
+          "secret": "5YoUhU63CDJIHPsE9YVs0Za6y77cUkG3Txg7daxUvWKdRnFgBFjGABnklMVlUsLs"
         }
+      }
     }
+  },
+  "ByBit": {
+    "exchangeName": "ByBit",
+    "credentials": {
+      "main": {
+        "futures": {
+          "key": "",
+          "secret": ""
+        },
+        "spot": {
+          "key": "",
+          "secret": ""
+        }
+      },
+      "test": {
+        "futures": {
+          "key": "hS9QpUAQWqsM5QXCZV",
+          "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
+        },
+        "spot": {
+          "key": "hS9QpUAQWqsM5QXCZV",
+          "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
+        }
+      }
+    }
+  },
+  "KuCoin": {
+    "exchangeName": "KuCoin",
+    "credentials": {
+      "main": {
+        "futures": {
+          "key": "",
+          "secret": "",
+          "passphrase": ""
+        },
+        "spot": {
+          "key": "",
+          "secret": "",
+          "passphrase": ""
+        }
+      },
+      "test": {
+        "futures": {
+          "key": "624035ad41a5330001d12ab2",
+          "secret": "5eab5527-3fdc-4b35-b07b-d0193b4b1736",
+          "passphrase": "9512369"
+        },
+        "spot": {
+          "key": "624194e329c69200011e20c0",
+          "secret": "5e81fdf6-c146-44e7-8005-fe6c13523f5e",
+          "passphrase": "9512369"
+        }
+      }
+    }
+  }
 }
