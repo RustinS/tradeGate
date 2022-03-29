@@ -119,7 +119,7 @@ class futuresOrderData():
 
 def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
                      stopPrice, symbol, timeInForce):
-    currOrder = DataHelpers.OrderData(symbol.upper(), side.upper(), orderType.upper())
+    currOrder = OrderData(symbol.upper(), side.upper(), orderType.upper())
     if quantity is not None:
         currOrder.setQuantity(quantity)
     if price is not None:
@@ -144,7 +144,7 @@ def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParam
                         reduceOnly, side, stopPrice, symbol, timeInForce, workingType):
     if extraParams is None:
         extraParams = {}
-    currOrder = DataHelpers.futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
+    currOrder = futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
     if positionSide is not None:
         currOrder.setPositionSide(positionSide)
     if timeInForce is not None:
@@ -176,3 +176,26 @@ def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParam
     if extraParams is not None:
         currOrder.setExtraParams(extraParams)
     return currOrder
+
+
+def getQuantity(enterPrice, quantity, quoteQuantity, stepPrecision):
+    if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
+        raise ValueError('Specify either quantity or quoteQuantity and not both')
+    if quantity is None:
+        if float(stepPrecision) > 0.5:
+            quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 3)
+        else:
+            quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 2)
+    return quantity
+
+
+def getTpSlLimitOrderIds(orderingResult):
+    orderIds = {}
+    for order in orderingResult:
+        if order['type'] == 'LIMIT':
+            orderIds['mainOrder'] = order['orderId']
+        elif order['type'] == 'STOP_MARKET':
+            orderIds['stopLoss'] = order['orderId']
+        elif order['type'] == 'TAKE_PROFIT_MARKET':
+            orderIds['takeProfit'] = order['orderId']
+    return orderIds

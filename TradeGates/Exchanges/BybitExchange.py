@@ -193,6 +193,18 @@ class BybitExchange(BaseExchange):
 
         return BybitHelpers.getMakeSpotOrderOut(self.spotSession.place_active_order(**orderParams)['result'])
 
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
+                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                               newClientOrderId=None):
+
+        currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
+                                                 quantity,
+                                                 recvWindow, side, stopPrice, symbol, timeInForce)
+
+        self.testSpotOrder(currOrder)
+
+        return currOrder
+
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         if futures:
             historyList = []
@@ -451,6 +463,20 @@ class BybitExchange(BaseExchange):
             result = self.futuresSession.place_active_order(**orderParams)
             return BybitHelpers.futuresOrderOut(result['result'])
 
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
+                                  recvWindow=None, extraParams=None):
+        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
+                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
+                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    symbol, timeInForce, workingType)
+
+        self.testFuturesOrder(currOrder)
+
+        return currOrder
+
     def makeBatchFuturesOrder(self, futuresOrderDatas):
         batchOrders = []
         batchConditionalOrders = []
@@ -475,7 +501,7 @@ class BybitExchange(BaseExchange):
         return results
 
     def changeInitialLeverage(self, symbol, leverage):
-        return self.futuresSession.set_leverage(symbol=symbol, leverage=leverage)['result']
+        return self.futuresSession.set_leverage(symbol=symbol, buy_leverage=leverage, sell_leverage=leverage)
 
     def changeMarginType(self, symbol, marginType, params):
         try:
@@ -564,4 +590,28 @@ class BybitExchange(BaseExchange):
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
-        pass
+        if enterPrice is None or takeProfit is None or stopLoss is None or leverage is None or marginType is None:
+            raise ValueError('Specify all inputs.')
+
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+
+        quantity = DataHelpers.getQuantity(enterPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
+
+        self.setMarginLeverage(leverage, marginType, symbol)
+        orderParams = {
+            'takeProfit': takeProfit,
+            'stopLoss': stopLoss,
+            'tpTriggerBy': 'MarkPrice',
+            'slTriggerBy': 'MarkPrice'
+        }
+
+        futuresOrder = self.createAndTestFuturesOrder(symbol=symbol, side=orderSide, orderType='LIMIT',
+                                                      timeInForce='GTC', quantity=quantity, price=enterPrice,
+                                                      closePosition=False, extraParams=orderParams)
+        orderingResult = self.makeFuturesOrder(futuresOrder)
+        return orderingResult['orderId']
+
+    def setMarginLeverage(self, leverage, marginType, symbol):
+        params = {'buyLeverage': leverage, 'sellLeverage': leverage}
+        self.changeInitialLeverage(leverage, symbol)
+        self.changeMarginType(symbol, marginType, params)

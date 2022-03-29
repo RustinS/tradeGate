@@ -206,20 +206,6 @@ class BinanceExchange(BaseExchange):
 
         return currOrder
 
-    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
-                                  reduceOnly=None, price=None, newClientOrderId=None,
-                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
-                                  workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None):
-        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
-                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
-                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
-                                                    symbol, timeInForce, workingType)
-
-        self.testFuturesOrder(currOrder)
-
-        return currOrder
-
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         try:
             if not futures:
@@ -383,6 +369,20 @@ class BinanceExchange(BaseExchange):
         response = self.futuresClient.post_order(**params)
         return response.toDict()
 
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
+                                  recvWindow=None, extraParams=None):
+        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
+                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
+                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    symbol, timeInForce, workingType)
+
+        self.testFuturesOrder(currOrder)
+
+        return currOrder
+
     def makeBatchFuturesOrder(self, futuresOrderDatas):
         batchOrders = BinanceHelpers.makeBatchOrderData(futuresOrderDatas)
 
@@ -477,7 +477,7 @@ class BinanceExchange(BaseExchange):
 
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
 
-        quantity = self._getQuantity(enterPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
+        quantity = DataHelpers.getQuantity(enterPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
         self._setLeverage(leverage, symbol)
         self.changeMarginType(symbol, marginType)
         tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
@@ -497,33 +497,11 @@ class BinanceExchange(BaseExchange):
 
         orderingResult = self.makeBatchFuturesOrder([mainOrder, stopLossOrder, takeProfitOrder])
 
-        orderIds = self._getTpSlLimitOrderIds(orderingResult)
+        orderIds = DataHelpers.getTpSlLimitOrderIds(orderingResult)
 
         return orderIds
-
-    @staticmethod
-    def _getQuantity(enterPrice, quantity, quoteQuantity, stepPrecision):
-        if (quantity is not None and quoteQuantity is not None) or (quantity is None and quoteQuantity is None):
-            raise ValueError('Specify either quantity or quoteQuantity and not both')
-        if quantity is None:
-            if float(stepPrecision) > 0.5:
-                quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 3)
-            else:
-                quantity = round(quoteQuantity / enterPrice, len(str(float(stepPrecision))) - 2)
-        return quantity
 
     def _setLeverage(self, leverage, symbol):
         setLeverageResult = self.changeInitialLeverage(symbol, leverage)
         if not (setLeverageResult['leverage'] == leverage):
             raise ConnectionError('Could not change leverage.')
-
-    def _getTpSlLimitOrderIds(self, orderingResult):
-        orderIds = {}
-        for order in orderingResult:
-            if order['type'] == 'LIMIT':
-                orderIds['mainOrder'] = order['orderId']
-            elif order['type'] == 'STOP_MARKET':
-                orderIds['stopLoss'] = order['orderId']
-            elif order['type'] == 'TAKE_PROFIT_MARKET':
-                orderIds['takeProfit'] = order['orderId']
-        return orderIds
