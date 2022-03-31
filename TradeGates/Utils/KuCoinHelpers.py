@@ -63,3 +63,33 @@ def unifyTradeHistory(tradeHistory, futures=False):
                 'exchangeSpecific': trade
             })
         return unifiedTradeHistory
+
+
+def unifyRecentTrades(tradeHistory, futures=False):
+    unifiedTradeHistory = []
+
+    if futures:
+        for trade in tradeHistory:
+            unifiedTradeHistory.append({
+                'id': int(trade['sequence']),
+                'price': float(trade['price']),
+                'qty': float(trade['size']),
+                'quoteQty': float(trade['price']) * float(trade['size']),
+                'time': int(trade['ts'] / 1000),
+                'isBuyerMaker': None,
+                'exchangeSpecific': trade
+            })
+    else:
+        for trade in tradeHistory:
+            unifiedTradeHistory.append({
+                'id': int(trade['sequence']),
+                'price': float(trade['price']),
+                'qty': float(trade['size']),
+                'quoteQty': float(trade['price']) * float(trade['size']),
+                'time': int(trade['time'] / 1000),
+                'isBuyerMaker': None,
+                'isBestMatch': None,
+                'exchangeSpecific': trade
+            })
+
+    return unifiedTradeHistory

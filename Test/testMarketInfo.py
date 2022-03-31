@@ -33,16 +33,23 @@ def testTradingFees(getGates):
 
 def testRecentTrades(getGates):
     for gate in getGates:
-        symbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT')
-        # print('\nBTCUSDT recent trades from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice[0]))
+        if gate.exchangeName.lower() == 'kucoin':
+            symbolRecentPrice = gate.getSymbolRecentTrades('BTC-USDT')
+        else:
+            symbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT')
+
+        print('\nBTCUSDT recent trades from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice[0]))
 
         assert symbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(
             gate.exchangeName)
 
-        futuresSymbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT', futures=True)
-        # print(
-        #     '\nBTCUSDT futures recent trades from {} exchange: {}'.format(gate.exchangeName,
-        #                                                                   futuresSymbolRecentPrice[0]))
+        if gate.exchangeName.lower() == 'kucoin':
+            futuresSymbolRecentPrice = gate.getSymbolRecentTrades('XBTUSDTM', futures=True)
+        else:
+            futuresSymbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT', futures=True)
+        print(
+            '\nBTCUSDT futures recent trades from {} exchange: {}'.format(gate.exchangeName,
+                                                                          futuresSymbolRecentPrice[0]))
 
         assert futuresSymbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(
             gate.exchangeName)

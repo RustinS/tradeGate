@@ -49,7 +49,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def getTradingFees(self):
+    def getTradingFees(self, futures=False):
         pass
 
     @abstractmethod

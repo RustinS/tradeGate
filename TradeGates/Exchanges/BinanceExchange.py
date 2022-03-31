@@ -287,7 +287,7 @@ class BinanceExchange(BaseExchange):
             else:
                 raise ValueError(errorMessage)
 
-    def getTradingFees(self):
+    def getTradingFees(self, futures=False):
         try:
             return self.client.trade_fee()
         except Exception:

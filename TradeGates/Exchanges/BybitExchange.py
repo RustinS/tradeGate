@@ -348,7 +348,7 @@ class BybitExchange(BaseExchange):
 
             return BybitHelpers.getOrderOut(order)
 
-    def getTradingFees(self):
+    def getTradingFees(self, futures=False):
         raise NotImplementedError()
 
     def getSymbolTickerPrice(self, symbol, futures=False):

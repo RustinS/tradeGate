@@ -87,8 +87,21 @@ class KuCoinExchange(BaseExchange):
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         pass
 
-    def getTradingFees(self):
-        pass
+    def getTradingFees(self, symbol=None, futures=False):
+        if futures:
+            if symbol is None:
+                raise ValueError('Must specify futures contract symbol name.')
+            contractInfo = self.futuresMarket.get_contract_detail(symbol=symbol)
+            return {
+                'symbol': contractInfo['symbol'],
+                'takerFeeRate': contractInfo['takerFeeRate'],
+                'makerFeeRate': contractInfo['makerFeeRate']
+            }
+        else:
+            if symbol is None:
+                return self.spotUser.get_base_fee()['data']
+            else:
+                return self.spotUser.get_actual_fee(symbols=[symbol])['data']
 
     def getSymbolTickerPrice(self, symbol, futures=False):
         pass
@@ -138,7 +151,12 @@ class KuCoinExchange(BaseExchange):
         pass
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
-        pass
+        if futures:
+            tradeHistory = self.futuresMarket.get_trade_history(symbol=symbol)
+            return KuCoinHelpers.unifyRecentTrades(tradeHistory, futures=True)
+        else:
+            tradeHistory = self.spotMarket.get_trade_histories(symbol=symbol)
+            return KuCoinHelpers.unifyRecentTrades(tradeHistory)
 
     def getPositionInfo(self, symbol=None):
         pass

@@ -174,3 +174,30 @@ def testCancelingOrder(getGates):
         result = gate.getOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'], futures=True)
         assert result['status'] in ['CANCELED', 'Cancelled'], \
             'Problem in canceling specified Open Orders from {} exchange.'.format(gate.exchangeName)
+
+
+def testFuturesTradeHistory(getGates):
+    for gate in getGates:
+        if gate.exchangeName.lower() == 'kucoin':
+            tradeHistory = gate.symbolAccountTradeHistory('XBTUSDTM', futures=True)
+        else:
+            tradeHistory = gate.symbolAccountTradeHistory('BTCUSDT', futures=True)
+        # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHistory))
+
+        assert tradeHistory is not None, 'Problem in fetching trade history from {} exchange.'.format(gate.exchangeName)
+
+        interface = ['symbol', 'id', 'orderId', 'orderListId', 'price', 'qty', 'quoteQty', 'commission',
+                     'commissionAsset', 'time',
+                     'isBuyer', 'isMaker', 'isBestMatch']
+
+        errorMessage = 'Bad fetch trade history interface for {} exchange,'.format(gate.exchangeName)
+        try:
+            if not gate.exchangeName == 'Binance':
+                interface.append('exchangeSpecific')
+                if not sorted(list(tradeHistory[0].keys())) == sorted(interface):
+                    assert False, errorMessage
+            else:
+                if not sorted(list(tradeHistory[0].keys())) == sorted(interface):
+                    assert False, errorMessage
+        except Exception:
+            assert False, errorMessage
