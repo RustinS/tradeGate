@@ -58,12 +58,18 @@ class KuCoinExchange(BaseExchange):
         if futures:
             raise NotImplementedError()
         else:
-            return self.spotTrade.get_fill_list(tradeType='TRADE', orderId=fromId)
+
+            return KuCoinHelpers.unifyTradeHistory(self.spotTrade.get_fill_list(tradeType='TRADE')['items'])
 
     def testSpotOrder(self, orderData):
         pass
 
     def makeSpotOrder(self, orderData):
+        pass
+
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
+                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                               newClientOrderId=None):
         pass
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
@@ -103,6 +109,13 @@ class KuCoinExchange(BaseExchange):
     def makeFuturesOrder(self, futuresOrderData):
         pass
 
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
+                                  recvWindow=None, extraParams=None):
+        pass
+
     def makeBatchFuturesOrder(self, futuresOrderDatas):
         pass
 
@@ -131,4 +144,8 @@ class KuCoinExchange(BaseExchange):
         pass
 
     def getSymbolMinTrade(self, symbol, futures=False):
+        pass
+
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
         pass

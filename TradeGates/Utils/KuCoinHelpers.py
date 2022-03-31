@@ -35,3 +35,31 @@ def getAssetIndexInList(assetName, allAssets):
         if assetName == allAssets[i]['asset']:
             return i
     return -1
+
+
+def unifyTradeHistory(tradeHistory, futures=False):
+    unifiedTradeHistory = []
+
+    if futures:
+        pass
+    else:
+        for trade in tradeHistory:
+            isBuyer = True if trade['liquidity'] == 'taker' else False
+            isMaker = True if trade['liquidity'] == 'maker' else False
+            unifiedTradeHistory.append({
+                'symbol': trade['symbol'],
+                'id': trade['tradeId'],
+                'orderId': trade['orderId'],
+                'orderListId': -1,
+                'price': trade['price'],
+                'qty': trade['size'],
+                'quoteQty': trade['funds'],
+                'commission': trade['fee'],
+                'commissionAsset': trade['feeCurrency'],
+                'time': trade['createdAt'],
+                'isBuyer': isBuyer,
+                'isMaker': isMaker,
+                'isBestMatch': None,
+                'exchangeSpecific': trade
+            })
+        return unifiedTradeHistory

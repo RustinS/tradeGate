@@ -61,8 +61,11 @@ def testSingleCoinBalance(getGates):
 
 def testTradeHistory(getGates):
     for gate in getGates:
-        tradeHistory = gate.symbolAccountTradeHistory('BTCUSDT', futures=False)
-        print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHistory))
+        if gate.exchangeName.lower() == 'kucoin':
+            tradeHistory = gate.symbolAccountTradeHistory('BTC-USDT', futures=False)
+        else:
+            tradeHistory = gate.symbolAccountTradeHistory('BTCUSDT', futures=False)
+        # print('\nTrade history from {} exchange: {}'.format(gate.exchangeName, tradeHistory))
 
         assert tradeHistory is not None, 'Problem in fetching trade history from {} exchange.'.format(gate.exchangeName)
 

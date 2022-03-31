@@ -74,7 +74,7 @@ class TradeGate:
                                   workingType=None, priceProtect=None, newOrderRespType=None,
                                   recvWindow=None, extraParams=None):
 
-        return self.exchange.createAndTestFuturesOrder(self, symbol, side, orderType, positionSide, timeInForce,
+        return self.exchange.createAndTestFuturesOrder(symbol, side, orderType, positionSide, timeInForce,
                                                        quantity, reduceOnly, price, newClientOrderId, stopPrice,
                                                        closePosition, activationPrice, callbackRate, workingType,
                                                        priceProtect, newOrderRespType, recvWindow, extraParams)
