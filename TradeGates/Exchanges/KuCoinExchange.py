@@ -1,11 +1,22 @@
+import time
+from datetime import datetime
+
+import pandas as pd
+
 from Exchanges.BaseExchange import BaseExchange
 from Utils import KuCoinHelpers
-
 from kucoin.client import User, Trade, Market
 from kucoin_futures.client import FuturesUser, FuturesTrade, FuturesMarket
 
 
 class KuCoinExchange(BaseExchange):
+    timeIntervals = ['1min', '3min', '5min', '15min', '30min', '1hour', '2hour', '4hour', '6hour', '8hour', '12hour',
+                     '1day', '1week']
+
+    timeIntervalTranslate = {'1m': '1min', '3m': '3min', '5m': '5min', '15m': '15min', '30m': '30min', '1h': '1hour',
+                             '2h': '2hour', '4h': '4hour', '6h': '6hour', '8h': '8hour', '12h': '12hour', '1d': '1day',
+                             '1w': '1week'}
+
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         self.spotApiKey = credentials['spot']['key']
         self.spotSecret = credentials['spot']['secret']
@@ -104,11 +115,169 @@ class KuCoinExchange(BaseExchange):
                 return self.spotUser.get_actual_fee(symbols=[symbol])['data']
 
     def getSymbolTickerPrice(self, symbol, futures=False):
-        pass
+        if futures:
+            return float(self.futuresMarket.get_ticker(symbol=symbol)['price'])
+        else:
+            return float(self.spotMarket.get_ticker(symbol=symbol)['price'])
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
+    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=500, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
-        pass
+        if interval not in KuCoinExchange.timeIntervals:
+            if interval in KuCoinExchange.timeIntervalTranslate.keys():
+                timeInterval = KuCoinExchange.timeIntervalTranslate[interval]
+            else:
+                raise ValueError('Time interval is not valid.')
+        else:
+            timeInterval = interval
+
+        if futures:
+            data = self._getFuturesSymbolKlines(endTime, timeInterval, limit, startTime, symbol)
+        else:
+            data = self._getSpotSymbolKlines(endTime, timeInterval, limit, startTime, symbol)
+
+        if convertDateTime or toCleanDataframe:
+            if futures:
+                for datum in data:
+                    datum.append(datum[-1])
+                    datum[-1] = datetime.fromtimestamp((float(datum[0]) - 1) / 1000)
+                    datum[0] = datetime.fromtimestamp(float(datum[0]) / 1000)
+                    datum.append(None)
+            else:
+                for datum in data:
+                    datum.append(datum[-1])
+                    datum[-2] = datetime.fromtimestamp(float(datum[0]) - 1)
+                    datum[0] = datetime.fromtimestamp(float(datum[0]))
+
+        if doClean or toCleanDataframe:
+            if toCleanDataframe:
+                cleanDataFrame = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume',
+                                                             'closeDate', 'tradesNum'])
+                cleanDataFrame.set_index('date', inplace=True)
+                return cleanDataFrame
+            return data
+        else:
+            return data
+
+    def _getSpotSymbolKlines(self, endTime, timeInterval, limit, startTime, symbol):
+        if limit is None:
+            if startTime is None:
+                if endTime is None:
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval)
+                else:
+                    raise ValueError('Can\'t use endTime without limit.')
+            else:
+                if endTime is None:
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime)
+                else:
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime,
+                                                     endAt=endTime)
+        else:
+            if startTime is None:
+                if endTime is None:
+                    startAt = int(time.time()) - limit * self._getTimeIntervalInSeconds(timeInterval)
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startAt,
+                                                     endAt=int(time.time()))
+                else:
+                    startAt = endTime - limit * self._getTimeIntervalInSeconds(timeInterval)
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startAt,
+                                                     endAt=endTime)
+            else:
+                if endTime is None:
+                    endAt = startTime + limit * self._getTimeIntervalInSeconds(timeInterval)
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime,
+                                                     endAt=endAt)
+                else:
+                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime,
+                                                     endAt=endTime)
+        return data[::-1]
+
+    def _getFuturesSymbolKlines(self, endTime, timeInterval, limit, startTime, symbol):
+        granularity = int(self._getTimeIntervalInSeconds(timeInterval) / 60)
+        if limit is None:
+            if startTime is None:
+                if endTime is None:
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity)
+                else:
+                    endTime = endTime - endTime % (granularity * 60)
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             end_t=endTime * 1000)
+            else:
+                if endTime is None:
+                    startTime = startTime - startTime % (granularity * 60)
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             begin_t=startTime * 1000)
+                else:
+                    endTime = endTime - endTime % (granularity * 60)
+                    startTime = startTime - startTime % (granularity * 60)
+
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+        else:
+            if startTime is None:
+                if endTime is None:
+                    endTime = int(time.time())
+                    endTime = endTime - endTime % (granularity * 60)
+
+                    startAt = endTime - limit * granularity * 60
+                    startAt = startAt - startAt % (granularity * 60)
+
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             begin_t=startAt * 1000)
+                else:
+                    endTime = endTime - endTime % (granularity * 60)
+
+                    startTime = endTime - limit * granularity * 60
+                    startTime = startTime - startTime % (granularity * 60)
+
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+            else:
+                if endTime is None:
+                    startTime = startTime - startTime % (granularity * 60)
+
+                    endTime = startTime + limit * granularity * 60
+                    endTime = endTime - endTime % (granularity * 60)
+
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+                else:
+                    startTime = startTime - startTime % (granularity * 60)
+                    endTime = endTime - endTime % (granularity * 60)
+
+                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
+                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+        return data
+
+    def _getTimeIntervalInSeconds(self, timeInterval):
+        if not timeInterval in self.timeIntervals:
+            raise ValueError('Time interval is not valid.')
+
+        if timeInterval == '1min':
+            return 60
+        elif timeInterval == '3min':
+            return 3 * 60
+        elif timeInterval == '5min':
+            return 5 * 60
+        elif timeInterval == '15min':
+            return 15 * 60
+        elif timeInterval == '30min':
+            return 40 * 60
+        elif timeInterval == '1hour':
+            return 3600
+        elif timeInterval == '2hour':
+            return 2 * 3600
+        elif timeInterval == '4hour':
+            return 4 * 3600
+        elif timeInterval == '6hour':
+            return 6 * 3600
+        elif timeInterval == '8hour':
+            return 8 * 3600
+        elif timeInterval == '12hour':
+            return 12 * 3600
+        elif timeInterval == '1day':
+            return 24 * 3600
+        elif timeInterval == '1week':
+            return 7 * 24 * 3600
 
     def getExchangeTime(self, futures=False):
         pass
