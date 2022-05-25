@@ -419,7 +419,10 @@ class BybitExchange(BaseExchange):
             startTimestamp = int(
                 datetime.now().timestamp() - BybitHelpers.getIntervalInSeconds(interval, self.timeIntervals) * limit)
         else:
-            startTimestamp = int(startTime.timestamp)
+            if isinstance(startTime, int):
+                startTimestamp = startTime
+            else:
+                startTimestamp = int(startTime.timestamp)
         candles = self.futuresSession.query_kline(symbol=symbol, interval=futuresInterval, from_time=startTimestamp,
                                                   limit=limit)
         for candle in candles['result']:

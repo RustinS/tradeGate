@@ -114,8 +114,13 @@ class TradeGate:
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
-        self.exchange.makeSlTpLimitFuturesOrder(symbol, orderSide, quantity, quoteQuantity, enterPrice,
-                                                takeProfit, stopLoss, leverage, marginType)
+        return self.exchange.makeSlTpLimitFuturesOrder(symbol, orderSide, quantity, quoteQuantity, enterPrice,
+                                                       takeProfit, stopLoss, leverage, marginType)
+
+    def makeSlTpMarketFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None,
+                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+        return self.exchange.makeSlTpMarketFuturesOrder(symbol, orderSide, quantity, quoteQuantity, takeProfit,
+                                                        stopLoss, leverage, marginType)
 
     def getPositionInfo(self, symbol=None):
         return self.exchange.getPositionInfo(symbol)
@@ -125,3 +130,12 @@ class TradeGate:
 
     def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
         return self.exchange.getIncomeHistory(symbol, incomeType, startTime, endTime, limit)
+
+    def getSymbolList(self, futures=True):
+        return self.exchange.getSymbolList(futures=futures)
+
+    def getSymbol24hChanges(self, futures=False):
+        return self.exchange.getSymbol24hChanges(futures=futures)
+
+    def getLatestSymbolNames(self, numOfSymbols=None, futures=True):
+        return self.exchange.getLatestSymbolNames(numOfSymbols=numOfSymbols, futures=futures)

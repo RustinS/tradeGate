@@ -54,14 +54,14 @@
     "credentials": {
       "main": {
         "futures": {
-          "key": "",
-          "secret": "",
-          "passphrase": ""
+          "key": "6289e85011239500016685c6",
+          "secret": "49d694ac-02ba-4c19-aae1-870b3ac579a5",
+          "passphrase": "9512369"
         },
         "spot": {
-          "key": "",
-          "secret": "",
-          "passphrase": ""
+          "key": "6289e85011239500016685c6",
+          "secret": "49d694ac-02ba-4c19-aae1-870b3ac579a5",
+          "passphrase": "9512369"
         }
       },
       "test": {

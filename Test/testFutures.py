@@ -112,6 +112,20 @@ def testFuturesTpSlLimitOrder(getGates):
             assert False, 'Problem in making new SL-TP-Limit order in {} exchange'.format(gate.exchangeName)
 
 
+def testFuturesTpSlMarketOrder(getGates):
+    for gate in getGates:
+        if gate.exchangeName.lower() != 'binance':
+            continue
+        try:
+            result = gate.makeSlTpMarketFuturesOrder(symbol='BTCUSDT', orderSide='BUY', quantity=None, quoteQuantity=40,
+                                                     takeProfit=47000, stopLoss=45000, leverage=10,
+                                                     marginType='ISOLATED')
+            print('\nResult of TP-SL-Market ordering from {} exchange: {}'.format(gate.exchangeName, result))
+            assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
+        except Exception:
+            assert False, 'Problem in making new SL-TP-Limit order in {} exchange'.format(gate.exchangeName)
+
+
 def testGetFuturesOpenOrders(getGates):
     for gate in getGates:
         symbolOpenOrders = gate.getOpenOrders('BTCUSDT', futures=True)
@@ -201,3 +215,13 @@ def testFuturesTradeHistory(getGates):
                     assert False, errorMessage
         except Exception:
             assert False, errorMessage
+
+
+def testFuturesSymbolList(getGates):
+    for gate in getGates:
+        if gate.exchangeName.lower() != 'binance':
+            continue
+        symbolList = gate.getSymbolList(futures=True)
+        print(symbolList)
+
+        assert symbolList != None

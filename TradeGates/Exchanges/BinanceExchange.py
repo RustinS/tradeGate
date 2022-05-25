@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import datetime
 
 from binance.spot import Spot
 
@@ -141,10 +142,10 @@ class BinanceExchange(BaseExchange):
         if not futures:
             try:
                 balances = self.client.account()['balances']
-            except Exception:
+            except Exception as e:
+                print(str(e))
                 return None
-
-            if asset == '':
+            if asset == '' or asset is None:
                 return balances
             else:
                 for balance in balances:
@@ -156,7 +157,7 @@ class BinanceExchange(BaseExchange):
             for balance in self.futuresClient.get_balance():
                 balances.append(balance.toDict())
 
-            if asset == '':
+            if asset == '' or asset is None:
                 return balances
             else:
                 for balance in balances:
@@ -501,7 +502,73 @@ class BinanceExchange(BaseExchange):
 
         return orderIds
 
+    def makeSlTpMarketFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, takeProfit=None,
+                                   stopLoss=None, leverage=None, marginType=None):
+
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+        marketPrice = self.getSymbolTickerPrice(symbol=symbol, futures=True)
+
+        quantity = DataHelpers.getQuantity(marketPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
+        self._setLeverage(leverage, symbol)
+        self.changeMarginType(symbol, marginType)
+        tpSlOrderSide = 'BUY' if orderSide.upper() == 'SELL' else 'SELL'
+
+        ordersList = []
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'MARKET', quantity=str(quantity))
+
+        ordersList.append(mainOrder)
+        has_tp = False
+        has_sl = False
+        if stopLoss is not None:
+            stopLossOrder = self.createAndTestFuturesOrder(symbol, tpSlOrderSide, 'STOP_MARKET',
+                                                           stopPrice=str(stopLoss), closePosition=True,
+                                                           priceProtect=True, workingType='MARK_PRICE',
+                                                           timeInForce='GTC')
+            ordersList.append(stopLossOrder)
+            has_sl = True
+
+        if takeProfit is not None:
+            takeProfitOrder = self.createAndTestFuturesOrder(symbol, tpSlOrderSide, 'TAKE_PROFIT_MARKET',
+                                                             stopPrice=str(takeProfit), closePosition=True,
+                                                             priceProtect=True, workingType='MARK_PRICE',
+                                                             timeInForce='GTC')
+            ordersList.append(takeProfitOrder)
+            has_tp = True
+
+        orderingResult = self.makeBatchFuturesOrder(ordersList)
+
+        orderIds = DataHelpers.getTpSlMarketOrderIds(orderingResult, has_sl=has_sl, has_tp=has_tp)
+        return orderIds
+
     def _setLeverage(self, leverage, symbol):
         setLeverageResult = self.changeInitialLeverage(symbol, leverage)
         if not (setLeverageResult['leverage'] == leverage):
             raise ConnectionError('Could not change leverage.')
+
+    def getSymbolList(self, futures=False):
+        if futures:
+            symbolNames = []
+            for symbolInfo in self.futuresClient.get_exchange_information().symbols:
+                symbolNames.append(symbolInfo.symbol)
+            return symbolNames
+
+    def getSymbol24hChanges(self, futures=False):
+        symbolDatas = []
+        if futures:
+            for symbolInfo in self.futuresClient.get_ticker_price_change_statistics():
+                symbolDatas.append((symbolInfo.symbol, symbolInfo.priceChangePercent))
+        else:
+            for symbolInfo in self.client.ticker_24hr():
+                symbolDatas.append((symbolInfo['symbol'], float(symbolInfo['priceChangePercent'])))
+        return sorted(symbolDatas, key=lambda x: x[1], reverse=True)
+
+    def getLatestSymbolNames(self, numOfSymbols=None, futures=False):
+        symbolDatas = []
+        if futures:
+            for symbolInfo in self.futuresClient.get_exchange_information().symbols:
+                symbolDatas.append((symbolInfo.symbol, datetime.fromtimestamp(float(symbolInfo.onboardDate) / 1000)))
+                symbolDatas.sort(key=lambda x: x[1], reverse=True)
+        else:
+            pass
+
+        return symbolDatas

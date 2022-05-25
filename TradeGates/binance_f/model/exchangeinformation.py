@@ -19,6 +19,7 @@ class Symbol:
     def __init__(self):
         self.symbol = ""
         self.status = ""
+        self.onboardDate = 0
         self.maintMarginPercent = 0.0
         self.requiredMarginPercent = 0.0
         self.baseAsset = ""
@@ -30,8 +31,6 @@ class Symbol:
         self.orderTypes = list()
         self.timeInForce = list()
         self.filters = list()
-
-
 
 
 class ExchangeInformation:
@@ -68,7 +67,7 @@ class ExchangeInformation:
             element.filterType = item.get_string("filterType")
             if element.filterType == "EXCHANGE_MAX_NUM_ORDERS":
                 element.maxNumOrders = item.get_int("maxNumOrders")
-            elif  element.filterType == "EXCHANGE_MAX_ALGO_ORDERS":
+            elif element.filterType == "EXCHANGE_MAX_ALGO_ORDERS":
                 element.maxNumAlgoOrders = item.get_int("maxNumAlgoOrders")
 
             element_list.append(element)
@@ -79,6 +78,7 @@ class ExchangeInformation:
         for item in data_list.get_items():
             element = Symbol()
             element.symbol = item.get_string("symbol")
+            element.onboardDate = item.get_int("onboardDate")
             element.status = item.get_string("status")
             element.maintMarginPercent = item.get_float("maintMarginPercent")
             element.requiredMarginPercent = item.get_float("requiredMarginPercent")
@@ -101,4 +101,3 @@ class ExchangeInformation:
         result.symbols = element_list
 
         return result
-

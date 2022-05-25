@@ -153,6 +153,10 @@ class KuCoinExchange(BaseExchange):
                 cleanDataFrame = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume',
                                                              'closeDate', 'tradesNum'])
                 cleanDataFrame.set_index('date', inplace=True)
+                cleanDataFrame[cleanDataFrame.columns[:5]] = cleanDataFrame[cleanDataFrame.columns[:5]].apply(
+                    pd.to_numeric, errors='coerce')
+                cleanDataFrame[cleanDataFrame.columns[-1]] = cleanDataFrame[cleanDataFrame.columns[-1]].apply(
+                    pd.to_numeric, errors='coerce')
                 return cleanDataFrame
             return data
         else:
@@ -280,7 +284,10 @@ class KuCoinExchange(BaseExchange):
             return 7 * 24 * 3600
 
     def getExchangeTime(self, futures=False):
-        pass
+        if futures:
+            return self.futuresMarket.get_server_timestamp()
+        else:
+            return self.spotMarket.get_server_timestamp()
 
     def getSymbol24hTicker(self, symbol):
         pass
@@ -317,7 +324,12 @@ class KuCoinExchange(BaseExchange):
         pass
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
-        pass
+        if futures:
+            orderBook = self.futuresMarket.l2_order_book(symbol)
+            return orderBook
+        else:
+            orderBook = self.spotMarket.get_aggregated_order(symbol)
+            return orderBook
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         if futures:
@@ -336,3 +348,35 @@ class KuCoinExchange(BaseExchange):
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
         pass
+
+    def getSymbol24hChanges(self, futures=False):
+        changesList = []
+        if futures:
+            for ticker in self.futuresMarket.get_contracts_list():
+                changesList.append((ticker['symbol'], float(ticker['priceChgPct']) * 100))
+        else:
+            for ticker in self.spotMarket.get_all_tickers()['ticker']:
+                changesList.append((ticker['symbol'], float(ticker['changeRate']) * 100))
+
+        return sorted(changesList, key=lambda x: x[1], reverse=True)
+
+    def getSymbolList(self, futures=False):
+        symbolNames = []
+        if futures:
+            for ticker in self.futuresMarket.get_contracts_list():
+                symbolNames.append(ticker['symbol'])
+        else:
+            for ticker in self.spotMarket.get_all_tickers()['ticker']:
+                symbolNames.append(ticker['symbol'])
+
+        return symbolNames
+
+    def getLatestSymbolNames(self, numOfSymbols=None, futures=False):
+        symbolDatas = []
+        if futures:
+            for symbolInfo in self.futuresMarket.get_contracts_list():
+                symbolDatas.append(
+                    (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
+                symbolDatas.sort(key=lambda x: x[1], reverse=True)
+        else:
+            pass

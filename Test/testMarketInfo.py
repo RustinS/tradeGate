@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 @pytest.fixture
 def getGates():
     gates = []
-    with open('./config.json') as f:
+    with open('../config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
@@ -38,7 +38,7 @@ def testRecentTrades(getGates):
         else:
             symbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT')
 
-        print('\nBTCUSDT recent trades from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice[0]))
+        # print('\nBTCUSDT recent trades from {} exchange: {}'.format(gate.exchangeName, symbolRecentPrice[0]))
 
         assert symbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(
             gate.exchangeName)
@@ -47,9 +47,9 @@ def testRecentTrades(getGates):
             futuresSymbolRecentPrice = gate.getSymbolRecentTrades('XBTUSDTM', futures=True)
         else:
             futuresSymbolRecentPrice = gate.getSymbolRecentTrades('BTCUSDT', futures=True)
-        print(
-            '\nBTCUSDT futures recent trades from {} exchange: {}'.format(gate.exchangeName,
-                                                                          futuresSymbolRecentPrice[0]))
+        # print(
+        #     '\nBTCUSDT futures recent trades from {} exchange: {}'.format(gate.exchangeName,
+        #                                                                   futuresSymbolRecentPrice[0]))
 
         assert futuresSymbolRecentPrice is not None, 'Problem in fetching symbol latest price from {} exchange.'.format(
             gate.exchangeName)
@@ -96,7 +96,7 @@ def testKlines(getGates):
             futuresData = gate.getSymbolKlines('XBTUSDTM', '15m', limit=10, futures=True, toCleanDataframe=True)
         else:
             futuresData = gate.getSymbolKlines('BTCUSDT', '15m', limit=10, futures=True, toCleanDataframe=True)
-        print('\nBTCUSDT futures candles from {} exchange: \n{}'.format(gate.exchangeName, futuresData))
+        # print('\nBTCUSDT futures candles from {} exchange: \n{}'.format(gate.exchangeName, futuresData))
 
         assert futuresData is not None, 'Problem in fetching futures market candle data from {} exchange.'.format(
             gate.exchangeName)

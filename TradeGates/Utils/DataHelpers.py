@@ -199,3 +199,24 @@ def getTpSlLimitOrderIds(orderingResult):
         elif order['type'] == 'TAKE_PROFIT_MARKET':
             orderIds['takeProfit'] = order['orderId']
     return orderIds
+
+
+def getTpSlMarketOrderIds(orderingResult, has_sl, has_tp):
+    orderIds = {}
+    for order in orderingResult:
+        if order['type'] == 'MARKET':
+            orderIds['mainOrder'] = order['orderId']
+        elif order['type'] == 'STOP_MARKET':
+            orderIds['stopLoss'] = order['orderId']
+        elif order['type'] == 'TAKE_PROFIT_MARKET':
+            orderIds['takeProfit'] = order['orderId']
+
+    if 'mainOrder' not in orderIds.keys():
+        raise Exception('Problem in main order')
+
+    if has_sl and 'stopLoss' not in orderIds.keys():
+        raise Exception('Problem in stop loss order')
+
+    if has_tp and 'takeProfit' not in orderIds.keys():
+        raise Exception('Problem in take profit order')
+    return orderIds
