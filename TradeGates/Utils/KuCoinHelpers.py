@@ -93,3 +93,42 @@ def unifyRecentTrades(tradeHistory, futures=False):
             })
 
     return unifiedTradeHistory
+
+
+def getSpotOrderAsDict(orderData):
+    params = {'side': orderData.side, 'symbol': orderData.symbol, 'type': orderData.orderType}
+
+    if orderData.newClientOrderId is not None:
+        params['clientOid']: orderData.newClientOrderId
+
+    if orderData.price is not None:
+        params['price']: orderData.price
+
+    if orderData.quantity is not None:
+        params['size']: orderData.quantity
+
+    if orderData.timeInForce is not None:
+        params['timeInForce']: orderData.timeInForce
+
+    if orderData.quoteOrderQty is not None:
+        if 'size' not in params.keys():
+            params['funds']: orderData.quoteOrderQty
+
+    if orderData.extraParams is not None:
+        if 'cancelAfter' in orderData.extraParams.keys():
+            params['cancelAfter'] = orderData.extraParams['cancelAfter']
+
+        if 'postOnly' in orderData.extraParams.keys():
+            params['postOnly'] = orderData.extraParams['postOnly']
+
+        if 'hidden' in orderData.extraParams.keys():
+            params['hidden'] = orderData.extraParams['hidden']
+
+        if 'iceberg' in orderData.extraParams.keys():
+            params['iceberg'] = orderData.extraParams['iceberg']
+
+        if 'visibleSize' in orderData.extraParams.keys():
+            params['visibleSize'] = orderData.extraParams['visibleSize']
+
+        if 'stopPrice' in orderData.extraParams.keys():
+            params['stopPrice'] = orderData.extraParams['stopPrice']

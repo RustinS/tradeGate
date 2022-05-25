@@ -17,19 +17,39 @@ def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
     if orderData.symbol is None:
         raise ValueError('Missing \'symbol\' field.')
 
-    if orderData.orderType is None or orderData.orderType not in ['limit', 'market', 'LIMIT', 'MARKET', 'Limit',
-                                                                  'Market']:
+    if orderData.orderType is None or orderData.orderType not in ['limit', 'market', 'stop', 'LIMIT', 'MARKET', 'STOP',
+                                                                  'Limit', 'Market', 'Stop']:
         raise ValueError('Missing \'type\' field.')
     orderData.orderType = orderData.orderType.lower()
 
     if orderData.orderType == 'market':
         if orderData.quantity is None and orderData.quoteOrderQty is None:
             raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
-    else:
+    elif orderData.orderType == 'limit':
         if orderData.price is None:
             raise ValueError('Missing \'price\' field for limit order type.')
         if orderData.quantity is None:
             raise ValueError('Missing \'quantity\' field for limit order type.')
+        if orderData.timeInForce not in ['GTC', 'GTT', 'IOC', 'FOK']:
+            raise ValueError('Invalid value for \'timeInForce\' specified')
+        if orderData.extraParams is not None:
+            if 'cancelAfter' in orderData.extraParams.keys():
+                if orderData.timeInForce != 'GTT':
+                    raise ValueError('\'cancelAfter\' field can only be used with \'GTT\' as \'timeInForce\' field.')
+
+            if 'postOnly' in orderData.extraParams.keys():
+                if orderData.timeInForce in ['IOC', 'FOK']:
+                    raise ValueError(
+                        '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
+    elif orderData.orderType == 'stop':
+        if orderData.extraParams is not None:
+            if 'stopPrice' not in orderData.extraParams.keys():
+                raise ValueError('Specify \'stopPrice\' in \'extraParams\' for stop order.')
+        else:
+            raise ValueError('Specify \'stopPrice\' in \'extraParams\' for stop order.')
+
+        if orderData.quantity is None:
+            raise ValueError('Missing \'quantity\' field for stop order type.')
         if orderData.timeInForce not in ['GTC', 'GTT', 'IOC', 'FOK']:
             raise ValueError('Invalid value for \'timeInForce\' specified')
         if orderData.extraParams is not None:
@@ -111,7 +131,19 @@ class KuCoinExchange(BaseExchange):
         return orderData
 
     def makeSpotOrder(self, orderData):
-        pass
+        params = KuCoinHelpers.getSpotOrderAsDict(orderData)
+        response = None
+
+        if params['type'] == 'market':
+            response = self.spotTrade.create_market_order(**params)
+        if params['type'] == 'limit':
+            response = self.spotTrade.create_limit_order(**params)
+        if params['type'] == 'stop' and 'price' in params.keys():
+            response = self.spotTrade.create_limit_stop_order(**params)
+        if params['type'] == 'stop' and 'price' not in params.keys():
+            response = self.spotTrade.create_market_stop_order(**params)
+
+        return response
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
                                stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
