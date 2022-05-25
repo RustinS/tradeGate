@@ -200,8 +200,7 @@ class BinanceExchange(BaseExchange):
                                newClientOrderId=None):
 
         currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
-                                                 quantity,
-                                                 recvWindow, side, stopPrice, symbol, timeInForce)
+                                                 quantity, recvWindow, side, stopPrice, symbol, timeInForce)
 
         self.testSpotOrder(currOrder)
 

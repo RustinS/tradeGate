@@ -4,9 +4,43 @@ from datetime import datetime
 import pandas as pd
 
 from Exchanges.BaseExchange import BaseExchange
-from Utils import KuCoinHelpers
+from Utils import KuCoinHelpers, DataHelpers
 from kucoin.client import User, Trade, Market
 from kucoin_futures.client import FuturesUser, FuturesTrade, FuturesMarket
+
+
+def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
+    if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
+        raise ValueError('Missing or incorrect \'side\' field.')
+    orderData.side = orderData.side.lower()
+
+    if orderData.symbol is None:
+        raise ValueError('Missing \'symbol\' field.')
+
+    if orderData.orderType is None or orderData.orderType not in ['limit', 'market', 'LIMIT', 'MARKET', 'Limit',
+                                                                  'Market']:
+        raise ValueError('Missing \'type\' field.')
+    orderData.orderType = orderData.orderType.lower()
+
+    if orderData.orderType == 'market':
+        if orderData.quantity is None and orderData.quoteOrderQty is None:
+            raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
+    else:
+        if orderData.price is None:
+            raise ValueError('Missing \'price\' field for limit order type.')
+        if orderData.quantity is None:
+            raise ValueError('Missing \'quantity\' field for limit order type.')
+        if orderData.timeInForce not in ['GTC', 'GTT', 'IOC', 'FOK']:
+            raise ValueError('Invalid value for \'timeInForce\' specified')
+        if orderData.extraParams is not None:
+            if 'cancelAfter' in orderData.extraParams.keys():
+                if orderData.timeInForce != 'GTT':
+                    raise ValueError('\'cancelAfter\' field can only be used with \'GTT\' as \'timeInForce\' field.')
+
+            if 'postOnly' in orderData.extraParams.keys():
+                if orderData.timeInForce in ['IOC', 'FOK']:
+                    raise ValueError(
+                        '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
 
 
 class KuCoinExchange(BaseExchange):
@@ -73,7 +107,8 @@ class KuCoinExchange(BaseExchange):
             return KuCoinHelpers.unifyTradeHistory(self.spotTrade.get_fill_list(tradeType='TRADE')['items'])
 
     def testSpotOrder(self, orderData):
-        pass
+        checkSpotOrderDataValid(orderData)
+        return orderData
 
     def makeSpotOrder(self, orderData):
         pass
@@ -81,7 +116,12 @@ class KuCoinExchange(BaseExchange):
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
                                stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
                                newClientOrderId=None):
-        pass
+        currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
+                                                 quantity, recvWindow, side, stopPrice, symbol, timeInForce)
+
+        self.testSpotOrder(currOrder)
+
+        return currOrder
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         pass

@@ -17,6 +17,7 @@ class OrderData():
         self.newOrderRespType = None
         self.recvWindow = None
         self.timestamp = None
+        self.extraParams = None
 
     def setTimeInForce(self, timeInForce):
         self.timeInForce = timeInForce
@@ -47,6 +48,9 @@ class OrderData():
 
     def setTimestamp(self):
         self.timestamp = time.time()
+
+    def setExtraParams(self, extraParams):
+        self.extraParams = extraParams
 
 
 class futuresOrderData():
@@ -118,7 +122,7 @@ class futuresOrderData():
 
 
 def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
-                     stopPrice, symbol, timeInForce):
+                     stopPrice, symbol, timeInForce, extraParams=None):
     currOrder = OrderData(symbol.upper(), side.upper(), orderType.upper())
     if quantity is not None:
         currOrder.setQuantity(quantity)
@@ -136,6 +140,8 @@ def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, 
         currOrder.setRecvWindow(recvWindow)
     if newClientOrderId is not None:
         currOrder.setNewClientOrderId(newClientOrderId)
+    if extraParams is not None:
+        currOrder.setExtraParams(extraParams)
     return currOrder
 
 
