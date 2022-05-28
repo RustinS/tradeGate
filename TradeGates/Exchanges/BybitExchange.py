@@ -618,3 +618,38 @@ class BybitExchange(BaseExchange):
         params = {'buyLeverage': leverage, 'sellLeverage': leverage}
         self.changeInitialLeverage(leverage, symbol)
         self.changeMarginType(symbol, marginType, params)
+
+    def getSymbol24hChanges(self, futures=False):
+        changesList = []
+        if futures:
+            for ticker in self.futuresMarket.get_contracts_list():
+                if ticker['status'] == 'Open':
+                    changesList.append((ticker['symbol'], float(ticker['priceChgPct']) * 100))
+        else:
+            symbolInfos = self.spotMarket.get_symbol_list()
+            for ticker in self.spotMarket.get_all_tickers()['ticker']:
+                if is_symbol_status_valid(ticker['symbol'], symbolInfos, futures=False):
+                    changesList.append((ticker['symbol'], float(ticker['changeRate']) * 100))
+
+        return sorted(changesList, key=lambda x: x[1], reverse=True)
+
+    def getSymbolList(self, futures=False):
+        symbolNames = []
+        if futures:
+            for ticker in self.futuresMarket.get_contracts_list():
+                symbolNames.append(ticker['symbol'])
+        else:
+            for ticker in self.spotMarket.get_all_tickers()['ticker']:
+                symbolNames.append(ticker['symbol'])
+
+        return symbolNames
+
+    def getLatestSymbolNames(self, numOfSymbols=None, futures=False):
+        symbolDatas = []
+        if futures:
+            for symbolInfo in self.futuresMarket.get_contracts_list():
+                symbolDatas.append(
+                    (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
+                symbolDatas.sort(key=lambda x: x[1], reverse=True)
+        else:
+            pass

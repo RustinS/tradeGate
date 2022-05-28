@@ -11,6 +11,24 @@ from binance_f.exception.binanceapiexception import BinanceApiException
 from binance_f.model.balance import Balance
 
 
+def is_symbol_status_valid(symbolName, symbolDatas, futures=False):
+    if futures:
+        for symbolData in symbolDatas:
+            if symbolData.symbol == symbolName:
+                if symbolData.status == 'TRADING':
+                    return True
+                else:
+                    return False
+    else:
+        for symbolData in symbolDatas:
+            if symbolData['symbol'] == symbolName:
+                if symbolData['status'] == 'TRADING':
+                    return True
+                else:
+                    return False
+    return False
+
+
 def isOrderDataValid(order: DataHelpers.OrderData):
     if order.orderType not in BinanceExchange.spotOrderTypes:
         return False
@@ -548,17 +566,22 @@ class BinanceExchange(BaseExchange):
         if futures:
             symbolNames = []
             for symbolInfo in self.futuresClient.get_exchange_information().symbols:
-                symbolNames.append(symbolInfo.symbol)
+                if symbolInfo.status == 'TRADING':
+                    symbolNames.append(symbolInfo.symbol)
             return symbolNames
 
     def getSymbol24hChanges(self, futures=False):
         symbolDatas = []
         if futures:
+            symbolStatus = self.futuresClient.get_exchange_information().symbols
             for symbolInfo in self.futuresClient.get_ticker_price_change_statistics():
-                symbolDatas.append((symbolInfo.symbol, symbolInfo.priceChangePercent))
+                if is_symbol_status_valid(symbolInfo.symbol, symbolStatus, futures=True):
+                    symbolDatas.append((symbolInfo.symbol, symbolInfo.priceChangePercent))
         else:
+            symbolStatus = self.client.exchange_info()['symbols']
             for symbolInfo in self.client.ticker_24hr():
-                symbolDatas.append((symbolInfo['symbol'], float(symbolInfo['priceChangePercent'])))
+                if is_symbol_status_valid(symbolInfo['symbol'], symbolStatus, futures=False):
+                    symbolDatas.append((symbolInfo['symbol'], float(symbolInfo['priceChangePercent'])))
         return sorted(symbolDatas, key=lambda x: x[1], reverse=True)
 
     def getLatestSymbolNames(self, numOfSymbols=None, futures=False):

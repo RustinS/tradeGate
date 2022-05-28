@@ -9,6 +9,24 @@ from kucoin.client import User, Trade, Market
 from kucoin_futures.client import FuturesUser, FuturesTrade, FuturesMarket
 
 
+def is_symbol_status_valid(symbolName, symbolDatas, futures=False):
+    if futures:
+        for symbolData in symbolDatas:
+            if symbolData.symbol == symbolName:
+                if symbolData.status == 'TRADING':
+                    return True
+                else:
+                    return False
+    else:
+        for symbolData in symbolDatas:
+            if symbolData['symbol'] == symbolName:
+                if symbolData['enableTrading']:
+                    return True
+                else:
+                    return False
+    return False
+
+
 def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
     if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
         raise ValueError('Missing or incorrect \'side\' field.')
@@ -425,10 +443,13 @@ class KuCoinExchange(BaseExchange):
         changesList = []
         if futures:
             for ticker in self.futuresMarket.get_contracts_list():
-                changesList.append((ticker['symbol'], float(ticker['priceChgPct']) * 100))
+                if ticker['status'] == 'Open':
+                    changesList.append((ticker['symbol'], float(ticker['priceChgPct']) * 100))
         else:
+            symbolInfos = self.spotMarket.get_symbol_list()
             for ticker in self.spotMarket.get_all_tickers()['ticker']:
-                changesList.append((ticker['symbol'], float(ticker['changeRate']) * 100))
+                if is_symbol_status_valid(ticker['symbol'], symbolInfos, futures=False):
+                    changesList.append((ticker['symbol'], float(ticker['changeRate']) * 100))
 
         return sorted(changesList, key=lambda x: x[1], reverse=True)
 
