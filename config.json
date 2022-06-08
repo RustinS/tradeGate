@@ -39,12 +39,12 @@
       },
       "test": {
         "futures": {
-          "key": "hS9QpUAQWqsM5QXCZV",
-          "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
+          "key": "qV8DOhUMhB4SZzYomr",
+          "secret": "xtF7Fkl8pqvikEu3YvdOjNnGdgXwMJexdlLD"
         },
         "spot": {
-          "key": "hS9QpUAQWqsM5QXCZV",
-          "secret": "0iRFgHjvpuuzyA30vfItOtobp1jvD1oA6Akj"
+          "key": "qV8DOhUMhB4SZzYomr",
+          "secret": "xtF7Fkl8pqvikEu3YvdOjNnGdgXwMJexdlLD"
         }
       }
     }
@@ -54,25 +54,25 @@
     "credentials": {
       "main": {
         "futures": {
-          "key": "6289e85011239500016685c6",
-          "secret": "49d694ac-02ba-4c19-aae1-870b3ac579a5",
-          "passphrase": "9512369"
+          "key": "",
+          "secret": "",
+          "passphrase": ""
         },
         "spot": {
-          "key": "6289e85011239500016685c6",
-          "secret": "49d694ac-02ba-4c19-aae1-870b3ac579a5",
-          "passphrase": "9512369"
+          "key": "",
+          "secret": "",
+          "passphrase": ""
         }
       },
       "test": {
         "futures": {
-          "key": "624035ad41a5330001d12ab2",
-          "secret": "5eab5527-3fdc-4b35-b07b-d0193b4b1736",
+          "key": "62a07be237a6090001988501",
+          "secret": "b40a7a43-6354-4bfb-b394-47351f70ecf8",
           "passphrase": "9512369"
         },
         "spot": {
-          "key": "624194e329c69200011e20c0",
-          "secret": "5e81fdf6-c146-44e7-8005-fe6c13523f5e",
+          "key": "62a07be237a6090001988501",
+          "secret": "b40a7a43-6354-4bfb-b394-47351f70ecf8",
           "passphrase": "9512369"
         }
       }

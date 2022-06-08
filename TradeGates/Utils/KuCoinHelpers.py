@@ -99,20 +99,20 @@ def getSpotOrderAsDict(orderData):
     params = {'side': orderData.side, 'symbol': orderData.symbol, 'type': orderData.orderType}
 
     if orderData.newClientOrderId is not None:
-        params['clientOid']: orderData.newClientOrderId
+        params['clientOid'] = orderData.newClientOrderId
 
     if orderData.price is not None:
-        params['price']: orderData.price
+        params['price'] = orderData.price
 
     if orderData.quantity is not None:
-        params['size']: orderData.quantity
+        params['size'] = orderData.quantity
 
     if orderData.timeInForce is not None:
-        params['timeInForce']: orderData.timeInForce
+        params['timeInForce'] = orderData.timeInForce
 
     if orderData.quoteOrderQty is not None:
         if 'size' not in params.keys():
-            params['funds']: orderData.quoteOrderQty
+            params['funds'] = orderData.quoteOrderQty
 
     if orderData.extraParams is not None:
         if 'cancelAfter' in orderData.extraParams.keys():
@@ -132,3 +132,5 @@ def getSpotOrderAsDict(orderData):
 
         if 'stopPrice' in orderData.extraParams.keys():
             params['stopPrice'] = orderData.extraParams['stopPrice']
+
+    return params

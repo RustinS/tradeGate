@@ -46,7 +46,7 @@ def testNewTestOrderBadOrderType(getGatesAndSymbolNames):
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
             res = gate.createAndTestSpotOrder(symbolName, 'SELL', 'LINIT', timeInForce='GTC', quantity=0.002,
-                                              price=49500)
+                                              price=30000)
             assert res is None, 'Bad order type and information provided. Must fail (Exchange: {})'.format(
                 gate.exchangeName)
         except Exception as e:
@@ -58,7 +58,7 @@ def testNewOrder(getGatesAndSymbolNames):
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=35000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=30000,
                                                         timeInForce='GTC')
             result = gate.makeSpotOrder(verifiedOrder)
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)

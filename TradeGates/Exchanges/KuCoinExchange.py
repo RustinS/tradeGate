@@ -174,7 +174,17 @@ class KuCoinExchange(BaseExchange):
         return currOrder
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
-        pass
+        if futures:
+            pass
+        else:
+            args = {}
+            if startTime is not None:
+                args['startAt'] = startTime
+            if endTime is not None:
+                args['endAt'] = endTime
+            args['symbol'] = symbol
+            orderList = self.spotTrade.get_order_list(**args)
+            return orderList
 
     def getOpenOrders(self, symbol, futures=False):
         pass
@@ -240,7 +250,7 @@ class KuCoinExchange(BaseExchange):
 
         if doClean or toCleanDataframe:
             if toCleanDataframe:
-                cleanDataFrame = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume',
+                cleanDataFrame = pd.DataFrame(data, columns=['date', 'open', 'close', 'high', 'low', 'volume',
                                                              'closeDate', 'tradesNum'])
                 cleanDataFrame.set_index('date', inplace=True)
                 cleanDataFrame[cleanDataFrame.columns[:5]] = cleanDataFrame[cleanDataFrame.columns[:5]].apply(
