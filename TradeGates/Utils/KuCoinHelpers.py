@@ -165,3 +165,13 @@ def unifyGetSymbolOrders(ordersList):
     for orderData in ordersList:
         unifiedOrdersList.append(unifyGetOrder(orderData))
     return unifiedOrdersList
+
+
+def unifyGetBestBidAsks(ticker, symbol):
+    return {
+        "symbol": symbol,
+        "bidPrice": ticker['bestBid'],
+        "bidQty": ticker['bestBidSize'],
+        "askPrice": ticker['bestAsk'],
+        "askQty": ticker['bestAskSize']
+    }

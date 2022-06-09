@@ -421,7 +421,7 @@ class KuCoinExchange(BaseExchange):
             return self.spotMarket.get_server_timestamp()
 
     def getSymbol24hTicker(self, symbol):
-        pass
+        return self.spotMarket.get_24h_stats(symbol)
 
     def testFuturesOrder(self, futuresOrderData):
         pass
@@ -451,8 +451,9 @@ class KuCoinExchange(BaseExchange):
     def getPosition(self):
         pass
 
-    def spotBestBidAsks(self, symbol=None):
-        pass
+    def spotBestBidAsks(self, symbol):
+        tickerData = self.spotMarket.get_ticker(symbol)
+        return KuCoinHelpers.unifyGetBestBidAsks(tickerData, symbol)
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
         if futures:
