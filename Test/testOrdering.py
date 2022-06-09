@@ -131,8 +131,6 @@ def testCancelingAllOpenOrders(getGatesAndSymbolNames):
 def testCancelingOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
-        if gate.exchangeName.lower() == 'binance':
-            continue
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
             verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=28000,
@@ -144,8 +142,8 @@ def testCancelingOrder(getGatesAndSymbolNames):
         result = gate.cancelOrder(symbol=symbolName, orderId=result['orderId'])
         result = gate.getOrder(symbol=symbolName, orderId=result['orderId'])
 
-        assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(
-            gate.exchangeName)
+        assert result['status'].upper() in ['CANCELED', 'CANCELLED'], \
+            'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
 
         try:
             verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=28000,
@@ -157,5 +155,5 @@ def testCancelingOrder(getGatesAndSymbolNames):
         result = gate.cancelOrder(symbol=symbolName, localOrderId=result['clientOrderId'])
         result = gate.getOrder(symbol=symbolName, orderId=result['orderId'])
 
-        assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(
-            gate.exchangeName)
+        assert result['status'].upper() in ['CANCELED', 'CANCELLED'], \
+            'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
