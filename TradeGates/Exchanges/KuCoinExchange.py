@@ -161,7 +161,7 @@ class KuCoinExchange(BaseExchange):
         if params['type'] == 'stop' and 'price' not in params.keys():
             response = self.spotTrade.create_market_stop_order(**params)
 
-        return response
+        return self.getOrder(params['symbol'], orderId=response['orderId'], futures=False)
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
                                stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
@@ -175,7 +175,7 @@ class KuCoinExchange(BaseExchange):
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         if futures:
-            pass
+            raise NotImplementedError()
         else:
             args = {}
             if startTime is not None:
@@ -188,7 +188,7 @@ class KuCoinExchange(BaseExchange):
 
     def getOpenOrders(self, symbol, futures=False):
         if futures:
-            pass
+            raise NotImplementedError()
         else:
             args = {}
             args['symbol'] = symbol
@@ -203,7 +203,17 @@ class KuCoinExchange(BaseExchange):
         pass
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
-        pass
+        if futures:
+            raise NotImplementedError()
+        else:
+            if orderId is not None:
+                orderData = self.spotTrade.get_order_details(orderId)
+            elif localOrderId is not None:
+                orderData = self.spotTrade.get_client_order_details(localOrderId)
+            else:
+                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+
+            return KuCoinHelpers.unifyGetOrder(orderData)
 
     def getTradingFees(self, symbol=None, futures=False):
         if futures:

@@ -139,7 +139,7 @@ def getSpotOrderAsDict(orderData):
 def unifyGetOrder(orderData):
     return {
         "symbol": orderData['symbol'],
-        "orderId": orderData['clientOid'],
+        "orderId": orderData['id'],
         "orderListId": -1,
         "clientOrderId": orderData['clientOid'],
         "price": orderData['price'],

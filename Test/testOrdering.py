@@ -93,9 +93,11 @@ def testGetOpenOrders(getGatesAndSymbolNames):
 def testGetOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.02, price=34000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.02, price=30000,
                                                         timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
