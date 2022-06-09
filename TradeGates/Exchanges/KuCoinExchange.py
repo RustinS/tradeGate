@@ -197,10 +197,24 @@ class KuCoinExchange(BaseExchange):
             return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
-        pass
+        if futures:
+            raise NotImplementedError()
+        else:
+            args = {'symbol': symbol}
+            result = self.spotTrade.cancel_all_orders(**args)
+            return result['cancelledOrderIds']
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
-        pass
+        if futures:
+            raise NotImplementedError()
+        else:
+            if orderId is not None:
+                result = self.spotTrade.cancel_order(orderId)
+            elif localOrderId is not None:
+                result = self.spotTrade.cancel_client_order(localOrderId)
+            else:
+                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+            return self.getOrder(symbol, orderId=result['cancelledOrderIds'], futures=False)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:

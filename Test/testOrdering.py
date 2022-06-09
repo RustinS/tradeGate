@@ -122,7 +122,7 @@ def testCancelingAllOpenOrders(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
-        gate.cancelAllSymbolOpenOrders(symbolName)
+        result = gate.cancelAllSymbolOpenOrders(symbolName)
 
         openOrders = gate.getOpenOrders(symbolName)
         assert len(openOrders) == 0, 'Problem in canceling all Open Orders in {} exchange.'.format(gate.exchangeName)
@@ -131,9 +131,11 @@ def testCancelingAllOpenOrders(getGatesAndSymbolNames):
 def testCancelingOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=35000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=28000,
                                                         timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
@@ -146,7 +148,7 @@ def testCancelingOrder(getGatesAndSymbolNames):
             gate.exchangeName)
 
         try:
-            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=35000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=28000,
                                                         timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
