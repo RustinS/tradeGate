@@ -69,6 +69,8 @@ def testNewOrder(getGatesAndSymbolNames):
 def testGetOrders(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
         symbolName = symbolNamesDict[gate.exchangeName]
         orders = gate.getSymbolOrders(symbolName, futures=False)
         # print('\nGetting order history for BTCUSDT symbol from {}: {}'.format(gate.exchangeName, orders[0]))
@@ -79,6 +81,8 @@ def testGetOrders(getGatesAndSymbolNames):
 def testGetOpenOrders(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
         symbolName = symbolNamesDict[gate.exchangeName]
         symbolOpenOrders = gate.getOpenOrders(symbolName)
         # print('\nGetting BTCUSDT open orders list from {} exchange: {}'.format(gate.exchangeName, symbolOpenOrders))

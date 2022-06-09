@@ -136,4 +136,5 @@ dmypy.json
 
 testingTradeGate.ipynb
 
-.config.json
+config.json
+/.idea

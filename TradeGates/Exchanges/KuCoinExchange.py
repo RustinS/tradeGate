@@ -183,11 +183,18 @@ class KuCoinExchange(BaseExchange):
             if endTime is not None:
                 args['endAt'] = endTime
             args['symbol'] = symbol
-            orderList = self.spotTrade.get_order_list(**args)
-            return orderList
+            orderList = self.spotTrade.get_order_list(**args)['items']
+            return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
     def getOpenOrders(self, symbol, futures=False):
-        pass
+        if futures:
+            pass
+        else:
+            args = {}
+            args['symbol'] = symbol
+            args['status'] = 'active'
+            orderList = self.spotTrade.get_order_list(**args)['items']
+            return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         pass

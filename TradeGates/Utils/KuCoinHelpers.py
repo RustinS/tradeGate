@@ -134,3 +134,34 @@ def getSpotOrderAsDict(orderData):
             params['stopPrice'] = orderData.extraParams['stopPrice']
 
     return params
+
+
+def unifyGetOrder(orderData):
+    return {
+        "symbol": orderData['symbol'],
+        "orderId": orderData['clientOid'],
+        "orderListId": -1,
+        "clientOrderId": orderData['clientOid'],
+        "price": orderData['price'],
+        "origQty": orderData['size'],
+        "executedQty": orderData['dealSize'],
+        "cummulativeQuoteQty": orderData['dealSize'],
+        "status": 'Cancelled' if orderData['cancelExist'] else 'New' if orderData['isActive'] else 'Filled',
+        "timeInForce": orderData['timeInForce'],
+        "type": orderData['type'],
+        "side": orderData['side'],
+        "stopPrice": orderData['stopPrice'],
+        "icebergQty": orderData['visibleSize'],
+        "time": orderData['createdAt'],
+        "updateTime": orderData['createdAt'],
+        "isWorking": orderData['isActive'],
+        "origQuoteOrderQty": orderData['dealFunds'],
+        "exchangeSpecific": orderData
+    }
+
+
+def unifyGetSymbolOrders(ordersList):
+    unifiedOrdersList = []
+    for orderData in ordersList:
+        unifiedOrdersList.append(unifyGetOrder(orderData))
+    return unifiedOrdersList

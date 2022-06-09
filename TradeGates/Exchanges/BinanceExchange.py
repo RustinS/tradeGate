@@ -225,18 +225,15 @@ class BinanceExchange(BaseExchange):
         return currOrder
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
-        try:
-            if not futures:
-                return self.client.get_orders(symbol, orderId=orderId, startTime=startTime, endTime=endTime,
-                                              limit=limit, timestamp=time.time())
-            else:
-                orders = []
-                for order in self.futuresClient.get_all_orders(symbol, orderId=orderId, startTime=startTime,
-                                                               endTime=endTime, limit=limit):
-                    orders.append(order.toDict())
-                return orders
-        except Exception:
-            return None
+        if not futures:
+            return self.client.get_orders(symbol, orderId=orderId, startTime=startTime, endTime=endTime,
+                                          limit=limit, timestamp=time.time())
+        else:
+            orders = []
+            for order in self.futuresClient.get_all_orders(symbol, orderId=orderId, startTime=startTime,
+                                                           endTime=endTime, limit=limit):
+                orders.append(order.toDict())
+            return orders
 
     def getOpenOrders(self, symbol, futures=False):
         try:
