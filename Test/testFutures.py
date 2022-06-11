@@ -38,11 +38,11 @@ def testFuturesBalance(getGates):
         assert balance is not None, 'Problem in futures balance from {} exchange.'.format(gate.exchangeName)
 
         try:
-            if not gate.exchangeName == 'Binance':
-                if not sorted(list(balance[0].keys())) == sorted(['asset', 'free', 'locked', 'exchangeSpecific']):
+            if gate.exchangeName != 'Binance':
+                if sorted(list(balance[0].keys())) != sorted(['asset', 'free', 'locked', 'exchangeSpecific']):
                     assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
             else:
-                if not sorted(list(balance[0].keys())) == sorted(['asset', 'free', 'locked']):
+                if sorted(list(balance[0].keys())) != sorted(['asset', 'free', 'locked']):
                     assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
         except:
             assert False, 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)
@@ -56,11 +56,11 @@ def testFuturesSingleCoinBalance(getGates):
             gate.exchangeName)
 
         try:
-            if not gate.exchangeName == 'Binance':
-                if not sorted(list(balance.keys())) == sorted(['asset', 'free', 'locked', 'exchangeSpecific']):
+            if gate.exchangeName != 'Binance':
+                if sorted(list(balance.keys())) != sorted(['asset', 'free', 'locked', 'exchangeSpecific']):
                     assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
             else:
-                if not sorted(list(balance.keys())) == sorted(['asset', 'free', 'locked']):
+                if sorted(list(balance.keys())) != sorted(['asset', 'free', 'locked']):
                     assert False, 'Bad fetch balance interface for {} exchange,'.format(gate.exchangeName)
         except:
             assert False, 'Bad fetch single coin balance interface for {} exchange,'.format(gate.exchangeName)

@@ -175,3 +175,19 @@ def unifyGetBestBidAsks(ticker, symbol):
         "askPrice": ticker['bestAsk'],
         "askQty": ticker['bestAskSize']
     }
+
+
+def unifyGetBalanceFuturesOut(data, isSingle=False):
+    if isSingle:
+        return {
+            'asset': data['currency'],
+            'free': data['availableBalance'],
+            'locked': data['positionMargin'],
+            'exchangeSpecific': data
+        }
+    else:
+        balances = []
+        for assetData in data:
+            balances.append({'asset': assetData['currency'], 'free': assetData['availableBalance'],
+                             'locked': assetData['positionMargin'], 'exchangeSpecific': assetData})
+        return balances

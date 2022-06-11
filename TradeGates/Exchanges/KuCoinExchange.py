@@ -129,7 +129,13 @@ class KuCoinExchange(BaseExchange):
 
     def getBalance(self, asset=None, futures=False):
         if futures:
-            raise NotImplementedError()
+            if asset is None:
+                return KuCoinHelpers.unifyGetBalanceFuturesOut([self.futuresUser.get_account_overview(),
+                                                                self.futuresUser.get_account_overview(currency='USDT')])
+            else:
+                return KuCoinHelpers.unifyGetBalanceFuturesOut(
+                    self.futuresUser.get_account_overview(currency=asset), isSingle=True)
+
         else:
             if asset is None:
                 return KuCoinHelpers.unifyGetBalanceSpotOut(self.spotUser.get_account_list(currency=asset))
@@ -433,8 +439,17 @@ class KuCoinExchange(BaseExchange):
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None):
-        pass
+                                  recvWindow=None, extraParams=None, leverage=None):
+        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
+                                                    newClientOrderId,
+                                                    newOrderRespType, orderType, positionSide, price, priceProtect,
+                                                    quantity, recvWindow,
+                                                    reduceOnly, side, stopPrice, symbol, timeInForce, workingType,
+                                                    leverage)
+
+        self.testSpotOrder(currOrder)
+
+        return currOrder
 
     def makeBatchFuturesOrder(self, futuresOrderDatas):
         pass

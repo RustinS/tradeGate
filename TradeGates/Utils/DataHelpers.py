@@ -74,6 +74,7 @@ class futuresOrderData():
         self.newOrderRespType = None
         self.recvWindow = None
         self.extraParams = None
+        self.leverage = None
 
     def setPositionSide(self, positionSide):
         self.positionSide = positionSide
@@ -120,6 +121,9 @@ class futuresOrderData():
     def setExtraParams(self, extraParams):
         self.extraParams = extraParams
 
+    def setLeverage(self, leverage):
+        self.leverage = leverage
+
 
 def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
                      stopPrice, symbol, timeInForce, extraParams=None):
@@ -147,7 +151,7 @@ def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, 
 
 def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams, newClientOrderId,
                         newOrderRespType, orderType, positionSide, price, priceProtect, quantity, recvWindow,
-                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType):
+                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType, leverage=None):
     if extraParams is None:
         extraParams = {}
     currOrder = futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
@@ -179,6 +183,8 @@ def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParam
         currOrder.setNewOrderRespType(newOrderRespType)
     if recvWindow is not None:
         currOrder.setRecvWindow(recvWindow)
+    if leverage is not None:
+        currOrder.setLeverage(leverage)
     if extraParams is not None:
         currOrder.setExtraParams(extraParams)
     return currOrder
