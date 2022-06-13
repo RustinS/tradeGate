@@ -554,7 +554,12 @@ class KuCoinExchange(BaseExchange):
             return KuCoinHelpers.unifyRecentTrades(tradeHistory)
 
     def getPositionInfo(self, symbol=None):
-        pass
+        if symbol is None:
+            positionInfos = self.futuresTrade.get_all_position()
+            return KuCoinHelpers.unifyGetPositionInfos(positionInfos)
+        else:
+            positionInfo = self.futuresTrade.get_position_details(symbol=symbol)
+            return [KuCoinHelpers.unifyGetPositionInfo(positionInfo)]
 
     def getSymbolMinTrade(self, symbol, futures=False):
         pass

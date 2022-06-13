@@ -103,7 +103,7 @@ def testFuturesOrder(getGatesAndSymbolNames):
                                                               price=24000, quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
         print('\nFuture ordering in {} exchange: {}'.format(gate.exchangeName, result))
-        assert result is not None, 'Problem in submiting futures order in {} exchange.'.format(gate.exchangeName)
+        assert result is not None, 'Problem in submitting futures order in {} exchange.'.format(gate.exchangeName)
 
 
 def testBatchFuturesOrders(getGatesAndSymbolNames):
@@ -177,7 +177,7 @@ def testGetPositionInformation(getGatesAndSymbolNames):
         symbolName = symbolNamesDict[gate.exchangeName]
         openPosition = gate.getPositionInfo(symbolName)
 
-        # print('\nOpen position information from {} exchange: {}'.format(gate.exchangeName, openPosition))
+        print('\nOpen position information from {} exchange: {}'.format(gate.exchangeName, openPosition))
 
         assert openPosition is not None, 'Problem in getting position information without symbol from {} exchange.'.format(
             gate.exchangeName)

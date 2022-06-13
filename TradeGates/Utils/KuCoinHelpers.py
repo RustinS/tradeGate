@@ -273,3 +273,68 @@ def getFuturesOrderAsDict(orderData):
             params['hidden'] = orderData.extraParams['hidden']
 
     return params
+
+
+def unifyGetPositionInfo(positionInfo):
+    hi = {
+        'id': '62a41fe7f1ee3000013a0c03',
+        'symbol': 'XBTUSDTM',
+        'autoDeposit': False,
+        'maintMarginReq': 0.025,
+        'riskLimit': 50000,
+        'realLeverage': 4.96,
+        'crossMode': False,
+        'delevPercentage': 1.0,
+        'openingTimestamp': 1655089350266,
+        'currentTimestamp': 1655116069153,
+        'currentQty': 10,
+        'currentCost': 240.0,
+        'currentComm': 0.02248549,
+        'unrealisedCost': 240.0,
+        'realisedGrossCost': 0.0,
+        'realisedCost': 0.02248549,
+        'isOpen': True,
+        'markPrice': 24039.25,
+        'markValue': 240.3925,
+        'posCost': 240.0,
+        'posCross': 0.0,
+        'posInit': 48.0,
+        'posComm': 0.1728,
+        'posLoss': 0.02551451,
+        'posMargin': 48.14728549,
+        'posMaint': 6.1968,
+        'maintMargin': 48.53978549,
+        'realisedGrossPnl': 0.0,
+        'realisedPnl': -0.07351451,
+        'unrealisedPnl': 0.3925,
+        'unrealisedPnlPcnt': 0.0016,
+        'unrealisedRoePcnt': 0.0082,
+        'avgEntryPrice': 24000.0,
+        'liquidationPrice': 19805.0,
+        'bankruptPrice': 19202.0,
+        'settleCurrency': 'USDT',
+        'maintainMargin': 0.025,
+        'riskLimitLevel': 1
+    }
+    return {
+        'entryPrice': positionInfo['avgEntryPrice'],
+        'isAutoAddMargin': positionInfo['autoDeposit'],
+        'leverage': positionInfo['realLeverage'],
+        'maxNotionalValue': None,
+        'liquidationPrice': positionInfo['liquidationPrice'],
+        'markPrice': positionInfo['markPrice'],
+        'positionAmt': positionInfo['currentQty'],
+        'symbol': positionInfo['symbol'],
+        'unrealizedProfit': positionInfo['unrealisedPnl'],
+        'marginType': 'cross' if positionInfo['crossMode'] else 'isolated',
+        'isolatedMargin': positionInfo['maintMargin'],
+        'positionSide': 'BOTH',
+        'exchangeSpecific': positionInfo
+    }
+
+
+def unifyGetPositionInfos(positionInfos):
+    posInfosList = []
+    for posInfo in positionInfos:
+        posInfosList.append(unifyGetPositionInfo(posInfo))
+    return posInfosList
