@@ -250,7 +250,9 @@ class KuCoinExchange(BaseExchange):
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         if futures:
-            raise NotImplementedError()
+            result = self.futuresTrade.cancel_all_limit_order(symbol)['cancelledOrderIds']
+            result.append(self.futuresTrade.cancel_all_stop_order(symbol)['cancelledOrderIds'])
+            return result
         else:
             args = {'symbol': symbol}
             result = self.spotTrade.cancel_all_orders(**args)
@@ -270,7 +272,14 @@ class KuCoinExchange(BaseExchange):
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:
-            raise NotImplementedError()
+            if orderId is not None:
+                orderData = self.futuresTrade.get_order_details(orderId)
+            elif localOrderId is not None:
+                orderData = self.futuresTrade.get_client_order_details(localOrderId)
+            else:
+                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+
+            return KuCoinHelpers.unifyGetOrder(orderData, futures=True)
         else:
             if orderId is not None:
                 orderData = self.spotTrade.get_order_details(orderId)
@@ -502,7 +511,7 @@ class KuCoinExchange(BaseExchange):
             result = self.futuresTrade.create_limit_order(symbol, side, leverage, size, price, **params)
         else:
             result = None
-        return result
+        return self.getOrder(symbol, orderId=result['orderId'], futures=True)
 
     def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
                                   reduceOnly=None, price=None, newClientOrderId=None,

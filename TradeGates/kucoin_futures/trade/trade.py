@@ -190,7 +190,7 @@ class TradeData(KucoinFuturesBaseRestApi):
             'bizNo': bizNo
         }
         return self._request('POST', '/api/v1/position/margin/deposit-margin', params=params)
-    
+
     def get_contracts_risk_limit(self, symbol):
         """
         https://docs.kucoin.cloud/futures/#obtain-futures-risk-limit-level
@@ -200,7 +200,7 @@ class TradeData(KucoinFuturesBaseRestApi):
         :return:
         """
         return self._request('GET', f'/api/v1/contracts/risk-limit/{symbol}')
-    
+
     def change_position_risk_limit_level(self, symbol, level):
         """
         https://docs.kucoin.com/futures/#adjust-risk-limit-level
@@ -216,7 +216,7 @@ class TradeData(KucoinFuturesBaseRestApi):
             'level': level,
         }
         return self._request('POST', '/api/v1/position/risk-limit-level/change', params=params)
-    
+
     def get_fills_details(self, symbol='', orderId='', side='', type='', startAt=None, endAt=None, **kwargs):
         """
         https://docs.kumex.com/#get-fills
@@ -403,8 +403,6 @@ class TradeData(KucoinFuturesBaseRestApi):
         :return:{'cancelledOrderIds': ['5d9ee77825aa3809494eac87']}
         """
         return self._request('DELETE', f'/api/v1/orders/{orderId}')
-
-
 
     def cancel_all_limit_order(self, symbol):
         """
@@ -638,5 +636,45 @@ class TradeData(KucoinFuturesBaseRestApi):
         """
         return self._request('GET', f'/api/v1/orders/{orderId}')
 
-
-
+    def get_client_order_details(self, clientOid):
+        """
+        https://docs.kumex.com/#get-details-of-a-single-order
+        Get a single order by client order id (including a stop order).
+        :param clientOid: str
+        :return:
+        {
+          "id": "5cdfc138b21023a909e5ad55", //Order ID
+          "symbol": "XBTUSDM",  //Ticker symbol of the contract
+          "type": "limit",   //Order type, market order or limit order
+          "side": "buy",  //Transaction side
+          "price": "3600",  //Order price
+          "size": 20000,  //Order quantity
+          "value": "56.1167227833",  //Order value
+          "dealValue": "56.1167227833",  //Value of the executed orders
+          "dealSize": 20000,  //Executed order quantity
+          "stp": "",  //Self trade prevention types
+          "stop": "",  //Stop order type (stop limit or stop market)
+          "stopPriceType": "",  //Trigger price type of stop orders
+          "stopTriggered": true,  //Mark to show whether the stop order is triggered
+          "stopPrice": null,  //Trigger price of stop orders
+          "timeInForce": "GTC",  //Time in force policy types
+          "postOnly": false,  //Mark of post only
+          "hidden": false,  //Mark of the hidden order
+          "iceberg": false,  //Mark of the iceberg order
+          "visibleSize": null,  //Visible size of the iceberg order
+          "leverage": "20",  //Leverage of the order
+          "forceHold": false,  //A mark to forcely hold the funds for an order
+          "closeOrder": false, //A mark to close the position
+          "reduceOnly": false,  //A mark to reduce the position size only
+          "clientOid": "5ce24c16b210233c36ee321d",  //Unique order id created by users to identify their orders
+          "remark": null,  //Remarks of the order
+          "isActive": false,  //Mark of the active orders
+          "cancelExist": false,  //Mark of the canceled orders
+          "createdAt": 1558167872000  //Time the order created
+          "settleCurrency": "XBT", //settlement currency
+          "status": "done", //order status: “open” or “done”
+          "updatedAt": 1558167872000, //last update time
+          "orderTime": 1558167872000000000 //order create time in nanosecond
+        }
+        """
+        return self._request('GET', f'/api/v1/orders/byClientOid?clientOid={clientOid}')

@@ -186,9 +186,16 @@ def testGetPositionInformation(getGatesAndSymbolNames):
 def testGetFuturesOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
+        if gate.exchangeName.lower() == 'bybit':
+            continue
         symbolName = symbolNamesDict[gate.exchangeName]
-        futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=40000,
-                                                          timeInForce='GTC', newClientOrderId=str(int(time.time())))
+        if gate.exchangeName.lower() == 'kucoin':
+            extraParams = {'leverage': 5}
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=20, extraParams=extraParams)
+        else:
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
         order = gate.getOrder(symbolName, orderId=result['orderId'], futures=True)
 
@@ -208,8 +215,13 @@ def testCancelingAllFuturesOpenOrders(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
-        futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', price=35000, quantity=0.002,
-                                                          timeInForce='GTC')
+        if gate.exchangeName.lower() == 'kucoin':
+            extraParams = {'leverage': 5}
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=20, extraParams=extraParams)
+        else:
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=0.002)
         gate.makeFuturesOrder(futuresOrderData)
 
         gate.cancelAllSymbolOpenOrders(symbolName, futures=True)
