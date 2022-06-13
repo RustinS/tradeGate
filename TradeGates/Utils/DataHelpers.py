@@ -151,7 +151,7 @@ def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, 
 
 def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams, newClientOrderId,
                         newOrderRespType, orderType, positionSide, price, priceProtect, quantity, recvWindow,
-                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType, leverage=None):
+                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType):
     if extraParams is None:
         extraParams = {}
     currOrder = futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
@@ -183,8 +183,8 @@ def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParam
         currOrder.setNewOrderRespType(newOrderRespType)
     if recvWindow is not None:
         currOrder.setRecvWindow(recvWindow)
-    if leverage is not None:
-        currOrder.setLeverage(leverage)
+    if 'leverage' in extraParams.keys():
+        currOrder.setLeverage(extraParams['leverage'])
     if extraParams is not None:
         currOrder.setExtraParams(extraParams)
     return currOrder

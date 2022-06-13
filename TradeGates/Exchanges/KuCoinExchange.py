@@ -81,6 +81,51 @@ def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
                         '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
 
 
+def checkFuturesOrderDataValid(orderData):
+    if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
+        raise ValueError('Missing or incorrect \'side\' field.')
+    orderData.side = orderData.side.lower()
+
+    if orderData.symbol is None:
+        raise ValueError('Missing \'symbol\' field.')
+
+    if orderData.orderType is None or orderData.orderType not in ['limit', 'market', 'LIMIT', 'MARKET', 'Limit',
+                                                                  'Market']:
+        raise ValueError('Missing \'type\' field.')
+    orderData.orderType = orderData.orderType.lower()
+
+    if orderData.leverage is None:
+        raise ValueError('Missing \'leverage\' field.')
+
+    if orderData.orderType == 'market':
+        if orderData.quantity is None and orderData.quoteOrderQty is None:
+            raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
+    elif orderData.orderType == 'limit':
+        if orderData.price is None:
+            raise ValueError('Missing \'price\' field for limit order type.')
+        if orderData.quantity is None:
+            raise ValueError('Missing \'quantity\' field for limit order type.')
+        if orderData.timeInForce not in ['GTC', 'IOC']:
+            raise ValueError('Invalid value for \'timeInForce\' specified')
+        if orderData.extraParams is not None:
+            if 'postOnly' in orderData.extraParams.keys():
+                if orderData.timeInForce in ['FOK']:
+                    raise ValueError('\'postOnly\' field can not be used with \'IOC\' as \'timeInForce\' field.')
+                if 'hidden' in orderData.extraParams.keys():
+                    raise ValueError('Can\'t use \'hidden\' with \'postOnly\'')
+                if 'iceberg' in orderData.extraParams.keys():
+                    raise ValueError('Can\'t use \'iceberg\' with \'postOnly\'')
+            if 'iceberg' in orderData.extraParams.keys():
+                if 'visibleSize' not in orderData.extraParams.keys():
+                    raise ValueError('Specify \'visibleSize\' with \'iceberg\' set as true')
+
+    if orderData.stopPrice is not None:
+        if 'stop' not in orderData.extraParams.key():
+            raise ValueError('Specify \'stop\' inside \'extraParams\'. Either \'down\' or \'up\'.')
+        if 'stopPriceType' not in orderData.extraParams.key():
+            raise ValueError('Specify \'stopPriceType\' inside \'extraParams\'. Either \'TP\', \'IP\' or \'MP\'.')
+
+
 class KuCoinExchange(BaseExchange):
     timeIntervals = ['1min', '3min', '5min', '15min', '30min', '1hour', '2hour', '4hour', '6hour', '8hour', '12hour',
                      '1day', '1week']
@@ -100,6 +145,8 @@ class KuCoinExchange(BaseExchange):
 
         self.sandbox = sandbox
         self.unifiedInOuts = unifiedInOuts
+
+        self.unavailableErrorText = 'This method is unavailable in KuCoin exchange'
 
         if sandbox:
             self.spotUser = User(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
@@ -193,12 +240,11 @@ class KuCoinExchange(BaseExchange):
             return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
     def getOpenOrders(self, symbol, futures=False):
+        args = {'symbol': symbol, 'status': 'active'}
         if futures:
-            raise NotImplementedError()
+            orderList = self.futuresTrade.get_order_list(**args)['items']
+            return KuCoinHelpers.unifyGetSymbolOrders(orderList, futures=True)
         else:
-            args = {}
-            args['symbol'] = symbol
-            args['status'] = 'active'
             orderList = self.spotTrade.get_order_list(**args)['items']
             return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
@@ -430,35 +476,56 @@ class KuCoinExchange(BaseExchange):
         return self.spotMarket.get_24h_stats(symbol)
 
     def testFuturesOrder(self, futuresOrderData):
-        pass
+        checkFuturesOrderDataValid(futuresOrderData)
 
     def makeFuturesOrder(self, futuresOrderData):
-        pass
+        params = KuCoinHelpers.getFuturesOrderAsDict(futuresOrderData)
+
+        symbol = params['symbol']
+        del params['symbol']
+
+        side = params['side']
+        del params['side']
+
+        leverage = params['leverage']
+        del params['leverage']
+
+        if params['type'] == 'market':
+            result = self.futuresTrade.create_market_order(symbol, side, leverage, **params)
+        elif params['type'] == 'limit':
+            size = params['size']
+            del params['size']
+
+            price = params['price']
+            del params['price']
+
+            result = self.futuresTrade.create_limit_order(symbol, side, leverage, size, price, **params)
+        else:
+            result = None
+        return result
 
     def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None, leverage=None):
+                                  recvWindow=None, extraParams=None):
         currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
-                                                    newClientOrderId,
-                                                    newOrderRespType, orderType, positionSide, price, priceProtect,
-                                                    quantity, recvWindow,
-                                                    reduceOnly, side, stopPrice, symbol, timeInForce, workingType,
-                                                    leverage)
+                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
+                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    symbol, timeInForce, workingType)
 
-        self.testSpotOrder(currOrder)
+        self.testFuturesOrder(currOrder)
 
         return currOrder
 
     def makeBatchFuturesOrder(self, futuresOrderDatas):
-        pass
+        raise NotImplementedError(self.unavailableErrorText)
 
     def changeInitialLeverage(self, symbol, leverage):
-        pass
+        raise NotImplementedError(self.unavailableErrorText)
 
     def changeMarginType(self, symbol, marginType, params):
-        pass
+        raise NotImplementedError(self.unavailableErrorText)
 
     def changePositionMargin(self, symbol, amount, marginType=None):
         pass

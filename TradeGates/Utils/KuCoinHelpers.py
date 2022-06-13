@@ -136,34 +136,60 @@ def getSpotOrderAsDict(orderData):
     return params
 
 
-def unifyGetOrder(orderData):
-    return {
-        "symbol": orderData['symbol'],
-        "orderId": orderData['id'],
-        "orderListId": -1,
-        "clientOrderId": orderData['clientOid'],
-        "price": orderData['price'],
-        "origQty": orderData['size'],
-        "executedQty": orderData['dealSize'],
-        "cummulativeQuoteQty": orderData['dealSize'],
-        "status": 'Cancelled' if orderData['cancelExist'] else 'New' if orderData['isActive'] else 'Filled',
-        "timeInForce": orderData['timeInForce'],
-        "type": orderData['type'],
-        "side": orderData['side'],
-        "stopPrice": orderData['stopPrice'],
-        "icebergQty": orderData['visibleSize'],
-        "time": orderData['createdAt'],
-        "updateTime": orderData['createdAt'],
-        "isWorking": orderData['isActive'],
-        "origQuoteOrderQty": orderData['dealFunds'],
-        "exchangeSpecific": orderData
-    }
+def unifyGetOrder(orderData, futures=False):
+    if futures:
+        return {'symbol': orderData['symbol'],
+                'orderId': orderData['id'],
+                'clientOrderId': orderData['clientOid'],
+                'transactTime': orderData['createdAt'],
+                'price': float(orderData['price']),
+                'origQty': float(orderData['size']) / float(orderData['price']),
+                'executedQty': float(orderData['filledSize']) / float(orderData['price']),
+                'cummulativeQuoteQty': float(orderData['filledSize']),
+                'status': 'CANCELLED' if orderData['cancelExist'] else 'NEW' if orderData['isActive'] else 'FILLED',
+                'timeInForce': orderData['timeInForce'],
+                'type': orderData['type'],
+                'side': orderData['side'],
+                'extraData': {'reduceOnly': orderData['reduceOnly'],
+                              'stopPrice': 0.0 if orderData['stopPrice'] is None else float(orderData['stopPrice']),
+                              'workingType': 'CONTRACT_PRICE',
+                              'avgPrice': float(orderData['price']),
+                              'origType': orderData['type'],
+                              'positionSide': 'BOTH',
+                              'activatePrice': None,
+                              'priceRate': None,
+                              'closePosition': orderData['closeOrder']
+                              },
+                'exchangeSpecific': orderData
+                }
+    else:
+        return {
+            "symbol": orderData['symbol'],
+            "orderId": orderData['id'],
+            "orderListId": -1,
+            "clientOrderId": orderData['clientOid'],
+            "price": orderData['price'],
+            "origQty": orderData['size'],
+            "executedQty": orderData['dealSize'],
+            "cummulativeQuoteQty": orderData['dealSize'],
+            "status": 'CANCELLED' if orderData['cancelExist'] else 'NEW' if orderData['isActive'] else 'FILLED',
+            "timeInForce": orderData['timeInForce'],
+            "type": orderData['type'],
+            "side": orderData['side'],
+            "stopPrice": orderData['stopPrice'],
+            "icebergQty": orderData['visibleSize'],
+            "time": orderData['createdAt'],
+            "updateTime": orderData['createdAt'],
+            "isWorking": orderData['isActive'],
+            "origQuoteOrderQty": orderData['dealFunds'],
+            "exchangeSpecific": orderData
+        }
 
 
-def unifyGetSymbolOrders(ordersList):
+def unifyGetSymbolOrders(ordersList, futures=False):
     unifiedOrdersList = []
     for orderData in ordersList:
-        unifiedOrdersList.append(unifyGetOrder(orderData))
+        unifiedOrdersList.append(unifyGetOrder(orderData, futures))
     return unifiedOrdersList
 
 
@@ -191,3 +217,59 @@ def unifyGetBalanceFuturesOut(data, isSingle=False):
             balances.append({'asset': assetData['currency'], 'free': assetData['availableBalance'],
                              'locked': assetData['positionMargin'], 'exchangeSpecific': assetData})
         return balances
+
+
+def getFuturesOrderAsDict(orderData):
+    params = {'side': orderData.side,
+              'symbol': orderData.symbol,
+              'type': orderData.orderType,
+              'leverage': orderData.extraParams['leverage']}
+
+    if orderData.newClientOrderId is not None:
+        params['clientOid'] = orderData.newClientOrderId
+    else:
+        params['clientOid'] = ''
+
+    if orderData.price is not None:
+        params['price'] = str(orderData.price)
+
+    if orderData.quantity is not None:
+        params['size'] = int(orderData.quantity)
+
+    if orderData.timeInForce is not None:
+        params['timeInForce'] = orderData.timeInForce
+
+    if orderData.stopPrice is not None:
+        params['stopPrice'] = orderData.stopPrice
+        params['stop'] = orderData.extraParams['stop']
+        params['stopPriceType'] = orderData.extraParams['stopPriceType']
+
+    if orderData.closePosition is not None:
+        params['closeOrder'] = orderData.closePosition
+
+    if orderData.extraParams is not None:
+        if 'postOnly' in orderData.extraParams.keys():
+            params['postOnly'] = orderData.extraParams['postOnly']
+
+        if 'hidden' in orderData.extraParams.keys():
+            params['hidden'] = orderData.extraParams['hidden']
+
+        if 'iceberg' in orderData.extraParams.keys():
+            params['iceberg'] = orderData.extraParams['iceberg']
+
+        if 'visibleSize' in orderData.extraParams.keys():
+            params['visibleSize'] = orderData.extraParams['visibleSize']
+
+        if 'reduceOnly' in orderData.extraParams.keys():
+            params['reduceOnly'] = orderData.extraParams['reduceOnly']
+
+        if 'forceHold' in orderData.extraParams.keys():
+            params['forceHold'] = orderData.extraParams['forceHold']
+
+        if 'postOnly' in orderData.extraParams.keys():
+            params['postOnly'] = orderData.extraParams['postOnly']
+
+        if 'hidden' in orderData.extraParams.keys():
+            params['hidden'] = orderData.extraParams['hidden']
+
+    return params
