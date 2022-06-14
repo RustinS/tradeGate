@@ -234,15 +234,41 @@ def testCancelingOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
-        futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', price=35000, quantity=0.002,
-                                                          timeInForce='GTC', newClientOrderId=str(int(time.time())))
+        if gate.exchangeName.lower() == 'kucoin':
+            extraParams = {'leverage': 5}
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=20, extraParams=extraParams,
+                                                              newClientOrderId=str(int(time.time())))
+        else:
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=0.002,
+                                                              newClientOrderId=str(int(time.time())))
+
+        result = gate.makeFuturesOrder(futuresOrderData)
+
+        gate.cancelOrder(symbol=symbolName, orderId=result['orderId'], futures=True)
+
+        result = gate.getOrder(symbol=symbolName, localOrderId=result['clientOrderId'], futures=True)
+        assert result['status'].lower() in ['canceled', 'cancelled'], \
+            'Problem in canceling specified open order by orderId from {} exchange.'.format(gate.exchangeName)
+
+        if gate.exchangeName.lower() == 'kucoin':
+            extraParams = {'leverage': 5}
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=20, extraParams=extraParams,
+                                                              newClientOrderId=str(int(time.time())))
+        else:
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=0.002,
+                                                              newClientOrderId=str(int(time.time())))
+
         result = gate.makeFuturesOrder(futuresOrderData)
 
         gate.cancelOrder(symbol=symbolName, localOrderId=result['clientOrderId'], futures=True)
 
         result = gate.getOrder(symbol=symbolName, localOrderId=result['clientOrderId'], futures=True)
-        assert result['status'] in ['CANCELED', 'Cancelled'], \
-            'Problem in canceling specified Open Orders from {} exchange.'.format(gate.exchangeName)
+        assert result['status'].lower() in ['canceled', 'cancelled'], \
+            'Problem in canceling specified open order by clientOrderId from {} exchange.'.format(gate.exchangeName)
 
 
 def testFuturesTradeHistory(getGatesAndSymbolNames):

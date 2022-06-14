@@ -260,7 +260,14 @@ class KuCoinExchange(BaseExchange):
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:
-            raise NotImplementedError()
+            if orderId is not None:
+                cancelledOrderId = self.futuresTrade.cancel_order(orderId)['cancelledOrderIds'][0]
+            elif localOrderId is not None:
+                orderData = self.getOrder(symbol=symbol, localOrderId=localOrderId, futures=True)
+                cancelledOrderId = self.futuresTrade.cancel_order(orderId=orderData['orderId'])['cancelledOrderIds'][0]
+            else:
+                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+            return self.getOrder(symbol, orderId=cancelledOrderId, futures=True)
         else:
             if orderId is not None:
                 cancelledOrderId = self.spotTrade.cancel_order(orderId)['cancelledOrderIds'][0]
