@@ -192,7 +192,8 @@ class KuCoinExchange(BaseExchange):
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         if futures:
-            raise NotImplementedError()
+            return KuCoinHelpers.unifyTradeHistory(self.futuresTrade.get_fills_details(symbol=symbol)['items'],
+                                                   futures=True)
         else:
 
             return KuCoinHelpers.unifyTradeHistory(self.spotTrade.get_fill_list(tradeType='TRADE')['items'])

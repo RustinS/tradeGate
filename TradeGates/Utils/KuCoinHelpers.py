@@ -41,7 +41,25 @@ def unifyTradeHistory(tradeHistory, futures=False):
     unifiedTradeHistory = []
 
     if futures:
-        pass
+        for trade in tradeHistory:
+            isBuyer = True if trade['liquidity'] == 'taker' else False
+            isMaker = True if trade['liquidity'] == 'maker' else False
+            unifiedTradeHistory.append({
+                'symbol': trade['symbol'],
+                'id': trade['tradeId'],
+                'orderId': trade['orderId'],
+                'orderListId': -1,
+                'price': trade['price'],
+                'qty': trade['value'],
+                'quoteQty': trade['size'],
+                'commission': trade['fee'],
+                'commissionAsset': trade['feeCurrency'],
+                'time': trade['tradeTime'],
+                'isBuyer': isBuyer,
+                'isMaker': isMaker,
+                'isBestMatch': None,
+                'exchangeSpecific': trade
+            })
     else:
         for trade in tradeHistory:
             isBuyer = True if trade['liquidity'] == 'taker' else False
@@ -62,7 +80,8 @@ def unifyTradeHistory(tradeHistory, futures=False):
                 'isBestMatch': None,
                 'exchangeSpecific': trade
             })
-        return unifiedTradeHistory
+
+    return unifiedTradeHistory
 
 
 def unifyRecentTrades(tradeHistory, futures=False):
