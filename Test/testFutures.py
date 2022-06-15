@@ -81,7 +81,7 @@ def testCreatingFuturesOrder(getGatesAndSymbolNames):
         symbolName = symbolNamesDict[gate.exchangeName]
         if gate.exchangeName.lower() == 'kucoin':
             extraParams = {'leverage': 5}
-            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002,
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.0001,
                                                               extraParams=extraParams)
         else:
             futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002)
@@ -302,6 +302,5 @@ def testFuturesSymbolList(getGatesAndSymbolNames):
         if gate.exchangeName.lower() != 'binance':
             continue
         symbolList = gate.getSymbolList(futures=True)
-        print(symbolList)
 
-        assert symbolList != None
+        assert symbolList is not None

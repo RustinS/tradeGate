@@ -253,7 +253,9 @@ def getFuturesOrderAsDict(orderData):
         params['price'] = str(orderData.price)
 
     if orderData.quantity is not None:
-        params['size'] = int(orderData.quantity)
+        params['size'] = float(orderData.quantity)
+    elif orderData.price is not None:
+        params['size'] = float(orderData.quoteOrderQty) / float(orderData.price)
 
     if orderData.timeInForce is not None:
         params['timeInForce'] = orderData.timeInForce
@@ -357,3 +359,21 @@ def unifyGetPositionInfos(positionInfos):
     for posInfo in positionInfos:
         posInfosList.append(unifyGetPositionInfo(posInfo))
     return posInfosList
+
+
+def unifyMinTrade(info, futures=False):
+    if futures:
+        params = {
+            'minQuantity': float(info['multiplier'] * info['lotSize']),
+            'precisionStep': float(info['multiplier'] * info['lotSize']),
+            'stepPrice': info['tickSize']
+        }
+        params['minQuoteQuantity'] = params['precisionStep'] * info['lastTradePrice']
+    else:
+        params = {
+            'minQuantity': info['baseMinSize'],
+            'minQuoteQuantity': info['quoteMinSize'],
+            'precisionStep': info['baseIncrement'],
+            'stepPrice': info['priceIncrement']
+        }
+    return params

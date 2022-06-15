@@ -229,7 +229,14 @@ class KuCoinExchange(BaseExchange):
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         if futures:
-            raise NotImplementedError()
+            args = {}
+            if startTime is not None:
+                args['startAt'] = startTime
+            if endTime is not None:
+                args['endAt'] = endTime
+            args['symbol'] = symbol
+            orderList = self.futuresTrade.get_order_list(**args)['items']
+            return KuCoinHelpers.unifyGetSymbolOrders(orderList, futures=True)
         else:
             args = {}
             if startTime is not None:
@@ -545,10 +552,15 @@ class KuCoinExchange(BaseExchange):
         raise NotImplementedError(self.unavailableErrorText)
 
     def changePositionMargin(self, symbol, amount, marginType=None):
-        pass
+        enResult = self.futuresTrade.modify_auto_deposit_margin(symbol, True)
+        if not enResult['data']:
+            raise Exception('Could not modify margin.')
+        newPosition = self.futuresTrade.add_margin_manually(symbol=symbol, margin=amount, bizNo=str(time.time()))
+
+        return KuCoinHelpers.unifyGetPositionInfo(newPosition)
 
     def getPosition(self):
-        pass
+        return self.futuresTrade.get_all_position()
 
     def spotBestBidAsks(self, symbol):
         tickerData = self.spotMarket.get_ticker(symbol)
@@ -579,7 +591,17 @@ class KuCoinExchange(BaseExchange):
             return [KuCoinHelpers.unifyGetPositionInfo(positionInfo)]
 
     def getSymbolMinTrade(self, symbol, futures=False):
-        pass
+        if futures:
+            contractInfos = self.futuresMarket.get_contract_detail(symbol)
+            return KuCoinHelpers.unifyMinTrade(contractInfos, futures=True)
+        else:
+            symbolInfoList = self.spotMarket.get_symbol_list()
+
+            symbolInfo = None
+            for info in symbolInfoList:
+                if info['symbol'] == symbol:
+                    symbolInfo = info
+            return KuCoinHelpers.unifyMinTrade(symbolInfo)
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
@@ -618,4 +640,4 @@ class KuCoinExchange(BaseExchange):
                     (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
                 symbolDatas.sort(key=lambda x: x[1], reverse=True)
         else:
-            pass
+            raise NotImplementedError()
