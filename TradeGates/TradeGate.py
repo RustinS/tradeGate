@@ -72,12 +72,13 @@ class TradeGate:
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None):
+                                  recvWindow=None, extraParams=None, quoteQuantity=None):
 
         return self.exchange.createAndTestFuturesOrder(symbol, side, orderType, positionSide, timeInForce,
                                                        quantity, reduceOnly, price, newClientOrderId, stopPrice,
                                                        closePosition, activationPrice, callbackRate, workingType,
-                                                       priceProtect, newOrderRespType, recvWindow, extraParams)
+                                                       priceProtect, newOrderRespType, recvWindow, extraParams,
+                                                       quoteQuantity=quoteQuantity)
 
     def makeFuturesOrder(self, futuresOrderData):
         return self.exchange.makeFuturesOrder(futuresOrderData)

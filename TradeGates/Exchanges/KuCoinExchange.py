@@ -83,8 +83,12 @@ def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
 
 def checkFuturesOrderDataValid(orderData):
     if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
-        raise ValueError('Missing or incorrect \'side\' field.')
-    orderData.side = orderData.side.lower()
+        if orderData.closePosition is None:
+            raise ValueError('Missing or incorrect \'side\' field.')
+        if not orderData.closePosition:
+            raise ValueError('Missing or incorrect \'side\' field.')
+    if orderData.side is not None:
+        orderData.side = orderData.side.lower()
 
     if orderData.symbol is None:
         raise ValueError('Missing \'symbol\' field.')
@@ -94,17 +98,21 @@ def checkFuturesOrderDataValid(orderData):
         raise ValueError('Missing \'type\' field.')
     orderData.orderType = orderData.orderType.lower()
 
-    if orderData.leverage is None:
-        raise ValueError('Missing \'leverage\' field.')
-
     if orderData.orderType == 'market':
-        if orderData.quantity is None and orderData.quoteOrderQty is None:
-            raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
+        if orderData.quantity is None and orderData.quoteQuantity is None:
+            if orderData.closePosition is None:
+                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
+            if not orderData.closePosition:
+                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
+
     elif orderData.orderType == 'limit':
         if orderData.price is None:
             raise ValueError('Missing \'price\' field for limit order type.')
-        if orderData.quantity is None:
-            raise ValueError('Missing \'quantity\' field for limit order type.')
+        if orderData.quantity is None and orderData.quoteQuantity is None:
+            if orderData.closePosition is None:
+                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
+            if not orderData.closePosition:
+                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
         if orderData.timeInForce not in ['GTC', 'IOC']:
             raise ValueError('Invalid value for \'timeInForce\' specified')
         if orderData.extraParams is not None:
@@ -118,11 +126,16 @@ def checkFuturesOrderDataValid(orderData):
             if 'iceberg' in orderData.extraParams.keys():
                 if 'visibleSize' not in orderData.extraParams.keys():
                     raise ValueError('Specify \'visibleSize\' with \'iceberg\' set as true')
+            if 'leverage' not in orderData.extraParams.keys():
+                if orderData.closePosition is None:
+                    raise ValueError('Missing \'leverage\' field.')
+                if not orderData.closePosition:
+                    raise ValueError('Missing \'leverage\' field.')
 
     if orderData.stopPrice is not None:
-        if 'stop' not in orderData.extraParams.key():
+        if 'stop' not in orderData.extraParams.keys():
             raise ValueError('Specify \'stop\' inside \'extraParams\'. Either \'down\' or \'up\'.')
-        if 'stopPriceType' not in orderData.extraParams.key():
+        if 'stopPriceType' not in orderData.extraParams.keys():
             raise ValueError('Specify \'stopPriceType\' inside \'extraParams\'. Either \'TP\', \'IP\' or \'MP\'.')
 
 
@@ -250,8 +263,9 @@ class KuCoinExchange(BaseExchange):
     def getOpenOrders(self, symbol, futures=False):
         args = {'symbol': symbol, 'status': 'active'}
         if futures:
+            lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
             orderList = self.futuresTrade.get_order_list(**args)['items']
-            return KuCoinHelpers.unifyGetSymbolOrders(orderList, futures=True)
+            return KuCoinHelpers.unifyGetSymbolOrders(orderList, futures=True, lotSize=lotSize)
         else:
             orderList = self.spotTrade.get_order_list(**args)['items']
             return KuCoinHelpers.unifyGetSymbolOrders(orderList)
@@ -294,7 +308,8 @@ class KuCoinExchange(BaseExchange):
             else:
                 raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
 
-            return KuCoinHelpers.unifyGetOrder(orderData, futures=True)
+            lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
+            return KuCoinHelpers.unifyGetOrder(orderData, futures=True, lotSize=lotSize)
         else:
             if orderId is not None:
                 orderData = self.spotTrade.get_order_details(orderId)
@@ -503,6 +518,16 @@ class KuCoinExchange(BaseExchange):
         checkFuturesOrderDataValid(futuresOrderData)
 
     def makeFuturesOrder(self, futuresOrderData):
+        if futuresOrderData.quantity is None:
+            lotSize = self.getSymbolMinTrade(symbol=futuresOrderData.symbol, futures=True)['precisionStep']
+            if futuresOrderData.price is None:
+                currPrice = self.getSymbolTickerPrice(futuresOrderData.symbol, futures=True)
+                futuresOrderData.quantity = futuresOrderData.quoteQuantity * futuresOrderData.leverage \
+                                            / currPrice * lotSize
+            else:
+                futuresOrderData.quantity = futuresOrderData.quoteQuantity * futuresOrderData.leverage \
+                                            / futuresOrderData.price * lotSize
+
         params = KuCoinHelpers.getFuturesOrderAsDict(futuresOrderData)
 
         symbol = params['symbol']
@@ -532,11 +557,15 @@ class KuCoinExchange(BaseExchange):
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None):
+                                  recvWindow=None, extraParams=None, quoteQuantity=None):
         currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
                                                     newClientOrderId, newOrderRespType, orderType, positionSide, price,
                                                     priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
-                                                    symbol, timeInForce, workingType)
+                                                    symbol, timeInForce, workingType, quoteQuantity)
+
+        lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
+        if currOrder.quantity is not None:
+            currOrder.quantity /= lotSize
 
         self.testFuturesOrder(currOrder)
 
@@ -605,7 +634,50 @@ class KuCoinExchange(BaseExchange):
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
-        pass
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+
+        if quoteQuantity is None:
+            if quantity is None:
+                raise ValueError('Specify either quantity or quoteQuantity')
+            quoteQuantity = quantity * enterPrice
+            quoteQuantity -= quoteQuantity % symbolInfo['minQuoteQuantity']
+        else:
+            quantity = quoteQuantity / enterPrice
+
+        if quantity < symbolInfo['minQuantity']:
+            raise ValueError('Quantity is lower than minimum quantity allowed.')
+
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quoteQuantity=quoteQuantity,
+                                                   price=enterPrice, timeInForce='GTC',
+                                                   extraParams={'leverage': leverage})
+
+        slExtraParams = {
+            'stop': 'down' if orderSide.upper() == 'BUY' else 'up',
+            'stopPriceType': 'TP'
+        }
+        stopLossOrder = self.createAndTestFuturesOrder(symbol=symbol, side=None, orderType='MARKET',
+                                                       stopPrice=stopLoss, closePosition=True,
+                                                       timeInForce='GTC', extraParams=slExtraParams)
+
+        tpExtraParams = {
+            'stop': 'up' if orderSide.upper() == 'BUY' else 'down',
+            'stopPriceType': 'TP'
+        }
+        takeProfitOrder = self.createAndTestFuturesOrder(symbol=symbol, side=None, orderType='MARKET',
+                                                         stopPrice=takeProfit, closePosition=True,
+                                                         timeInForce='GTC', extraParams=tpExtraParams)
+
+        mainOrderRes = self.makeFuturesOrder(mainOrder)
+        slOrderRes = self.makeFuturesOrder(stopLossOrder)
+        tpOrderRes = self.makeFuturesOrder(takeProfitOrder)
+
+        orderIds = {
+            'mainOrder': mainOrderRes['orderId'],
+            'stopLoss': slOrderRes['orderId'],
+            'takeProfit': tpOrderRes['orderId']
+        }
+
+        return orderIds
 
     def getSymbol24hChanges(self, futures=False):
         changesList = []

@@ -2,6 +2,7 @@ import logging
 import time
 from datetime import datetime
 
+import pandas as pd
 from binance.spot import Spot
 
 from Exchanges.BaseExchange import BaseExchange
@@ -388,11 +389,11 @@ class BinanceExchange(BaseExchange):
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None):
+                                  recvWindow=None, extraParams=None, quoteQuantity=None):
         currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
                                                     newClientOrderId, newOrderRespType, orderType, positionSide, price,
                                                     priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
-                                                    symbol, timeInForce, workingType)
+                                                    symbol, timeInForce, workingType, quoteQuantity)
 
         self.testFuturesOrder(currOrder)
 
@@ -428,8 +429,8 @@ class BinanceExchange(BaseExchange):
     def getPosition(self):
         return self.futuresClient.get_position()
 
-    def spotBestBidAsks(self, symbol=None):
-        return self.client.book_ticker(symbol=symbol)
+    def spotBestBidAsks(self, symbol):
+        return pd.DataFrame(self.client.book_ticker(symbol=symbol))
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
         if not futures:
@@ -451,14 +452,14 @@ class BinanceExchange(BaseExchange):
                 limit = 1
         if not futures:
             if limit is None:
-                return self.client.trades(symbol)
+                return pd.DataFrame(self.client.trades(symbol))
             else:
-                return self.client.trades(symbol, limit=limit)
+                return pd.DataFrame(self.client.trades(symbol, limit=limit))
         else:
             if limit is None:
-                return self.futuresClient.get_recent_trades_list(symbol=symbol)
+                return pd.DataFrame(self.futuresClient.get_recent_trades_list(symbol=symbol))
             else:
-                return self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit)
+                return pd.DataFrame(self.futuresClient.get_recent_trades_list(symbol=symbol, limit=limit))
 
     def getPositionInfo(self, symbol=None):
         return self.futuresClient.get_position_v2(symbol)

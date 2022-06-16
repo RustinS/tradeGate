@@ -54,7 +54,7 @@ class OrderData():
 
 
 class futuresOrderData():
-    def __init__(self, symbol, side, orderType):
+    def __init__(self, symbol, side=None, orderType=None):
         self.symbol = symbol
         self.side = side
         self.orderType = orderType
@@ -62,6 +62,7 @@ class futuresOrderData():
         self.positionSide = None
         self.timeInForce = None
         self.quantity = None
+        self.quoteQuantity = None
         self.reduceOnly = None
         self.price = None
         self.newClientOrderId = None
@@ -75,6 +76,9 @@ class futuresOrderData():
         self.recvWindow = None
         self.extraParams = None
         self.leverage = None
+
+    def setOrderSide(self, orderSide):
+        self.side = orderSide
 
     def setPositionSide(self, positionSide):
         self.positionSide = positionSide
@@ -124,6 +128,9 @@ class futuresOrderData():
     def setLeverage(self, leverage):
         self.leverage = leverage
 
+    def setQuoteQuantity(self, quoteQuantity):
+        self.quoteQuantity = quoteQuantity
+
 
 def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
                      stopPrice, symbol, timeInForce, extraParams=None):
@@ -151,16 +158,20 @@ def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, 
 
 def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams, newClientOrderId,
                         newOrderRespType, orderType, positionSide, price, priceProtect, quantity, recvWindow,
-                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType):
+                        reduceOnly, side, stopPrice, symbol, timeInForce, workingType, quoteQuantity):
     if extraParams is None:
         extraParams = {}
-    currOrder = futuresOrderData(symbol.upper(), side.upper(), orderType.upper())
+    currOrder = futuresOrderData(symbol=symbol.upper(), orderType=orderType.upper())
+    if side is not None:
+        currOrder.setOrderSide(side)
     if positionSide is not None:
         currOrder.setPositionSide(positionSide)
     if timeInForce is not None:
         currOrder.setTimeInForce(timeInForce)
     if quantity is not None:
         currOrder.setQuantity(quantity)
+    if quoteQuantity is not None:
+        currOrder.setQuoteQuantity(quoteQuantity)
     if reduceOnly is not None:
         currOrder.setReduceOnly(reduceOnly)
     if price is not None:

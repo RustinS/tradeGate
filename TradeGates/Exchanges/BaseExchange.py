@@ -106,7 +106,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def spotBestBidAsks(self, symbol=None):
+    def spotBestBidAsks(self, symbol):
         pass
 
     @abstractmethod

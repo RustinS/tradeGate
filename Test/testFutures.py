@@ -81,7 +81,7 @@ def testCreatingFuturesOrder(getGatesAndSymbolNames):
         symbolName = symbolNamesDict[gate.exchangeName]
         if gate.exchangeName.lower() == 'kucoin':
             extraParams = {'leverage': 5}
-            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.0001,
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002,
                                                               extraParams=extraParams)
         else:
             futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002)
@@ -96,11 +96,10 @@ def testFuturesOrder(getGatesAndSymbolNames):
         symbolName = symbolNamesDict[gate.exchangeName]
         if gate.exchangeName.lower() == 'kucoin':
             extraParams = {'leverage': 5}
-            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=20,
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002,
                                                               extraParams=extraParams)
         else:
-            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
-                                                              price=24000, quantity=0.002)
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
         print('\nFuture ordering in {} exchange: {}'.format(gate.exchangeName, result))
         assert result is not None, 'Problem in submitting futures order in {} exchange.'.format(gate.exchangeName)
@@ -129,13 +128,12 @@ def testFuturesTpSlLimitOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
-        if gate.exchangeName.lower() != 'binance':
+        if gate.exchangeName.lower() != 'kucoin':
             continue
         try:
-            result = gate.makeSlTpLimitFuturesOrder(symbol=symbolName, orderSide='BUY', quantity=None, quoteQuantity=40,
-                                                    enterPrice=1.1649, takeProfit=1.1473, stopLoss=1.1974,
-                                                    leverage=10,
-                                                    marginType='ISOLATED')
+            result = gate.makeSlTpLimitFuturesOrder(symbol=symbolName, orderSide='BUY', quantity=None,
+                                                    quoteQuantity=100, enterPrice=20500, takeProfit=21500,
+                                                    stopLoss=20000, leverage=10, marginType='ISOLATED')
             # print('\nResult of TP-SL-Limit ordering from {} exchange: {}'.format(gate.exchangeName, result))
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
         except Exception:

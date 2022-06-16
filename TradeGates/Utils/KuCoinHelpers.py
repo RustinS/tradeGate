@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def unifyGetBalanceSpotOut(data, isSingle=False):
     allAssets = []
 
@@ -81,7 +84,7 @@ def unifyTradeHistory(tradeHistory, futures=False):
                 'exchangeSpecific': trade
             })
 
-    return unifiedTradeHistory
+    return pd.DataFrame(unifiedTradeHistory)
 
 
 def unifyRecentTrades(tradeHistory, futures=False):
@@ -155,16 +158,20 @@ def getSpotOrderAsDict(orderData):
     return params
 
 
-def unifyGetOrder(orderData, futures=False):
+def unifyGetOrder(orderData, futures=False, lotSize=None):
     if futures:
+        if orderData['value'] is not None and orderData['price'] is None:
+            orderData['price'] = float(orderData['value']) / (float(orderData['size']) * lotSize)
+
         return {'symbol': orderData['symbol'],
                 'orderId': orderData['id'],
                 'clientOrderId': orderData['clientOid'],
                 'transactTime': orderData['createdAt'],
-                'price': float(orderData['price']),
-                'origQty': float(orderData['size']) / float(orderData['price']),
-                'executedQty': float(orderData['filledSize']) / float(orderData['price']),
-                'cummulativeQuoteQty': float(orderData['filledSize']),
+                'price': orderData['price'],
+                'origQty': float(orderData['size']) * lotSize,
+                'executedQty': float(orderData['filledSize']) * lotSize,
+                'cummulativeQuoteQty': 0 if orderData['price'] is None else float(orderData['filledSize']) * float(
+                    orderData['price']) * lotSize,
                 'status': 'CANCELLED' if orderData['cancelExist'] else 'NEW' if orderData['isActive'] else 'FILLED',
                 'timeInForce': orderData['timeInForce'],
                 'type': orderData['type'],
@@ -172,7 +179,7 @@ def unifyGetOrder(orderData, futures=False):
                 'extraData': {'reduceOnly': orderData['reduceOnly'],
                               'stopPrice': 0.0 if orderData['stopPrice'] is None else float(orderData['stopPrice']),
                               'workingType': 'CONTRACT_PRICE',
-                              'avgPrice': float(orderData['price']),
+                              'avgPrice': orderData['price'],
                               'origType': orderData['type'],
                               'positionSide': 'BOTH',
                               'activatePrice': None,
@@ -205,10 +212,10 @@ def unifyGetOrder(orderData, futures=False):
         }
 
 
-def unifyGetSymbolOrders(ordersList, futures=False):
+def unifyGetSymbolOrders(ordersList, futures=False, lotSize=None):
     unifiedOrdersList = []
     for orderData in ordersList:
-        unifiedOrdersList.append(unifyGetOrder(orderData, futures))
+        unifiedOrdersList.append(unifyGetOrder(orderData, futures, lotSize))
     return unifiedOrdersList
 
 
@@ -254,8 +261,6 @@ def getFuturesOrderAsDict(orderData):
 
     if orderData.quantity is not None:
         params['size'] = float(orderData.quantity)
-    elif orderData.price is not None:
-        params['size'] = float(orderData.quoteOrderQty) / float(orderData.price)
 
     if orderData.timeInForce is not None:
         params['timeInForce'] = orderData.timeInForce
