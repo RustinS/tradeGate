@@ -6,7 +6,7 @@ class Income:
         self.income = 0.0
         self.asset = ""
         self.time = 0
-    
+
     @staticmethod
     def json_parse(json_data):
         result = Income()
@@ -17,3 +17,12 @@ class Income:
         result.time = json_data.get_int("time")
 
         return result
+
+    def toDict(self):
+        return {
+            'symbol': self.symbol,
+            'incomeType': self.incomeType,
+            'income': self.income,
+            'asset': self.asset,
+            'time': self.time
+        }

@@ -8,6 +8,79 @@ from Exchanges.BaseExchange import BaseExchange
 from Utils import DataHelpers, BybitHelpers
 
 
+def isOrderDataValid(orderData: DataHelpers.OrderData):
+    if orderData.symbol is None or orderData.quantity is None or orderData.side is None \
+            or orderData.orderType is None:
+        raise ValueError('Missing mandatory fields.')
+
+    if orderData.orderType not in BybitExchange.spotOrderTypes:
+        raise ValueError('Order type not correctly specified. Available order types for spot market: {}'.format(
+            BybitExchange.spotOrderTypes))
+
+    if orderData.side not in ['BUY', 'SELL']:
+        raise ValueError('Order side can only be \'BUY\' or \'SELL\'')
+
+    if orderData.timeInForce not in BybitExchange.spotTimeInForces:
+        raise ValueError(
+            'Time-in-force not correctly specified. Available time-in-force for spot market: {}'.format(
+                BybitExchange.spotTimeInForces))
+
+    if orderData.orderType in ['LIMIT', 'LIMIT_MAKER'] and orderData.price is None:
+        raise ValueError('Price must be specified for limit orders.')
+
+
+def isFuturesOrderDataValid(orderData: DataHelpers.futuresOrderData):
+    if orderData.symbol is None:
+        raise ValueError('Specify symbol.')
+    if orderData.quantity is None:
+        raise ValueError('Specify quantity.')
+    if orderData.side is None:
+        raise ValueError('Specify order side.')
+    if orderData.orderType is None:
+        raise ValueError('Specify order type.')
+    if orderData.timeInForce is None:
+        raise ValueError('Specify timeInForce.')
+    if orderData.closePosition is None:
+        raise ValueError('Specify closePosition.')
+    if orderData.reduceOnly is None:
+        raise ValueError('Specify reduceOnly.')
+
+    if orderData.orderType not in BybitExchange.futuresOrderTypes:
+        raise ValueError('Bad order type specified. Available order types for futures: {}'.format(
+            BybitExchange.futuresOrderTypes))
+
+    if orderData.orderType.startswith('STOP'):
+        if orderData.extraParams is None:
+            raise ValueError('Specify \'basePrice\' in \'extraParams\'')
+        if 'basePrice' not in orderData.extraParams.keys():
+            raise ValueError('Specify \'basePrice\' in \'extraParams\'')
+        if orderData.stopPrice is None:
+            raise ValueError('Specify \'stopPrice\'.')
+
+    if 'LIMIT' in orderData.orderType and orderData.price is None:
+        raise ValueError('Specify \'price\' for limit orders.')
+
+    if orderData.timeInForce not in BybitExchange.futuresTimeInForces.keys() and \
+            orderData.timeInForce not in BybitExchange.futuresTimeInForces.values():
+        raise ValueError('\'timeInForce\' is not correct.')
+
+    if orderData.extraParams is not None:
+        if 'triggerBy' in orderData.extraParams.keys() \
+                and orderData.extraParams['tpTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
+            raise ValueError('\'triggerBy\' was not correctly specified.')
+
+        if 'tpTriggerBy' in orderData.extraParams.keys() \
+                and orderData.extraParams['tpTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
+            raise ValueError('\'tpTriggerBy\' was not correctly specified.')
+
+        if 'slTriggerBy' in orderData.extraParams.keys() \
+                and orderData.extraParams['slTriggerBy'] not in ['LastPrice', 'IndexPrice', 'MarkPrice']:
+            raise ValueError('\'slTriggerBy\' was not correctly specified.')
+
+        if 'positionIdx' in orderData.extraParams.keys() and orderData.extraParams['positionIdx'] not in [0, 1, 2]:
+            raise ValueError('\'positionIdx\' was not correctly specified.')
+
+
 class PyBitHTTP(HTTP):
     def __init__(self, endpoint=None, api_key=None, api_secret=None, logging_level=logging.INFO, log_requests=False,
                  request_timeout=10, recv_window=5000, force_retry=False, retry_codes=None, ignore_codes=None,
@@ -106,7 +179,7 @@ class BybitExchange(BaseExchange):
             return BybitHelpers.getMyTradeHistoryOut(tradeHistory['result'])
 
     def testSpotOrder(self, orderData: DataHelpers.OrderData):
-        BybitHelpers.isOrderDataValid(orderData)
+        isOrderDataValid(orderData)
 
         if orderData.icebergQty is not None or orderData.newOrderRespType is not None \
                 or orderData.quoteOrderQty is not None or orderData.recvWindow is not None \
@@ -119,6 +192,18 @@ class BybitExchange(BaseExchange):
         orderParams = BybitHelpers.getSpotOrderAsDict(orderData)
 
         return BybitHelpers.getMakeSpotOrderOut(self.spotSession.place_active_order(**orderParams)['result'])
+
+    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
+                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
+                               newClientOrderId=None):
+
+        currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
+                                                 quantity,
+                                                 recvWindow, side, stopPrice, symbol, timeInForce)
+
+        self.testSpotOrder(currOrder)
+
+        return currOrder
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
         if futures:
@@ -263,7 +348,7 @@ class BybitExchange(BaseExchange):
 
             return BybitHelpers.getOrderOut(order)
 
-    def getTradingFees(self):
+    def getTradingFees(self, futures=False):
         raise NotImplementedError()
 
     def getSymbolTickerPrice(self, symbol, futures=False):
@@ -285,10 +370,10 @@ class BybitExchange(BaseExchange):
             data = self._getSpotSymbolKlines(endTime, interval, limit, startTime, symbol)
 
         if convertDateTime or toCleanDataframe:
-            BybitHelpers.klinesConvertDate(data, futures)
+            BybitHelpers.klinesConvertDate(data, futures, self.timeIndexesInCandleData)
 
         if doClean or toCleanDataframe:
-            finalDataArray = BybitHelpers.getKlinesDesiredOnlyCols(data)
+            finalDataArray = BybitHelpers.getKlinesDesiredOnlyCols(data, self.desiredCandleDataIndexes)
 
             if toCleanDataframe:
                 return BybitHelpers.klinesConvertToPandas(finalDataArray)
@@ -331,15 +416,20 @@ class BybitExchange(BaseExchange):
         else:
             limit = 200
         if startTime is None:
-            startTimestamp = int(datetime.now().timestamp() - BybitHelpers.getIntervalInSeconds(interval) * limit)
+            startTimestamp = int(
+                datetime.now().timestamp() - BybitHelpers.getIntervalInSeconds(interval, self.timeIntervals) * limit)
         else:
-            startTimestamp = int(startTime.timestamp)
+            if isinstance(startTime, int):
+                startTimestamp = startTime
+            else:
+                startTimestamp = int(startTime.timestamp)
         candles = self.futuresSession.query_kline(symbol=symbol, interval=futuresInterval, from_time=startTimestamp,
                                                   limit=limit)
         for candle in candles['result']:
             dataArray = [float(candle['open_time']), float(candle['open']), float(candle['high']),
                          float(candle['low']), float(candle['close']), float(candle['volume']),
-                         int(candle['open_time']) + BybitHelpers.getIntervalInSeconds(interval), None, None, None, None]
+                         int(candle['open_time']) + BybitHelpers.getIntervalInSeconds(interval, self.timeIntervals),
+                         None, None, None, None]
             data.append(dataArray)
         return data
 
@@ -362,12 +452,12 @@ class BybitExchange(BaseExchange):
         if futuresOrderData.reduceOnly is None:
             futuresOrderData.reduceOnly = False
 
-        BybitHelpers.isFuturesOrderDataValid(futuresOrderData)
+        isFuturesOrderDataValid(futuresOrderData)
 
         return futuresOrderData
 
     def makeFuturesOrder(self, futuresOrderData: DataHelpers.futuresOrderData):
-        orderParams = BybitHelpers.getFuturesOrderAsDict(futuresOrderData)
+        orderParams = BybitHelpers.getFuturesOrderAsDict(futuresOrderData, self.futuresTimeInForces)
 
         if 'STOP' in futuresOrderData.orderType:
             result = self.futuresSession.place_conditional_order(**orderParams)
@@ -376,11 +466,25 @@ class BybitExchange(BaseExchange):
             result = self.futuresSession.place_active_order(**orderParams)
             return BybitHelpers.futuresOrderOut(result['result'])
 
+    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
+                                  reduceOnly=None, price=None, newClientOrderId=None,
+                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
+                                  workingType=None, priceProtect=None, newOrderRespType=None,
+                                  recvWindow=None, extraParams=None, quoteQuantity=None):
+        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
+                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
+                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    symbol, timeInForce, workingType, quoteQuantity)
+
+        self.testFuturesOrder(currOrder)
+
+        return currOrder
+
     def makeBatchFuturesOrder(self, futuresOrderDatas):
         batchOrders = []
         batchConditionalOrders = []
         for order in futuresOrderDatas:
-            orderAsDict = BybitHelpers.getFuturesOrderAsDict(order)
+            orderAsDict = BybitHelpers.getFuturesOrderAsDict(order, self.futuresTimeInForces)
 
             if 'STOP' in order.orderType:
                 batchConditionalOrders.append(order)
@@ -400,7 +504,7 @@ class BybitExchange(BaseExchange):
         return results
 
     def changeInitialLeverage(self, symbol, leverage):
-        return self.futuresSession.set_leverage(symbol=symbol, leverage=leverage)['result']
+        return self.futuresSession.set_leverage(symbol=symbol, buy_leverage=leverage, sell_leverage=leverage)
 
     def changeMarginType(self, symbol, marginType, params):
         try:
@@ -486,3 +590,66 @@ class BybitExchange(BaseExchange):
 
         return {'minQuantity': minQuantity, 'minQuoteQuantity': minQuoteQuantity,
                 'precisionStep': stepQuantity, 'stepPrice': stepPrice}
+
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+        if enterPrice is None or takeProfit is None or stopLoss is None or leverage is None or marginType is None:
+            raise ValueError('Specify all inputs.')
+
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+
+        quantity = DataHelpers.getQuantity(enterPrice, quantity, quoteQuantity, symbolInfo['precisionStep'])
+
+        self.setMarginLeverage(leverage, marginType, symbol)
+        orderParams = {
+            'takeProfit': takeProfit,
+            'stopLoss': stopLoss,
+            'tpTriggerBy': 'MarkPrice',
+            'slTriggerBy': 'MarkPrice'
+        }
+
+        futuresOrder = self.createAndTestFuturesOrder(symbol=symbol, side=orderSide, orderType='LIMIT',
+                                                      timeInForce='GTC', quantity=quantity, price=enterPrice,
+                                                      closePosition=False, extraParams=orderParams)
+        orderingResult = self.makeFuturesOrder(futuresOrder)
+        return orderingResult['orderId']
+
+    def setMarginLeverage(self, leverage, marginType, symbol):
+        params = {'buyLeverage': leverage, 'sellLeverage': leverage}
+        self.changeInitialLeverage(leverage, symbol)
+        self.changeMarginType(symbol, marginType, params)
+
+    def getSymbol24hChanges(self, futures=False):
+        changesList = []
+        if futures:
+            for ticker in self.futuresMarket.get_contracts_list():
+                if ticker['status'] == 'Open':
+                    changesList.append((ticker['symbol'], float(ticker['priceChgPct']) * 100))
+        else:
+            symbolInfos = self.spotMarket.get_symbol_list()
+            for ticker in self.spotMarket.get_all_tickers()['ticker']:
+                if is_symbol_status_valid(ticker['symbol'], symbolInfos, futures=False):
+                    changesList.append((ticker['symbol'], float(ticker['changeRate']) * 100))
+
+        return sorted(changesList, key=lambda x: x[1], reverse=True)
+
+    def getSymbolList(self, futures=False):
+        symbolNames = []
+        if futures:
+            for ticker in self.futuresMarket.get_contracts_list():
+                symbolNames.append(ticker['symbol'])
+        else:
+            for ticker in self.spotMarket.get_all_tickers()['ticker']:
+                symbolNames.append(ticker['symbol'])
+
+        return symbolNames
+
+    def getLatestSymbolNames(self, numOfSymbols=None, futures=False):
+        symbolDatas = []
+        if futures:
+            for symbolInfo in self.futuresMarket.get_contracts_list():
+                symbolDatas.append(
+                    (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
+                symbolDatas.sort(key=lambda x: x[1], reverse=True)
+        else:
+            pass

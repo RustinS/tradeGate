@@ -12,42 +12,53 @@ log = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def getGates():
+def getGatesAndSymbolNames():
     gates = []
+    symbolNames = {}
     with open('./config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
         gates.append(TradeGate(config[key], sandbox=True))
+        if gates[-1].exchangeName.lower() == 'kucoin':
+            symbolNames[gates[-1].exchangeName] = 'BTC-USDT'
+        else:
+            symbolNames[gates[-1].exchangeName] = 'BTCUSDT'
 
-    return gates
+    return gates, symbolNames
 
 
-def testNewTestOrder(getGates):
-    for gate in getGates:
+def testNewTestOrder(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            res = gate.createAndTestSpotOrder('BTCUSDT', 'SELL', 'LIMIT', timeInForce='GTC', quantity=0.002,
+            res = gate.createAndTestSpotOrder(symbolName, 'SELL', 'LIMIT', timeInForce='GTC', quantity=0.002,
                                               price=49500)
             assert res is not None, 'Problem in testing making order from {} exchange'.format(gate.exchangeName)
         except Exception as e:
             assert False, 'From {} exchange : {}'.format(gate.exchangeName, str(e))
 
 
-def testNewTestOrderBadOrderType(getGates):
-    for gate in getGates:
+def testNewTestOrderBadOrderType(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            res = gate.createAndTestSpotOrder('BTCUSDT', 'SELL', 'LINIT', timeInForce='GTC', quantity=0.002,
-                                              price=49500)
+            res = gate.createAndTestSpotOrder(symbolName, 'SELL', 'LINIT', timeInForce='GTC', quantity=0.002,
+                                              price=30000)
             assert res is None, 'Bad order type and information provided. Must fail (Exchange: {})'.format(
                 gate.exchangeName)
-        except Exception:
+        except Exception as e:
             assert True, 'Bad order type and information provided. Must fail (Exchange: {})'.format(gate.exchangeName)
 
 
-def testNewOrder(getGates):
-    for gate in getGates:
+def testNewOrder(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=30000,
                                                         timeInForce='GTC')
             result = gate.makeSpotOrder(verifiedOrder)
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
@@ -55,26 +66,38 @@ def testNewOrder(getGates):
             assert False, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
 
 
-def testGetOrders(getGates):
-    for gate in getGates:
-        orders = gate.getSymbolOrders('BTCUSDT', futures=False)
+def testGetOrders(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
+        symbolName = symbolNamesDict[gate.exchangeName]
+        orders = gate.getSymbolOrders(symbolName, futures=False)
         # print('\nGetting order history for BTCUSDT symbol from {}: {}'.format(gate.exchangeName, orders[0]))
 
         assert orders is not None, 'Problem in getting list of all orders from {} exchange.'.format(gate.exchangeName)
 
 
-def testGetOpenOrders(getGates):
-    for gate in getGates:
-        symbolOpenOrders = gate.getOpenOrders('BTCUSDT')
+def testGetOpenOrders(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
+        symbolName = symbolNamesDict[gate.exchangeName]
+        symbolOpenOrders = gate.getOpenOrders(symbolName)
         # print('\nGetting BTCUSDT open orders list from {} exchange: {}'.format(gate.exchangeName, symbolOpenOrders))
         assert symbolOpenOrders is not None, 'Problem in getting list of open orders with symbol from {} exchange.'.format(
             gate.exchangeName)
 
 
-def testGetOrder(getGates):
-    for gate in getGates:
+def testGetOrder(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        if gate.exchangeName.lower() == 'binance':
+            continue
+        symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.02, price=34000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.02, price=30000,
                                                         timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
@@ -82,12 +105,12 @@ def testGetOrder(getGates):
 
         # print('Submitted order on {} exchange: {}'.format(gate.exchangeName, result))
 
-        order = gate.getOrder('BTCUSDT', orderId=result['orderId'])
+        order = gate.getOrder(symbolName, orderId=result['orderId'])
         assert order['clientOrderId'] == result['clientOrderId'], \
             'Fetch client orderID is not equal to the actual client orderID from {} exchange.'.format(gate.exchangeName)
         # print('Correct \'clientOrderId\'.')
 
-        order = gate.getOrder('BTCUSDT', localOrderId=result['clientOrderId'])
+        order = gate.getOrder(symbolName, localOrderId=result['clientOrderId'])
         assert order['orderId'] == result['orderId'], \
             'Fetch orderID is not equal to the actual orderID from {} exchange.'.format(gate.exchangeName)
         # print('Correct \'orderId\'.')
@@ -95,38 +118,42 @@ def testGetOrder(getGates):
         gate.cancelOrder('BTCUSDT', orderId=result['orderId'])
 
 
-def testCancelingAllOpenOrders(getGates):
-    for gate in getGates:
-        gate.cancelAllSymbolOpenOrders('BTCUSDT')
+def testCancelingAllOpenOrders(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        symbolName = symbolNamesDict[gate.exchangeName]
+        result = gate.cancelAllSymbolOpenOrders(symbolName)
 
-        openOrders = gate.getOpenOrders('BTCUSDT')
+        openOrders = gate.getOpenOrders(symbolName)
         assert len(openOrders) == 0, 'Problem in canceling all Open Orders in {} exchange.'.format(gate.exchangeName)
 
 
-def testCancelingOrder(getGates):
-    for gate in getGates:
+def testCancelingOrder(getGatesAndSymbolNames):
+    gates, symbolNamesDict = getGatesAndSymbolNames
+    for gate in gates:
+        symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=28000,
                                                         timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
 
-        result = gate.cancelOrder(symbol='BTCUSDT', orderId=result['orderId'])
-        result = gate.getOrder(symbol='BTCUSDT', orderId=result['orderId'])
+        result = gate.cancelOrder(symbol=symbolName, orderId=result['orderId'])
+        result = gate.getOrder(symbol=symbolName, orderId=result['orderId'])
 
-        assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(
-            gate.exchangeName)
+        assert result['status'].upper() in ['CANCELED', 'CANCELLED'], \
+            'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
 
         try:
-            verifiedOrder = gate.createAndTestSpotOrder('BTCUSDT', 'BUY', 'LIMIT', quantity=0.002, price=35000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=28000,
                                                         timeInForce='GTC', newClientOrderId=str(int(time.time())))
             result = gate.makeSpotOrder(verifiedOrder)
         except Exception as e:
             assert False, 'Problem in making order in {} exchange: {}'.format(gate.exchangeName, str(e))
 
-        result = gate.cancelOrder(symbol='BTCUSDT', localOrderId=result['clientOrderId'])
-        result = gate.getOrder(symbol='BTCUSDT', orderId=result['orderId'])
+        result = gate.cancelOrder(symbol=symbolName, localOrderId=result['clientOrderId'])
+        result = gate.getOrder(symbol=symbolName, orderId=result['orderId'])
 
-        assert result['status'] == 'CANCELED', 'Problem in canceling specified Open Orders in {} exchange.'.format(
-            gate.exchangeName)
+        assert result['status'].upper() in ['CANCELED', 'CANCELLED'], \
+            'Problem in canceling specified Open Orders in {} exchange.'.format(gate.exchangeName)
