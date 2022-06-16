@@ -132,9 +132,8 @@ def getSpotOrderAsDict(orderData):
     if orderData.timeInForce is not None:
         params['timeInForce'] = orderData.timeInForce
 
-    if orderData.quoteOrderQty is not None:
-        if 'size' not in params.keys():
-            params['funds'] = orderData.quoteOrderQty
+    if orderData.quoteOrderQty is not None and 'size' not in params.keys():
+        params['funds'] = orderData.quoteOrderQty
 
     if orderData.extraParams is not None:
         if 'cancelAfter' in orderData.extraParams.keys():
@@ -164,6 +163,13 @@ def unifyGetOrder(orderData, futures=False, lotSize=None):
             if float(orderData['size']) > 0:
                 orderData['price'] = float(orderData['value']) / (float(orderData['size']) * lotSize)
 
+        if orderData['cancelExist']:
+            orderStatus = 'CANCELLED'
+        elif orderData['isActive']:
+            orderStatus = 'NEW'
+        else:
+            orderStatus = 'FILLED'
+
         return {'symbol': orderData['symbol'],
                 'orderId': orderData['id'],
                 'clientOrderId': orderData['clientOid'],
@@ -173,7 +179,7 @@ def unifyGetOrder(orderData, futures=False, lotSize=None):
                 'executedQty': float(orderData['filledSize']) * lotSize,
                 'cummulativeQuoteQty': 0 if orderData['price'] is None else float(orderData['filledSize']) * float(
                     orderData['price']) * lotSize,
-                'status': 'CANCELLED' if orderData['cancelExist'] else 'NEW' if orderData['isActive'] else 'FILLED',
+                'status': orderStatus,
                 'timeInForce': orderData['timeInForce'],
                 'type': orderData['type'],
                 'side': orderData['side'],
@@ -190,6 +196,13 @@ def unifyGetOrder(orderData, futures=False, lotSize=None):
                 'exchangeSpecific': orderData
                 }
     else:
+        if orderData['cancelExist']:
+            orderStatus = 'CANCELLED'
+        elif orderData['isActive']:
+            orderStatus = 'NEW'
+        else:
+            orderStatus = 'FILLED'
+
         return {
             "symbol": orderData['symbol'],
             "orderId": orderData['id'],
@@ -199,7 +212,7 @@ def unifyGetOrder(orderData, futures=False, lotSize=None):
             "origQty": orderData['size'],
             "executedQty": orderData['dealSize'],
             "cummulativeQuoteQty": orderData['dealSize'],
-            "status": 'CANCELLED' if orderData['cancelExist'] else 'NEW' if orderData['isActive'] else 'FILLED',
+            "status": orderStatus,
             "timeInForce": orderData['timeInForce'],
             "type": orderData['type'],
             "side": orderData['side'],
@@ -305,46 +318,6 @@ def getFuturesOrderAsDict(orderData):
 
 
 def unifyGetPositionInfo(positionInfo):
-    hi = {
-        'id': '62a41fe7f1ee3000013a0c03',
-        'symbol': 'XBTUSDTM',
-        'autoDeposit': False,
-        'maintMarginReq': 0.025,
-        'riskLimit': 50000,
-        'realLeverage': 4.96,
-        'crossMode': False,
-        'delevPercentage': 1.0,
-        'openingTimestamp': 1655089350266,
-        'currentTimestamp': 1655116069153,
-        'currentQty': 10,
-        'currentCost': 240.0,
-        'currentComm': 0.02248549,
-        'unrealisedCost': 240.0,
-        'realisedGrossCost': 0.0,
-        'realisedCost': 0.02248549,
-        'isOpen': True,
-        'markPrice': 24039.25,
-        'markValue': 240.3925,
-        'posCost': 240.0,
-        'posCross': 0.0,
-        'posInit': 48.0,
-        'posComm': 0.1728,
-        'posLoss': 0.02551451,
-        'posMargin': 48.14728549,
-        'posMaint': 6.1968,
-        'maintMargin': 48.53978549,
-        'realisedGrossPnl': 0.0,
-        'realisedPnl': -0.07351451,
-        'unrealisedPnl': 0.3925,
-        'unrealisedPnlPcnt': 0.0016,
-        'unrealisedRoePcnt': 0.0082,
-        'avgEntryPrice': 24000.0,
-        'liquidationPrice': 19805.0,
-        'bankruptPrice': 19202.0,
-        'settleCurrency': 'USDT',
-        'maintainMargin': 0.025,
-        'riskLimitLevel': 1
-    }
     return {
         'entryPrice': positionInfo['avgEntryPrice'],
         'isAutoAddMargin': positionInfo['autoDeposit'],

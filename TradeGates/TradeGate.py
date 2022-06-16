@@ -86,9 +86,6 @@ class TradeGate:
     def makeBatchFuturesOrder(self, batchOrders):
         return self.exchange.makeBatchFuturesOrder(batchOrders)
 
-    # def cancelAllSymbolFuturesOrdersWithCountDown(self, symbol, countdownTime):
-    #     return self.exchange.cancellAllSymbolFuturesOrdersWithCountDown(symbol, countdownTime)
-
     def changeInitialLeverage(self, symbol, leverage):
         return self.exchange.changeInitialLeverage(symbol, leverage)
 
