@@ -557,7 +557,7 @@ class BinanceExchange(BaseExchange):
 
     def _setLeverage(self, leverage, symbol):
         setLeverageResult = self.changeInitialLeverage(symbol, leverage)
-        if not (setLeverageResult['leverage'] == leverage):
+        if setLeverageResult['leverage'] != leverage:
             raise ConnectionError('Could not change leverage.')
 
     def getSymbolList(self, futures=False):
@@ -588,7 +588,9 @@ class BinanceExchange(BaseExchange):
             for symbolInfo in self.futuresClient.get_exchange_information().symbols:
                 symbolDatas.append((symbolInfo.symbol, datetime.fromtimestamp(float(symbolInfo.onboardDate) / 1000)))
                 symbolDatas.sort(key=lambda x: x[1], reverse=True)
+            if numOfSymbols > len(symbolDatas):
+                numOfSymbols = len(symbolDatas)
         else:
-            pass
+            raise NotImplementedError('Only available for futures market.')
 
-        return symbolDatas
+        return symbolDatas[:numOfSymbols]

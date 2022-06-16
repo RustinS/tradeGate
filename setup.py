@@ -13,7 +13,7 @@ except OSError as e:
 
 setuptools.setup(
     name="TradeGate",  # This is the name of the package
-    version="0.3",
+    version="0.3.2",
     author="Rustin Soraki",  # Full name of the author
     description="A Trading Gateway",
     long_description=long_description,  # Long description read from the readme file

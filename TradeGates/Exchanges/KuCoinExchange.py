@@ -28,38 +28,109 @@ def is_symbol_status_valid(symbolName, symbolDatas, futures=False):
 
 
 def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
-    if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
-        raise ValueError('Missing or incorrect \'side\' field.')
-    orderData.side = orderData.side.lower()
-
-    if orderData.symbol is None:
-        raise ValueError('Missing \'symbol\' field.')
-
-    if orderData.orderType is None or orderData.orderType not in ['limit', 'market', 'stop', 'LIMIT', 'MARKET', 'STOP',
-                                                                  'Limit', 'Market', 'Stop']:
-        raise ValueError('Missing \'type\' field.')
-    orderData.orderType = orderData.orderType.lower()
+    checkOrderSide(orderData, futures=False)
+    checkOrderSymbol(orderData)
+    checkOrderType(orderData, futures=False)
 
     if orderData.orderType == 'market':
-        if orderData.quantity is None and orderData.quoteOrderQty is None:
-            raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
-    elif orderData.orderType == 'limit':
-        if orderData.price is None:
-            raise ValueError('Missing \'price\' field for limit order type.')
-        if orderData.quantity is None:
-            raise ValueError('Missing \'quantity\' field for limit order type.')
-        if orderData.timeInForce not in ['GTC', 'GTT', 'IOC', 'FOK']:
-            raise ValueError('Invalid value for \'timeInForce\' specified')
-        if orderData.extraParams is not None:
-            if 'cancelAfter' in orderData.extraParams.keys():
-                if orderData.timeInForce != 'GTT':
-                    raise ValueError('\'cancelAfter\' field can only be used with \'GTT\' as \'timeInForce\' field.')
+        checkOrderSize(orderData)
+    else:
+        if orderData.orderType == 'limit':
+            checkOrderPrice(orderData)
+            checkOrderSize(orderData)
+        elif orderData.orderType == 'stop':
+            checkStopOrderDatas(orderData)
 
-            if 'postOnly' in orderData.extraParams.keys():
-                if orderData.timeInForce in ['IOC', 'FOK']:
-                    raise ValueError(
-                        '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
-    elif orderData.orderType == 'stop':
+        checkOrderTimeInForce(orderData)
+        checkExtraParams(orderData)
+
+
+def checkFuturesOrderDataValid(orderData):
+    checkOrderSide(orderData, futures=True)
+    checkOrderSymbol(orderData)
+    checkOrderType(orderData, futures=True)
+
+    if orderData.orderType == 'market':
+        checkOrderSize(orderData, futures=True)
+    elif orderData.orderType == 'limit':
+        checkOrderPrice(orderData)
+        checkOrderSize(orderData, futures=True)
+        checkOrderTimeInForce(orderData, futures=True)
+        checkExtraParams(orderData, futures=True)
+    if orderData.stopPrice is not None:
+        checkStopOrderDatas(orderData, futures=True)
+
+
+def checkExtraParams(orderData, futures=False):
+    if orderData.extraParams is not None:
+        if futures:
+            checkPostOnlyOrder(orderData, futures)
+            checkIceBergOrder(orderData)
+            checkOrderLeverage(orderData)
+        else:
+            checkCancelAfterOrder(orderData)
+            checkPostOnlyOrder(orderData, futures)
+
+
+def checkCancelAfterOrder(orderData):
+    if 'cancelAfter' in orderData.extraParams.keys():
+        if orderData.timeInForce != 'GTT':
+            raise ValueError('\'cancelAfter\' field can only be used with \'GTT\' as \'timeInForce\' field.')
+
+
+def checkOrderLeverage(orderData):
+    if 'leverage' not in orderData.extraParams.keys():
+        if orderData.closePosition is None:
+            raise ValueError('Missing \'leverage\' field.')
+        if not orderData.closePosition:
+            raise ValueError('Missing \'leverage\' field.')
+
+
+def checkIceBergOrder(orderData):
+    if 'iceberg' in orderData.extraParams.keys():
+        if 'visibleSize' not in orderData.extraParams.keys():
+            raise ValueError('Specify \'visibleSize\' with \'iceberg\' set as true')
+
+
+def checkPostOnlyOrder(orderData, futures=False):
+    if 'postOnly' in orderData.extraParams.keys():
+        if futures:
+            if orderData.timeInForce in ['FOK']:
+                raise ValueError('\'postOnly\' field can not be used with \'IOC\' as \'timeInForce\' field.')
+            if 'hidden' in orderData.extraParams.keys():
+                raise ValueError('Can\'t use \'hidden\' with \'postOnly\'')
+            if 'iceberg' in orderData.extraParams.keys():
+                raise ValueError('Can\'t use \'iceberg\' with \'postOnly\'')
+        else:
+            if orderData.timeInForce in ['IOC', 'FOK']:
+                raise ValueError(
+                    '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
+
+
+def checkOrderTimeInForce(orderData, futures=False):
+    errorString = 'Invalid value for \'timeInForce\' specified'
+
+    if futures:
+        validValues = ['GTC', 'IOC']
+    else:
+        validValues = ['GTC', 'GTT', 'IOC', 'FOK']
+
+    if orderData.timeInForce not in validValues:
+        raise ValueError(errorString)
+
+
+def checkOrderPrice(orderData):
+    if orderData.price is None:
+        raise ValueError('Missing \'price\' field for limit order type.')
+
+
+def checkStopOrderDatas(orderData, futures=False):
+    if futures:
+        if 'stop' not in orderData.extraParams.keys():
+            raise ValueError('Specify \'stop\' inside \'extraParams\'. Either \'down\' or \'up\'.')
+        if 'stopPriceType' not in orderData.extraParams.keys():
+            raise ValueError('Specify \'stopPriceType\' inside \'extraParams\'. Either \'TP\', \'IP\' or \'MP\'.')
+    else:
         if orderData.extraParams is not None:
             if 'stopPrice' not in orderData.extraParams.keys():
                 raise ValueError('Specify \'stopPrice\' in \'extraParams\' for stop order.')
@@ -68,75 +139,51 @@ def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
 
         if orderData.quantity is None:
             raise ValueError('Missing \'quantity\' field for stop order type.')
-        if orderData.timeInForce not in ['GTC', 'GTT', 'IOC', 'FOK']:
-            raise ValueError('Invalid value for \'timeInForce\' specified')
-        if orderData.extraParams is not None:
-            if 'cancelAfter' in orderData.extraParams.keys():
-                if orderData.timeInForce != 'GTT':
-                    raise ValueError('\'cancelAfter\' field can only be used with \'GTT\' as \'timeInForce\' field.')
-
-            if 'postOnly' in orderData.extraParams.keys():
-                if orderData.timeInForce in ['IOC', 'FOK']:
-                    raise ValueError(
-                        '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
 
 
-def checkFuturesOrderDataValid(orderData):
-    if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
-        if orderData.closePosition is None:
-            raise ValueError('Missing or incorrect \'side\' field.')
-        if not orderData.closePosition:
-            raise ValueError('Missing or incorrect \'side\' field.')
-    if orderData.side is not None:
-        orderData.side = orderData.side.lower()
+def checkOrderSize(orderData, futures=False):
+    errorString = 'Provide either \'quantity\' or \'quoteOrderQty\'.'
+    if futures:
+        if orderData.quantity is None and orderData.quoteQuantity is None:
+            if orderData.closePosition is None:
+                raise ValueError(errorString)
+            if not orderData.closePosition:
+                raise ValueError(errorString)
+    else:
+        if orderData.quantity is None and orderData.quoteOrderQty is None:
+            raise ValueError(errorString)
 
-    if orderData.symbol is None:
-        raise ValueError('Missing \'symbol\' field.')
 
-    if orderData.orderType is None or orderData.orderType not in ['limit', 'market', 'LIMIT', 'MARKET', 'Limit',
-                                                                  'Market']:
+def checkOrderType(orderData, futures=False):
+    if futures:
+        validTypes = ['limit', 'market', 'LIMIT', 'MARKET', 'Limit', 'Market']
+    else:
+        validTypes = ['limit', 'market', 'stop', 'LIMIT', 'MARKET', 'STOP', 'Limit', 'Market', 'Stop']
+
+    if orderData.orderType is None or orderData.orderType not in validTypes:
         raise ValueError('Missing \'type\' field.')
     orderData.orderType = orderData.orderType.lower()
 
-    if orderData.orderType == 'market':
-        if orderData.quantity is None and orderData.quoteQuantity is None:
-            if orderData.closePosition is None:
-                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
-            if not orderData.closePosition:
-                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
 
-    elif orderData.orderType == 'limit':
-        if orderData.price is None:
-            raise ValueError('Missing \'price\' field for limit order type.')
-        if orderData.quantity is None and orderData.quoteQuantity is None:
-            if orderData.closePosition is None:
-                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
-            if not orderData.closePosition:
-                raise ValueError('Provide either \'quantity\' or \'quoteOrderQty\'.')
-        if orderData.timeInForce not in ['GTC', 'IOC']:
-            raise ValueError('Invalid value for \'timeInForce\' specified')
-        if orderData.extraParams is not None:
-            if 'postOnly' in orderData.extraParams.keys():
-                if orderData.timeInForce in ['FOK']:
-                    raise ValueError('\'postOnly\' field can not be used with \'IOC\' as \'timeInForce\' field.')
-                if 'hidden' in orderData.extraParams.keys():
-                    raise ValueError('Can\'t use \'hidden\' with \'postOnly\'')
-                if 'iceberg' in orderData.extraParams.keys():
-                    raise ValueError('Can\'t use \'iceberg\' with \'postOnly\'')
-            if 'iceberg' in orderData.extraParams.keys():
-                if 'visibleSize' not in orderData.extraParams.keys():
-                    raise ValueError('Specify \'visibleSize\' with \'iceberg\' set as true')
-            if 'leverage' not in orderData.extraParams.keys():
-                if orderData.closePosition is None:
-                    raise ValueError('Missing \'leverage\' field.')
-                if not orderData.closePosition:
-                    raise ValueError('Missing \'leverage\' field.')
+def checkOrderSymbol(orderData):
+    if orderData.symbol is None:
+        raise ValueError('Missing \'symbol\' field.')
 
-    if orderData.stopPrice is not None:
-        if 'stop' not in orderData.extraParams.keys():
-            raise ValueError('Specify \'stop\' inside \'extraParams\'. Either \'down\' or \'up\'.')
-        if 'stopPriceType' not in orderData.extraParams.keys():
-            raise ValueError('Specify \'stopPriceType\' inside \'extraParams\'. Either \'TP\', \'IP\' or \'MP\'.')
+
+def checkOrderSide(orderData, futures=False):
+    errorString = 'Missing or incorrect \'side\' field.'
+    if futures:
+        if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
+            if orderData.closePosition is None:
+                raise ValueError(errorString)
+            if not orderData.closePosition:
+                raise ValueError(errorString)
+        if orderData.side is not None:
+            orderData.side = orderData.side.lower()
+    else:
+        if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
+            raise ValueError(errorString)
+        orderData.side = orderData.side.lower()
 
 
 class KuCoinExchange(BaseExchange):
@@ -146,6 +193,8 @@ class KuCoinExchange(BaseExchange):
     timeIntervalTranslate = {'1m': '1min', '3m': '3min', '5m': '5min', '15m': '15min', '30m': '30min', '1h': '1hour',
                              '2h': '2hour', '4h': '4hour', '6h': '6hour', '8h': '8hour', '12h': '12hour', '1d': '1day',
                              '1w': '1week'}
+
+    noOrderIdsErrorString = 'Specify either \'orderId\' or \'localOrderId\' (only for active orders)'
 
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
         self.spotApiKey = credentials['spot']['key']
@@ -288,7 +337,7 @@ class KuCoinExchange(BaseExchange):
                 orderData = self.getOrder(symbol=symbol, localOrderId=localOrderId, futures=True)
                 cancelledOrderId = self.futuresTrade.cancel_order(orderId=orderData['orderId'])['cancelledOrderIds'][0]
             else:
-                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+                raise ValueError(self.noOrderIdsErrorString)
             return self.getOrder(symbol, orderId=cancelledOrderId, futures=True)
         else:
             if orderId is not None:
@@ -296,7 +345,7 @@ class KuCoinExchange(BaseExchange):
             elif localOrderId is not None:
                 cancelledOrderId = self.spotTrade.cancel_client_order(localOrderId)['cancelledOrderId']
             else:
-                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+                raise ValueError(self.noOrderIdsErrorString)
             return self.getOrder(symbol, orderId=cancelledOrderId, futures=False)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
@@ -306,7 +355,7 @@ class KuCoinExchange(BaseExchange):
             elif localOrderId is not None:
                 orderData = self.futuresTrade.get_client_order_details(localOrderId)
             else:
-                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+                raise ValueError(self.noOrderIdsErrorString)
 
             lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
             return KuCoinHelpers.unifyGetOrder(orderData, futures=True, lotSize=lotSize)
@@ -316,7 +365,7 @@ class KuCoinExchange(BaseExchange):
             elif localOrderId is not None:
                 orderData = self.spotTrade.get_client_order_details(localOrderId)
             else:
-                raise ValueError('Specify either \'orderId\' or \'localOrderId\' (only for active orders)')
+                raise ValueError(self.noOrderIdsErrorString)
 
             return KuCoinHelpers.unifyGetOrder(orderData)
 
@@ -475,7 +524,7 @@ class KuCoinExchange(BaseExchange):
         return data
 
     def _getTimeIntervalInSeconds(self, timeInterval):
-        if not timeInterval in self.timeIntervals:
+        if timeInterval not in self.timeIntervals:
             raise ValueError('Time interval is not valid.')
 
         if timeInterval == '1min':
@@ -585,7 +634,7 @@ class KuCoinExchange(BaseExchange):
     def changePositionMargin(self, symbol, amount, marginType=None):
         enResult = self.futuresTrade.modify_auto_deposit_margin(symbol, True)
         if not enResult['data']:
-            raise Exception('Could not modify margin.')
+            raise RuntimeError('Could not modify margin.')
         newPosition = self.futuresTrade.add_margin_manually(symbol=symbol, margin=amount, bizNo=str(time.time()))
 
         return KuCoinHelpers.unifyGetPositionInfo(newPosition)
@@ -608,10 +657,10 @@ class KuCoinExchange(BaseExchange):
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         if futures:
             tradeHistory = self.futuresMarket.get_trade_history(symbol=symbol)
-            return KuCoinHelpers.unifyRecentTrades(tradeHistory, futures=True)
+            return pd.DataFrame(KuCoinHelpers.unifyRecentTrades(tradeHistory, futures=True))
         else:
             tradeHistory = self.spotMarket.get_trade_histories(symbol=symbol)
-            return KuCoinHelpers.unifyRecentTrades(tradeHistory)
+            return pd.DataFrame(KuCoinHelpers.unifyRecentTrades(tradeHistory))
 
     def getPositionInfo(self, symbol=None):
         if symbol is None:
@@ -712,5 +761,8 @@ class KuCoinExchange(BaseExchange):
                 symbolDatas.append(
                     (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
                 symbolDatas.sort(key=lambda x: x[1], reverse=True)
+            if numOfSymbols > len(symbolDatas):
+                numOfSymbols = len(symbolDatas)
         else:
             raise NotImplementedError()
+        return symbolDatas[:numOfSymbols]
