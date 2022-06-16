@@ -522,11 +522,10 @@ class KuCoinExchange(BaseExchange):
             lotSize = self.getSymbolMinTrade(symbol=futuresOrderData.symbol, futures=True)['precisionStep']
             if futuresOrderData.price is None:
                 currPrice = self.getSymbolTickerPrice(futuresOrderData.symbol, futures=True)
-                futuresOrderData.quantity = futuresOrderData.quoteQuantity * futuresOrderData.leverage \
-                                            / currPrice * lotSize
+                futuresOrderData.quantity = int(round(futuresOrderData.quoteQuantity / currPrice / lotSize))
             else:
-                futuresOrderData.quantity = futuresOrderData.quoteQuantity * futuresOrderData.leverage \
-                                            / futuresOrderData.price * lotSize
+                futuresOrderData.quantity = int(
+                    round(futuresOrderData.quoteQuantity / futuresOrderData.price / lotSize))
 
         params = KuCoinHelpers.getFuturesOrderAsDict(futuresOrderData)
 
