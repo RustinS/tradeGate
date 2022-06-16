@@ -70,6 +70,7 @@ print(gate.getSymbolTickerPrice('BTCUSDT'))
 ## Current Supported Exchanges
 - Binance
 - ByBit
+- KuCoin
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. The best way to contribute right now is to implement as many exchanges as possible. Make sure all test cases are passing.
