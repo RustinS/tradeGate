@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 def getGatesAndSymbolNames():
     gates = []
     symbolNames = {}
-    with open('./config.json') as f:
+    with open('../config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
@@ -131,8 +131,8 @@ def testFuturesTpSlLimitOrder(getGatesAndSymbolNames):
         if gate.exchangeName.lower() != 'kucoin':
             continue
         try:
-            result = gate.makeSlTpLimitFuturesOrder(symbol=symbolName, orderSide='BUY', quantity=None,
-                                                    quoteQuantity=100, enterPrice=20500, takeProfit=21500,
+            result = gate.makeSlTpLimitFuturesOrder(symbol=symbolName, orderSide='BUY',
+                                                    quantity=0.002, enterPrice=20500, takeProfit=21500,
                                                     stopLoss=20000, leverage=10, marginType='ISOLATED')
             # print('\nResult of TP-SL-Limit ordering from {} exchange: {}'.format(gate.exchangeName, result))
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)

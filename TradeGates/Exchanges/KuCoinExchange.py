@@ -519,13 +519,14 @@ class KuCoinExchange(BaseExchange):
 
     def makeFuturesOrder(self, futuresOrderData):
         if futuresOrderData.quantity is None:
-            lotSize = self.getSymbolMinTrade(symbol=futuresOrderData.symbol, futures=True)['precisionStep']
-            if futuresOrderData.price is None:
-                currPrice = self.getSymbolTickerPrice(futuresOrderData.symbol, futures=True)
-                futuresOrderData.quantity = int(round(futuresOrderData.quoteQuantity / currPrice / lotSize))
-            else:
-                futuresOrderData.quantity = int(
-                    round(futuresOrderData.quoteQuantity / futuresOrderData.price / lotSize))
+            if futuresOrderData.quoteQuantity is not None:
+                lotSize = self.getSymbolMinTrade(symbol=futuresOrderData.symbol, futures=True)['precisionStep']
+                if futuresOrderData.price is None:
+                    currPrice = self.getSymbolTickerPrice(futuresOrderData.symbol, futures=True)
+                    futuresOrderData.quantity = int(round(futuresOrderData.quoteQuantity / currPrice / lotSize))
+                else:
+                    futuresOrderData.quantity = int(
+                        round(futuresOrderData.quoteQuantity / futuresOrderData.price / lotSize))
 
         params = KuCoinHelpers.getFuturesOrderAsDict(futuresOrderData)
 
@@ -535,9 +536,11 @@ class KuCoinExchange(BaseExchange):
         side = params['side']
         del params['side']
 
-        leverage = params['leverage']
-        del params['leverage']
-
+        if 'leverage' in params.keys():
+            leverage = params['leverage']
+            del params['leverage']
+        else:
+            leverage = None
         if params['type'] == 'market':
             result = self.futuresTrade.create_market_order(symbol, side, leverage, **params)
         elif params['type'] == 'limit':
@@ -650,11 +653,13 @@ class KuCoinExchange(BaseExchange):
                                                    price=enterPrice, timeInForce='GTC',
                                                    extraParams={'leverage': leverage})
 
+        tpSlSide = 'sell' if orderSide.upper() == 'BUY' else 'buy'
+
         slExtraParams = {
             'stop': 'down' if orderSide.upper() == 'BUY' else 'up',
             'stopPriceType': 'TP'
         }
-        stopLossOrder = self.createAndTestFuturesOrder(symbol=symbol, side=None, orderType='MARKET',
+        stopLossOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
                                                        stopPrice=stopLoss, closePosition=True,
                                                        timeInForce='GTC', extraParams=slExtraParams)
 
@@ -662,7 +667,7 @@ class KuCoinExchange(BaseExchange):
             'stop': 'up' if orderSide.upper() == 'BUY' else 'down',
             'stopPriceType': 'TP'
         }
-        takeProfitOrder = self.createAndTestFuturesOrder(symbol=symbol, side=None, orderType='MARKET',
+        takeProfitOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
                                                          stopPrice=takeProfit, closePosition=True,
                                                          timeInForce='GTC', extraParams=tpExtraParams)
 

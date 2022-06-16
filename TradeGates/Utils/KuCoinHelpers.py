@@ -161,7 +161,8 @@ def getSpotOrderAsDict(orderData):
 def unifyGetOrder(orderData, futures=False, lotSize=None):
     if futures:
         if orderData['value'] is not None and orderData['price'] is None:
-            orderData['price'] = float(orderData['value']) / (float(orderData['size']) * lotSize)
+            if float(orderData['size']) > 0:
+                orderData['price'] = float(orderData['value']) / (float(orderData['size']) * lotSize)
 
         return {'symbol': orderData['symbol'],
                 'orderId': orderData['id'],
@@ -248,8 +249,10 @@ def unifyGetBalanceFuturesOut(data, isSingle=False):
 def getFuturesOrderAsDict(orderData):
     params = {'side': orderData.side,
               'symbol': orderData.symbol,
-              'type': orderData.orderType,
-              'leverage': orderData.extraParams['leverage']}
+              'type': orderData.orderType}
+
+    if 'leverage' in orderData.extraParams.keys():
+        params['leverage'] = orderData.extraParams['leverage']
 
     if orderData.newClientOrderId is not None:
         params['clientOid'] = orderData.newClientOrderId
