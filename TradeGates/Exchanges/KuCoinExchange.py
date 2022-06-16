@@ -638,18 +638,15 @@ class KuCoinExchange(BaseExchange):
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
 
-        if quoteQuantity is None:
-            if quantity is None:
+        if quantity is None:
+            if quoteQuantity is None:
                 raise ValueError('Specify either quantity or quoteQuantity')
-            quoteQuantity = quantity * enterPrice
-            quoteQuantity -= quoteQuantity % symbolInfo['minQuoteQuantity']
-        else:
-            quantity = quoteQuantity / enterPrice
+            quantity = int(quoteQuantity / enterPrice / symbolInfo['precisionStep']) * symbolInfo['precisionStep']
 
         if quantity < symbolInfo['minQuantity']:
             raise ValueError('Quantity is lower than minimum quantity allowed.')
 
-        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quoteQuantity=quoteQuantity,
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=quantity,
                                                    price=enterPrice, timeInForce='GTC',
                                                    extraParams={'leverage': leverage})
 
