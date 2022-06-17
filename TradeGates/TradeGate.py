@@ -23,6 +23,25 @@ class TradeGate:
             self.exchange = exchangeClass(configDict['credentials']['main'], sandbox=False)
 
     def getBalance(self, asset=None, futures=False):
+        """ Returns account balance of all assets or a single asset
+
+        :param asset: a valid asset name, defaults to None
+        :type asset: str , optional
+        :param futures: For futures account or spot account, defaults to False
+        :type futures: bool , optional
+        :return: Returns a single asset balance or list of assets if no asset was specified.
+        :rtype: dict or list(dict)
+        :Output for single asset:
+
+            .. code-block:: json
+
+                {
+                    "asset": "BNB",
+                    "free": "1000.00000000",
+                    "locked": "0.00000000"
+                }
+
+        """
         return self.exchange.getBalance(asset, futures)
 
     @staticmethod

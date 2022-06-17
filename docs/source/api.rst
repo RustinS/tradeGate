@@ -1,7 +1,9 @@
 API
 ===
 
-.. autosummary::
-   :toctree: generated
+.. autoclass:: TradeGate.TradeGate
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-   TradeGate.TradeGate
+
