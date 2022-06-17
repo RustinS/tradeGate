@@ -761,7 +761,7 @@ class KuCoinExchange(BaseExchange):
                 symbolDatas.append(
                     (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
                 symbolDatas.sort(key=lambda x: x[1], reverse=True)
-            if numOfSymbols > len(symbolDatas):
+            if numOfSymbols is not None and numOfSymbols > len(symbolDatas):
                 numOfSymbols = len(symbolDatas)
         else:
             raise NotImplementedError()

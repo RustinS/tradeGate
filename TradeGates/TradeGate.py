@@ -7,10 +7,19 @@ __version__ = "0.3.2"
 from Exchanges import BinanceExchange, BybitExchange, KuCoinExchange
 
 
+def getCorrectExchange(exchangeName):
+    if exchangeName.lower() == 'binance':
+        return BinanceExchange.BinanceExchange
+    if exchangeName.lower() == 'bybit':
+        return BybitExchange.BybitExchange
+    if exchangeName.lower() == 'kucoin':
+        return KuCoinExchange.KuCoinExchange
+
+
 class TradeGate:
     def __init__(self, configDict, sandbox=False):
         self.exchangeName = configDict['exchangeName']
-        exchangeClass = self.getCorrectExchange(self.exchangeName)
+        exchangeClass = getCorrectExchange(self.exchangeName)
         if sandbox:
             self.apiKey = configDict['credentials']['test']['spot']['key']
             self.apiSecret = configDict['credentials']['test']['spot']['secret']
@@ -27,31 +36,40 @@ class TradeGate:
 
         :param asset: a valid asset name, defaults to None
         :type asset: str , optional
-        :param futures: For futures account or spot account, defaults to False
+        :param futures: False for spot market and True for spot market, defaults to False
         :type futures: bool , optional
         :return: Returns a single asset balance or list of assets if no asset was specified.
         :rtype: dict or list(dict)
-        :Output for single asset:
+        :Output with asset specified:
 
-            .. code-block:: json
+            .. code-block:: python
 
                 {
-                    "asset": "BNB",
-                    "free": "1000.00000000",
-                    "locked": "0.00000000"
+                    'asset': 'BNB',
+                    'free': '1000.00000000',
+                    'locked': '0.00000000'
                 }
+
+        :Output without asset specified:
+
+            .. code-block:: python
+
+                [
+                    {
+                        'asset': 'BNB',
+                        'free': '1000.00000000',
+                        'locked': '0.00000000'
+                    },
+                    {
+                        'asset': 'BTC',
+                        'free': '1.02000000',
+                        'locked': '0.00000000'
+                    },
+                    ...
+                ]
 
         """
         return self.exchange.getBalance(asset, futures)
-
-    @staticmethod
-    def getCorrectExchange(exchangeName):
-        if exchangeName.lower() == 'binance':
-            return BinanceExchange.BinanceExchange
-        if exchangeName.lower() == 'bybit':
-            return BybitExchange.BybitExchange
-        if exchangeName.lower() == 'kucoin':
-            return KuCoinExchange.KuCoinExchange
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
                                stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
@@ -154,11 +172,83 @@ class TradeGate:
     def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
         return self.exchange.getIncomeHistory(symbol, incomeType, startTime, endTime, limit)
 
-    def getSymbolList(self, futures=True):
+    def getSymbolList(self, futures=False):
+        """ Returns list of symbol names available for trade
+
+        :param futures: False for spot market and True for spot market, defaults to False
+        :type futures: bool , optional
+        :return: Returns a list of strings
+        :rtype: list(str)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    'BTCUSDT',
+                    'ETHUSDT',
+                    'BCHUSDT',
+                    'XRPUSDT',
+                    'EOSUSDT',
+                    'LTCUSDT',
+                    'TRXUSDT',
+                    ...
+                ]
+
+        """
         return self.exchange.getSymbolList(futures=futures)
 
     def getSymbol24hChanges(self, futures=False):
+        """ Returns all symbols 24-hour change percentages
+
+        :param futures: False for spot market and True for spot market, defaults to False
+        :type futures: bool , optional
+        :return: Returns a list of tuples containing asset names and percentage of change in 24-hour
+        :rtype: list(tuple)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    ('PONDUSDT', 28.45),
+                    ('PONDBTC', 28.261),
+                    ('PONDBUSD', 28.162),
+                    ('NULSBTC', 24.321),
+                    ('NULSUSDT', 23.975),
+                    ('NULSBUSD', 23.244),
+                    ('CTXCBTC', 20.551),
+                    ('CTXCUSDT', 19.959),
+                    ('CTXCBUSD', 19.776),
+                    ...
+                ]
+
+        """
         return self.exchange.getSymbol24hChanges(futures=futures)
 
     def getLatestSymbolNames(self, numOfSymbols=None, futures=True):
+        """ Returns list of newly added symbols to the exchange. Currently, only working for futures market.
+
+        :param numOfSymbols: Number of symbols returned, sorted for the newest to oldest.
+        :type numOfSymbols: int, optional
+        :param futures: False for spot market and True for spot market, defaults to False
+        :type futures: bool , optional
+        :return: Returns a list of tuples containing asset names and a datetime object specifying its listed date.
+        :rtype: list(tuple)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    ('DOTBUSD', datetime.datetime(2022, 6, 7, 11, 30)),
+                    ('TLMBUSD', datetime.datetime(2022, 6, 7, 11, 30)),
+                    ('ICPBUSD', datetime.datetime(2022, 6, 7, 11, 30)),
+                    ('OPUSDT', datetime.datetime(2022, 6, 1, 11, 30)),
+                    ('LUNA2BUSD', datetime.datetime(2022, 5, 31, 11, 30)),
+                    ('1000LUNCBUSD', datetime.datetime(2022, 5, 30, 11, 30)),
+                    ('GALABUSD', datetime.datetime(2022, 5, 25, 11, 30)),
+                    ('TRXBUSD', datetime.datetime(2022, 5, 25, 11, 30)),
+                    ('DODOBUSD', datetime.datetime(2022, 5, 24, 11, 30)),
+                    ('ANCBUSD', datetime.datetime(2022, 5, 24, 11, 30))
+                ]
+
+        """
         return self.exchange.getLatestSymbolNames(numOfSymbols=numOfSymbols, futures=futures)
