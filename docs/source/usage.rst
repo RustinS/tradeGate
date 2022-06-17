@@ -4,10 +4,11 @@ Usage
 How to install
 ------------------
 
-Use this Github repository by running ```python setup.py install```, or using pip:
-```bash
-pip install TradeGate
-```
+Use this Github repository by running :code:`python setup.py install`, or using pip:
+
+.. code-block:: bash
+
+    pip install TradeGate
 
 How to use
 ---------------
