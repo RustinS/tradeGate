@@ -8,4 +8,4 @@ authors = [{ name = "Rustin Soraki", email = "rustin.soraki@gmail.com" }]
 dynamic = ["version", "description"]
 
 [tool.flit.module]
-name = "TradeGate"
+name = "TradeGates"
