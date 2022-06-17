@@ -1,5 +1,5 @@
-API
-===
+TradeGate
+===========
 
 .. autoclass:: TradeGate.TradeGate
     :members:
