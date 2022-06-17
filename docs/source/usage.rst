@@ -13,6 +13,7 @@ How to use
 -----------
 
 Use with a config file in JSON format. Your config file should look like this:
+
 .. code-block:: json
     {
         "Binance":
@@ -51,6 +52,7 @@ Use with a config file in JSON format. Your config file should look like this:
     }
 
 You should read this config file as JSON and give the desired exchange information to the main class initializer. Use sandbox argument to connect to the testnets of exchanges (if it exists). This is shown below:
+
 .. code-block:: python
     from TradeGate import TradeGate
     import json
