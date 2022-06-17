@@ -4,7 +4,7 @@ Welcome to TradeGate's documentation!
 An algorithmic trading library to use as a gateway to different exchanges.
 
 Check out the :doc:`usage` section for further information, including
-how to :ref:`How to install` the project.
+how to :ref:`installation` the project.
 
 .. note::
 

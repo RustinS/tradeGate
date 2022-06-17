@@ -1,6 +1,7 @@
 Usage
 ===========
 
+.. _installation:
 How to install
 ------------------
 
