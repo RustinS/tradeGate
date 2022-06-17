@@ -440,9 +440,9 @@ class BinanceExchange(BaseExchange):
                 return self.client.depth(symbol, limit=limit)
         else:
             if limit is None:
-                return self.futuresClient.get_order_book(symbol=symbol)
+                return self.futuresClient.get_order_book(symbol=symbol).toDict()
             else:
-                return self.futuresClient.get_order_book(symbol=symbol, limit=limit)
+                return self.futuresClient.get_order_book(symbol=symbol, limit=limit).toDict()
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         if limit is not None:

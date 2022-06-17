@@ -401,6 +401,11 @@ class KuCoinExchange(BaseExchange):
         else:
             timeInterval = interval
 
+        if startTime is not None and not isinstance(startTime, int):
+            startTime = int(datetime.timestamp(datetime.strptime(startTime, '%Y-%m-%d %H:%M:%S')))
+        if endTime is not None and not isinstance(endTime, int):
+            endTime = int(datetime.timestamp(datetime.strptime(endTime, '%Y-%m-%d %H:%M:%S')))
+
         if futures:
             data = self._getFuturesSymbolKlines(endTime, timeInterval, limit, startTime, symbol)
         else:

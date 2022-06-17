@@ -35,6 +35,13 @@ class OrderBook:
             order.price = val[0]
             order.qty = val[1]
             ask_list.append(order)
-        order_book.asks = ask_list        
+        order_book.asks = ask_list
 
         return order_book
+
+    def toDict(self):
+        return {
+            'lastUpdateId': self.lastUpdateId,
+            'bids': [[bid.price, bid.qty] for bid in self.bids],
+            'asks': [[ask.price, ask.qty] for ask in self.asks]
+        }
