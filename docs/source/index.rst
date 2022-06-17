@@ -1,5 +1,5 @@
 Welcome to TradeGate's documentation!
-===================================
+==============================================
 
 An algorithmic trading library to use as a gateway to different exchanges.
 

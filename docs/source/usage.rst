@@ -1,8 +1,8 @@
 Usage
-=====
+===========
 
 How to install
-------------
+------------------
 
 Use this Github repository by running ```python setup.py install```, or using pip:
 ```bash
@@ -10,7 +10,7 @@ pip install TradeGate
 ```
 
 How to use
------------
+---------------
 
 Use with a config file in JSON format. Your config file should look like this:
 
