@@ -6,7 +6,8 @@ build:
     python: "3.9"
   jobs:
     post_install:
-      - pip install sphinx_book_theme
+      - pip install sphinx_rtd_theme
+      - pip install -r requirements.txt
 
 sphinx:
   configuration: docs/source/conf.py
