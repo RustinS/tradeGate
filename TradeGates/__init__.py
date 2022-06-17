@@ -1,4 +1,10 @@
+"""
+TradeGate - An algorithmic trading library to use as a gateway to different exchanges.
+"""
+
+__version__ = "0.3.2"
+
 import os
 import sys
 
-import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
