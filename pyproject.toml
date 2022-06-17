@@ -2,8 +2,6 @@
 requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
-dependencies = ["sphinx_book_theme"]
-
 [project]
 name = "TradeGates"
 authors = [{ name = "Rustin Soraki", email = "rustin.soraki@gmail.com" }]
