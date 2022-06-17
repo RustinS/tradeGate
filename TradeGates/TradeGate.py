@@ -1,3 +1,9 @@
+"""
+TradeGate - An algorithmic trading library to use as a gateway to different exchanges.
+"""
+
+__version__ = "0.3.2"
+
 from Exchanges import BinanceExchange, BybitExchange, KuCoinExchange
 
 

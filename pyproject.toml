@@ -6,3 +6,6 @@ build-backend = "flit_core.buildapi"
 name = "TradeGate"
 authors = [{ name = "RustinSoraki", email = "rustin.soraki@gmail.com" }]
 dynamic = ["version", "description"]
+
+[tool.flit.module]
+name = "TradeGate"
