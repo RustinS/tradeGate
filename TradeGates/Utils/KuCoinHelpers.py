@@ -358,3 +358,19 @@ def unifyMinTrade(info, futures=False):
             'stepPrice': info['priceIncrement']
         }
     return params
+
+
+def unifyGetIncome(incomeList):
+    outList = []
+
+    for income in incomeList:
+        outList.append({
+            'symbol': income['remark'],
+            'incomeType': income['type'],
+            'income': income['amount'],
+            'asset': income['currency'],
+            'time': income['type'],
+            'exchangeSpecific': income
+        })
+
+    return outList

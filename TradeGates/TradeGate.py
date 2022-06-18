@@ -170,6 +170,44 @@ class TradeGate:
         return self.exchange.getSymbolMinTrade(symbol, futures)
 
     def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
+        """ Returns list of changes to the account balance. (Only for futures accounts)
+
+        :param symbol: The symbol which the incomes are related to
+        :type symbol: str
+        :param incomeType: Type of income. For options visit the exchange's API documentation.
+        :type incomeType: str , Optional
+        :param startTime: If specified, incomes will be fetched from that time forward. (Time string format : '%Y-%m-%d %H:%M:%S')
+        :type startTime: str , Optional
+        :param endTime: If specified, incomes will be fetched until that time. (Time string format : '%Y-%m-%d %H:%M:%S')
+        :type endTime: str , Optional
+        :param limit: Maximum number of entries returned. For available options visit the exchange's API documentation.
+        :type limit: int
+        :rtype: list(dict)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    {'symbol': 'BTCUSDT',
+                     'incomeType': 'FUNDING_FEE',
+                     'income': 0.26403463,
+                     'asset': 'USDT',
+                     'time': 1655280000000},
+                    {'symbol': 'BTCUSDT',
+                     'incomeType': 'REALIZED_PNL',
+                     'income': 26.0335,
+                     'asset': 'USDT',
+                     'time': 1655281638000},
+                    {'symbol': 'BTCUSDT',
+                     'incomeType': 'COMMISSION',
+                     'income': -0.08219559,
+                     'asset': 'USDT',
+                     'time': 1655281638000},
+                     ...
+                ]
+
+        """
+
         return self.exchange.getIncomeHistory(symbol, incomeType, startTime, endTime, limit)
 
     def getSymbolList(self, futures=False):

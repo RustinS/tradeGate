@@ -656,3 +656,15 @@ class BybitExchange(BaseExchange):
         else:
             raise NotImplementedError()
         return symbolDatas[:numOfSymbols]
+
+    def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
+        args = {
+            'start_date': startTime,
+            'end_date': endTime,
+            'wallet_fund_type': incomeType,
+            'limit': limit,
+            'coin': symbol
+        }
+        args = {k: v for k, v in args.items() if v is not None}
+
+        return self.futuresSession.wallet_fund_records(**args)

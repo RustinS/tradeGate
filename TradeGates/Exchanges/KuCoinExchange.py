@@ -771,3 +771,15 @@ class KuCoinExchange(BaseExchange):
         else:
             raise NotImplementedError()
         return symbolDatas[:numOfSymbols]
+
+    def getIncomeHistory(self, currency, incomeType=None, startTime=None, endTime=None, limit=None):
+        args = {
+            'beginAt': startTime,
+            'endAt': endTime,
+            'type': incomeType,
+            'maxCount': limit,
+            'currency': currency
+        }
+        args = {k: v for k, v in args.items() if v is not None}
+
+        return KuCoinHelpers.unifyGetIncome(self.futuresUser.get_transaction_history(**args)['dataList'])
