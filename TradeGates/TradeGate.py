@@ -151,6 +151,57 @@ class TradeGate:
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
 
     def symbolAccountTradeHistory(self, symbol, fromId=None, limit=None, futures=False):
+        """ Returns list of the trade history for user orders
+
+        :param symbol: Symbol name of the trades
+        :type symbol: str
+        :param fromId: Only return trades from the specified id forward.
+        :type fromId: str , Optional
+        :param limit: Maximum number of returned trade datas
+        :type limit: int , Optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: A list of trade datas
+        :rtype: list(dict)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    {'symbol': 'BTCUSDT',
+                    'id': 233453846,
+                    'orderId': 3046255912,
+                    'orderListId': None,
+                    'price': 27426.7,
+                    'qty': 0.61,
+                    'quoteQty': 16730.287,
+                    'commission': 0.0,
+                    'commissionAsset': 'USDT',
+                    'time': 1655001759033,
+                    'isBuyer': False,
+                    'isMaker': False,
+                    'isBestMatch': None},
+                    {'symbol': 'BTCUSDT',
+                    'id': 233480351,
+                    'orderId': 3046360099,
+                    'orderListId': None,
+                    'price': 27300.0,
+                    'qty': 0.002,
+                    'quoteQty': 54.6,
+                    'commission': 0.02184,
+                    'commissionAsset': 'USDT',
+                    'time': 1655027380068,
+                    'isBuyer': True,
+                    'isMaker': False,
+                    'isBestMatch': None},
+                    ...
+                ]
+
+        :Notes:
+
+            * The **orderListId** returned parameter is either None or -1 if order was made with API.
+            * The **isBestMatch** returned parameter is not reliable and not available on most of the exchanges.
+        """
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
 
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, enterPrice, quantity=None, quoteQuantity=None,
