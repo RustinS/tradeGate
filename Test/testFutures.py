@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 def getGatesAndSymbolNames():
     gates = []
     symbolNames = {}
-    with open('../config.json') as f:
+    with open('../../config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
@@ -128,13 +128,13 @@ def testFuturesTpSlLimitOrder(getGatesAndSymbolNames):
     gates, symbolNamesDict = getGatesAndSymbolNames
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
-        if gate.exchangeName.lower() != 'kucoin':
+        if gate.exchangeName.lower() != 'binance':
             continue
         try:
             result = gate.makeSlTpLimitFuturesOrder(symbol=symbolName, orderSide='BUY',
-                                                    quantity=0.002, enterPrice=20500, takeProfit=21500,
-                                                    stopLoss=20000, leverage=10, marginType='ISOLATED')
-            # print('\nResult of TP-SL-Limit ordering from {} exchange: {}'.format(gate.exchangeName, result))
+                                                    quantity=0.002, enterPrice=19000, takeProfit=20000,
+                                                    stopLoss=18500, leverage=10, marginType='ISOLATED')
+            print('\nResult of TP-SL-Limit ordering from {} exchange: {}'.format(gate.exchangeName, result))
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
         except Exception:
             assert False, 'Problem in making new SL-TP-Limit order in {} exchange'.format(gate.exchangeName)
@@ -149,7 +149,7 @@ def testFuturesTpSlMarketOrder(getGatesAndSymbolNames):
         try:
             result = gate.makeSlTpMarketFuturesOrder(symbol=symbolName, orderSide='BUY', quantity=None,
                                                      quoteQuantity=40,
-                                                     takeProfit=47000, stopLoss=45000, leverage=10,
+                                                     takeProfit=20000, stopLoss=18500, leverage=10,
                                                      marginType='ISOLATED')
             print('\nResult of TP-SL-Market ordering from {} exchange: {}'.format(gate.exchangeName, result))
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)

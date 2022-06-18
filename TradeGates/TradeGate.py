@@ -150,16 +150,102 @@ class TradeGate:
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
 
-    def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
+    def symbolAccountTradeHistory(self, symbol, fromId=None, limit=None, futures=False):
         return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
 
-    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
+    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, enterPrice, quantity=None, quoteQuantity=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+        """ Make market price futures order with take profit and stop loss.
+
+        :param symbol: Name of the symbol
+        :type symbol: str
+        :param orderSide: Side of the order.
+        :type orderSide: str
+        :param enterPrice: Limit price of the order
+        :type enterPrice: float , optional
+        :param quantity: Amount of the base asset
+        :type quantity: float , optional
+        :param quoteQuantity: Amount of the quote asset
+        :type quoteQuantity: float , optional
+        :param takeProfit: Take profit price
+        :type takeProfit: float , optional
+        :param stopLoss: Stop loss price
+        :type stopLoss: float , optional
+        :param leverage: Desired leverage for the order.
+        :type leverage: int , optional
+        :param marginType: Margin type of the order
+        :type marginType: str , optional
+        :return: Returns orderID's of the orders submitted.
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'mainOrder': 3048448085,
+                    'stopLoss': 3048448086,
+                    'takeProfit': 3048448087
+                }
+
+        :Notes:
+
+            * The **orderSide** parameter can either be **BUY** or **SELL**.
+            * Should specify either **quantity** or **quoteQuantity**.
+            * The **leverage** parameter is mandatory for the following exchanges:
+
+                * KuCoin
+            * The **marginType** is currently only valid for **Binance** exchange.
+            * Be careful with the **takeProfit** and **stopLoss** prices, if they would trigger immidietly, there will be an error.
+            * Use with a try catch block preferably.
+
+        """
         return self.exchange.makeSlTpLimitFuturesOrder(symbol, orderSide, quantity, quoteQuantity, enterPrice,
                                                        takeProfit, stopLoss, leverage, marginType)
 
     def makeSlTpMarketFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None,
                                    takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+        """ Make market price futures order with take profit and stop loss.
+
+        :param symbol: Name of the symbol
+        :type symbol: str
+        :param orderSide: Side of the order.
+        :type orderSide: str
+        :param quantity: Amount of the base asset
+        :type quantity: float , optional
+        :param quoteQuantity: Amount of the quote asset
+        :type quoteQuantity: float , optional
+        :param takeProfit: Take profit price
+        :type takeProfit: float , optional
+        :param stopLoss: Stop loss price
+        :type stopLoss: float , optional
+        :param leverage: Desired leverage for the order.
+        :type leverage: int , optional
+        :param marginType: Margin type of the order
+        :type marginType: str , optional
+        :return: Returns orderID's of the orders submitted.
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'mainOrder': 3048424829,
+                    'stopLoss': 3048424830,
+                    'takeProfit': 3048424828
+                }
+
+        :Notes:
+
+            * The **orderSide** parameter can either be **BUY** or **SELL**.
+            * Should specify either **quantity** or **quoteQuantity**.
+            * The **leverage** parameter is mandatory for the following exchanges:
+            
+                * KuCoin
+            * The **marginType** is currently only valid for **Binance** exchange.
+            * Be careful with the **takeProfit** and **stopLoss** prices, if they would trigger immidietly, there will be an error.
+            * Use with a try catch block preferably.
+
+        """
         return self.exchange.makeSlTpMarketFuturesOrder(symbol, orderSide, quantity, quoteQuantity, takeProfit,
                                                         stopLoss, leverage, marginType)
 
