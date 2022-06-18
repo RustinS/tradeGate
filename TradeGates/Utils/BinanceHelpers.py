@@ -123,7 +123,7 @@ def extractSymbolInfoFromFilters(symbolFilters, tickerPrice):
             params['minQuoteQuantity'] = tickerPrice * params['minQuantity']
 
         if symbolFilter['filterType'] == 'PRICE_FILTER':
-            params['stepPrice'] = symbolFilter['tickSize']
+            params['stepPrice'] = float(symbolFilter['tickSize'])
     return params
 
 

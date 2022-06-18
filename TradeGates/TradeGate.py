@@ -36,7 +36,7 @@ class TradeGate:
 
         :param asset: a valid asset name, defaults to None
         :type asset: str , optional
-        :param futures: False for spot market and True for spot market, defaults to False
+        :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
         :return: Returns a single asset balance or list of assets if no asset was specified.
         :rtype: dict or list(dict)
@@ -167,7 +167,7 @@ class TradeGate:
         """ Returns information of  position or positions. (Only for futures accounts)
 
         :param symbol: The symbol of the position
-        :type symbol: str
+        :type symbol: str , optional
         :return: A list of position information. If the symbol parameter is given, the list will contain only one element.
         :rtype: list(dict)
         :Output with symbol specified:
@@ -225,6 +225,41 @@ class TradeGate:
         return self.exchange.getPositionInfo(symbol)
 
     def getSymbolMinTrade(self, symbol, futures=False):
+        """ Returns information of valid minimum quantity, quote quantity and price precision.
+
+        :param symbol: The symbol which the information is for.
+        :type symbol: str
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: A dictionary containing information about the minimum valid values of the specified symbol
+        :rtype: dict
+        :Output parameters:
+
+            .. list-table::
+               :widths: 10 50
+               :header-rows: 0
+
+               * - **stepPrice**
+                 - Price's maximum precision
+               * - **minQuantity**
+                 - Minimum valid quantity
+               * - **precisionStep**
+                 - Quantity's maximum precision
+               * - **minQuoteQuantity**
+                 - Minimum valid quote quantity
+
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'stepPrice': 0.01,
+                    'minQuantity': 1e-05,
+                    'precisionStep': 1e-05,
+                    'minQuoteQuantity': 0.19279200000000002
+                }
+
+        """
         return self.exchange.getSymbolMinTrade(symbol, futures)
 
     def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
@@ -272,7 +307,7 @@ class TradeGate:
     def getSymbolList(self, futures=False):
         """ Returns list of symbol names available for trade
 
-        :param futures: False for spot market and True for spot market, defaults to False
+        :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
         :return: Returns a list of strings
         :rtype: list(str)
@@ -297,7 +332,7 @@ class TradeGate:
     def getSymbol24hChanges(self, futures=False):
         """ Returns all symbols 24-hour change percentages
 
-        :param futures: False for spot market and True for spot market, defaults to False
+        :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
         :return: Returns a list of tuples containing asset names and percentage of change in 24-hour
         :rtype: list(tuple)
@@ -326,7 +361,7 @@ class TradeGate:
 
         :param numOfSymbols: Number of symbols returned, sorted for the newest to oldest.
         :type numOfSymbols: int, optional
-        :param futures: False for spot market and True for spot market, defaults to False
+        :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
         :return: Returns a list of tuples containing asset names and a datetime object specifying its listed date.
         :rtype: list(tuple)
