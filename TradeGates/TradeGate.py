@@ -164,6 +164,64 @@ class TradeGate:
                                                         stopLoss, leverage, marginType)
 
     def getPositionInfo(self, symbol=None):
+        """ Returns information of  position or positions. (Only for futures accounts)
+
+        :param symbol: The symbol of the position
+        :type symbol: str
+        :return: A list of position information. If the symbol parameter is given, the list will contain only one element.
+        :rtype: list(dict)
+        :Output with symbol specified:
+
+            .. code-block:: python
+
+                [
+                    {'entryPrice': 19229.6,
+                    'isAutoAddMargin': True,
+                    'leverage': 10.0,
+                    'maxNotionalValue': 1000000.0,
+                    'liquidationPrice': 20935.5130297,
+                    'markPrice': 19222.55166016,
+                    'positionAmt': -0.01,
+                    'symbol': 'BTCUSDT',
+                    'unrealizedProfit': 0.07048339,
+                    'marginType': 'isolated',
+                    'isolatedMargin': 19.22316499,
+                    'positionSide': 'BOTH'}
+                ]
+
+        :Output without symbol specified:
+
+            .. code-block:: python
+
+                [
+                    {'entryPrice': 0.0,
+                    'isAutoAddMargin': True,
+                    'leverage': 20.0,
+                    'maxNotionalValue': 25000.0,
+                    'liquidationPrice': 0.0,
+                    'markPrice': 0.0,
+                    'positionAmt': 0.0,
+                    'symbol': 'RAYUSDT',
+                    'unrealizedProfit': 0.0,
+                    'marginType': 'cross',
+                    'isolatedMargin': 0.0,
+                    'positionSide': 'BOTH'},
+                    {'entryPrice': 0.0,
+                    'isAutoAddMargin': True,
+                    'leverage': 20.0,
+                    'maxNotionalValue': 25000.0,
+                    'liquidationPrice': 0.0,
+                    'markPrice': 0.0,
+                    'positionAmt': 0.0,
+                    'symbol': 'API3USDT',
+                    'unrealizedProfit': 0.0,
+                    'marginType': 'cross',
+                    'isolatedMargin': 0.0,
+                    'positionSide': 'BOTH'},
+                    ...
+                ]
+
+        """
         return self.exchange.getPositionInfo(symbol)
 
     def getSymbolMinTrade(self, symbol, futures=False):
@@ -182,6 +240,7 @@ class TradeGate:
         :type endTime: str , Optional
         :param limit: Maximum number of entries returned. For available options visit the exchange's API documentation.
         :type limit: int
+        :return: A list of incomes
         :rtype: list(dict)
         :Output:
 
