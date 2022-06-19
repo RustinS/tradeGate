@@ -142,6 +142,25 @@ class TradeGate:
         return self.exchange.getPosition()
 
     def spotBestBidAsks(self, symbol=None):
+        """ Returns best bid and best ask price with their quantities
+
+        :param symbol: Symbol name of the orders
+        :type symbol: str
+        :return: A dictionary with best bid and ask with their quantity
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'symbol': 'BTC-USDT',
+                    'bidPrice': '18125.7',
+                    'bidQty': '0.00839998',
+                    'askPrice': '18126',
+                    'askQty': '0.00496777'
+                }
+
+        """
         return self.exchange.spotBestBidAsks(symbol)
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
@@ -221,32 +240,36 @@ class TradeGate:
             .. code-block:: python
 
                 [
-                    {'symbol': 'BTCUSDT',
-                    'id': 233453846,
-                    'orderId': 3046255912,
-                    'orderListId': None,
-                    'price': 27426.7,
-                    'qty': 0.61,
-                    'quoteQty': 16730.287,
-                    'commission': 0.0,
-                    'commissionAsset': 'USDT',
-                    'time': 1655001759033,
-                    'isBuyer': False,
-                    'isMaker': False,
-                    'isBestMatch': None},
-                    {'symbol': 'BTCUSDT',
-                    'id': 233480351,
-                    'orderId': 3046360099,
-                    'orderListId': None,
-                    'price': 27300.0,
-                    'qty': 0.002,
-                    'quoteQty': 54.6,
-                    'commission': 0.02184,
-                    'commissionAsset': 'USDT',
-                    'time': 1655027380068,
-                    'isBuyer': True,
-                    'isMaker': False,
-                    'isBestMatch': None},
+                    {
+                        'symbol': 'BTCUSDT',
+                        'id': 233453846,
+                        'orderId': 3046255912,
+                        'orderListId': None,
+                        'price': 27426.7,
+                        'qty': 0.61,
+                        'quoteQty': 16730.287,
+                        'commission': 0.0,
+                        'commissionAsset': 'USDT',
+                        'time': 1655001759033,
+                        'isBuyer': False,
+                        'isMaker': False,
+                        'isBestMatch': None
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'id': 233480351,
+                        'orderId': 3046360099,
+                        'orderListId': None,
+                        'price': 27300.0,
+                        'qty': 0.002,
+                        'quoteQty': 54.6,
+                        'commission': 0.02184,
+                        'commissionAsset': 'USDT',
+                        'time': 1655027380068,
+                        'isBuyer': True,
+                        'isMaker': False,
+                        'isBestMatch': None
+                    },
                     ...
                 ]
 
@@ -365,18 +388,20 @@ class TradeGate:
             .. code-block:: python
 
                 [
-                    {'entryPrice': 19229.6,
-                    'isAutoAddMargin': True,
-                    'leverage': 10.0,
-                    'maxNotionalValue': 1000000.0,
-                    'liquidationPrice': 20935.5130297,
-                    'markPrice': 19222.55166016,
-                    'positionAmt': -0.01,
-                    'symbol': 'BTCUSDT',
-                    'unrealizedProfit': 0.07048339,
-                    'marginType': 'isolated',
-                    'isolatedMargin': 19.22316499,
-                    'positionSide': 'BOTH'}
+                    {
+                        'entryPrice': 19229.6,
+                        'isAutoAddMargin': True,
+                        'leverage': 10.0,
+                        'maxNotionalValue': 1000000.0,
+                        'liquidationPrice': 20935.5130297,
+                        'markPrice': 19222.55166016,
+                        'positionAmt': -0.01,
+                        'symbol': 'BTCUSDT',
+                        'unrealizedProfit': 0.07048339,
+                        'marginType': 'isolated',
+                        'isolatedMargin': 19.22316499,
+                        'positionSide': 'BOTH'
+                    }
                 ]
 
         :Output without symbol specified:
@@ -384,30 +409,34 @@ class TradeGate:
             .. code-block:: python
 
                 [
-                    {'entryPrice': 0.0,
-                    'isAutoAddMargin': True,
-                    'leverage': 20.0,
-                    'maxNotionalValue': 25000.0,
-                    'liquidationPrice': 0.0,
-                    'markPrice': 0.0,
-                    'positionAmt': 0.0,
-                    'symbol': 'RAYUSDT',
-                    'unrealizedProfit': 0.0,
-                    'marginType': 'cross',
-                    'isolatedMargin': 0.0,
-                    'positionSide': 'BOTH'},
-                    {'entryPrice': 0.0,
-                    'isAutoAddMargin': True,
-                    'leverage': 20.0,
-                    'maxNotionalValue': 25000.0,
-                    'liquidationPrice': 0.0,
-                    'markPrice': 0.0,
-                    'positionAmt': 0.0,
-                    'symbol': 'API3USDT',
-                    'unrealizedProfit': 0.0,
-                    'marginType': 'cross',
-                    'isolatedMargin': 0.0,
-                    'positionSide': 'BOTH'},
+                    {
+                        'entryPrice': 0.0,
+                        'isAutoAddMargin': True,
+                        'leverage': 20.0,
+                        'maxNotionalValue': 25000.0,
+                        'liquidationPrice': 0.0,
+                        'markPrice': 0.0,
+                        'positionAmt': 0.0,
+                        'symbol': 'RAYUSDT',
+                        'unrealizedProfit': 0.0,
+                        'marginType': 'cross',
+                        'isolatedMargin': 0.0,
+                        'positionSide': 'BOTH'
+                    },
+                    {
+                        'entryPrice': 0.0,
+                        'isAutoAddMargin': True,
+                        'leverage': 20.0,
+                        'maxNotionalValue': 25000.0,
+                        'liquidationPrice': 0.0,
+                        'markPrice': 0.0,
+                        'positionAmt': 0.0,
+                        'symbol': 'API3USDT',
+                        'unrealizedProfit': 0.0,
+                        'marginType': 'cross',
+                        'isolatedMargin': 0.0,
+                        'positionSide': 'BOTH'
+                    },
                     ...
                 ]
 
@@ -472,22 +501,28 @@ class TradeGate:
             .. code-block:: python
 
                 [
-                    {'symbol': 'BTCUSDT',
-                     'incomeType': 'FUNDING_FEE',
-                     'income': 0.26403463,
-                     'asset': 'USDT',
-                     'time': 1655280000000},
-                    {'symbol': 'BTCUSDT',
-                     'incomeType': 'REALIZED_PNL',
-                     'income': 26.0335,
-                     'asset': 'USDT',
-                     'time': 1655281638000},
-                    {'symbol': 'BTCUSDT',
-                     'incomeType': 'COMMISSION',
-                     'income': -0.08219559,
-                     'asset': 'USDT',
-                     'time': 1655281638000},
-                     ...
+                    {
+                        'symbol': 'BTCUSDT',
+                        'incomeType': 'FUNDING_FEE',
+                        'income': 0.26403463,
+                        'asset': 'USDT',
+                        'time': 1655280000000
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'incomeType': 'REALIZED_PNL',
+                        'income': 26.0335,
+                        'asset': 'USDT',
+                        'time': 1655281638000
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'incomeType': 'COMMISSION',
+                        'income': -0.08219559,
+                        'asset': 'USDT',
+                        'time': 1655281638000
+                    },
+                    ...
                 ]
 
         """

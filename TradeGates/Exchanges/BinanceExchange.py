@@ -427,7 +427,7 @@ class BinanceExchange(BaseExchange):
         return self.futuresClient.get_position()
 
     def spotBestBidAsks(self, symbol):
-        return pd.DataFrame(self.client.book_ticker(symbol=symbol))
+        return self.client.book_ticker(symbol=symbol)
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
         if not futures:
