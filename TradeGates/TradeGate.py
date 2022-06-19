@@ -145,6 +145,39 @@ class TradeGate:
         return self.exchange.spotBestBidAsks(symbol)
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
+        """ Returns list of current orders in the orderbook of the exchange
+
+        :param symbol: Symbol name of the orders
+        :type symbol: str
+        :param limit: Maximum number of returned bids and asks
+        :type limit: int , Optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: A dictionary with bids and asks. Each bid and ask is a tuple of price and quantity.
+        :rtype: dict
+        :Output (limit=5):
+
+            .. code-block:: python
+
+                {
+                    'lastUpdateId': 1630819351623,
+                    'bids': [
+                        ['18009.90', '0.557'],
+                        ['18009.80', '0.076'],
+                        ['18009.30', '0.002'],
+                        ['18009.20', '0.004'],
+                        ['18008.20', '0.038']
+                    ],
+                    'asks': [
+                        ['18010.00', '0.464'],
+                        ['18010.50', '0.101'],
+                        ['18010.70', '0.099'],
+                        ['18010.90', '0.017'],
+                        ['18011.20', '0.206']
+                    ]
+                }
+
+        """
         return self.exchange.getSymbolOrderBook(symbol, limit, futures)
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
