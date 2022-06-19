@@ -148,6 +148,26 @@ class TradeGate:
         return self.exchange.getSymbolOrderBook(symbol, limit, futures)
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
+        """ Returns list of the recent trades for a symbol
+
+        :param symbol: Symbol name of the trades
+        :type symbol: str
+        :param limit: Maximum number of returned trade datas
+        :type limit: int , Optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: A data frame of the trade infos
+        :rtype: pandas.DataFrame
+        :Output columns:
+
+            * **id** (:py:class:`int`) - ID of the trade
+            * **price** (:py:class:`float`) - Price of the trade
+            * **qty** (:py:class:`float`) - Amount of the base asset
+            * **quoteQty** (:py:class:`float`) - Amount of the quote asset
+            * **time** (:py:class:`int`) - Timestamp of the trade
+            * **isBuyerMaker** (:py:class:`bool`) - If trade is buyer-maker
+
+        """
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
 
     def symbolAccountTradeHistory(self, symbol, fromId=None, limit=None, futures=False):
