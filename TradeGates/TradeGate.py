@@ -130,6 +130,25 @@ class TradeGate:
         return self.exchange.makeBatchFuturesOrder(batchOrders)
 
     def changeInitialLeverage(self, symbol, leverage):
+        """ Change initial leverage for a symbol
+
+        :param symbol: Futures symbol
+        :type symbol: str
+        :param leverage: Initial leverage number.
+        :type leverage: int
+        :return: The number of leverage
+        :rtype: int
+        :Output:
+
+            .. code-block:: python
+
+                10
+
+        :Notes:
+
+            * Not available for **KuCoin** exchange. You must specify leverage when sending an order for this exchange.
+
+        """
         return self.exchange.changeInitialLeverage(symbol, leverage)
 
     def changeMarginType(self, symbol, marginType, params=None):

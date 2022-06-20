@@ -504,7 +504,7 @@ class BybitExchange(BaseExchange):
         return results
 
     def changeInitialLeverage(self, symbol, leverage):
-        return self.futuresSession.set_leverage(symbol=symbol, buy_leverage=leverage, sell_leverage=leverage)
+        return self.futuresSession.set_leverage(symbol=symbol, buy_leverage=leverage, sell_leverage=leverage)['result']
 
     def changeMarginType(self, symbol, marginType, params):
         try:

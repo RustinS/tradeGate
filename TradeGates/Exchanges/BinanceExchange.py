@@ -407,7 +407,7 @@ class BinanceExchange(BaseExchange):
         return self.futuresClient.auto_cancel_all_orders(symbol, countdownTime)
 
     def changeInitialLeverage(self, symbol, leverage):
-        return self.futuresClient.change_initial_leverage(symbol=symbol, leverage=leverage).toDict()
+        return self.futuresClient.change_initial_leverage(symbol=symbol, leverage=leverage).toDict()['leverage']
 
     def changeMarginType(self, symbol, marginType, params=None):
         if marginType not in ['ISOLATED', 'CROSSED']:
