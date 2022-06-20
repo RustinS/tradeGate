@@ -124,7 +124,7 @@ class TradeGate:
                                                        quoteQuantity=quoteQuantity)
 
     def makeFuturesOrder(self, futuresOrderData):
-        """ Change initial leverage for a symbol
+        """ Make a futures order
 
         :param futuresOrderData: OrderData created using :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
         :type futuresOrderData: OrderData
@@ -166,7 +166,7 @@ class TradeGate:
         return self.exchange.makeFuturesOrder(futuresOrderData)
 
     def makeBatchFuturesOrder(self, batchOrders):
-        """ Change initial leverage for a symbol
+        """ Make multiple futures order with single request
 
         :param batchOrders: list of OrderDatas created using :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
         :type batchOrders: list(OrderData)
