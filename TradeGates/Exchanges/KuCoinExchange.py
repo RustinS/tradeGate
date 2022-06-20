@@ -734,6 +734,55 @@ class KuCoinExchange(BaseExchange):
 
         return orderIds
 
+    def makeSlTpMarketFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, takeProfit=None,
+                                   stopLoss=None, leverage=None, marginType=None):
+        symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
+        marketPrice = self.getSymbolTickerPrice(symbol=symbol, futures=True)
+
+        if leverage is None:
+            raise ValueError('Must specify \'leverage\' parameter for KuCoin orders.')
+
+        if quantity is None:
+            if quoteQuantity is None:
+                raise ValueError('Specify either quantity or quoteQuantity')
+            quantity = int(quoteQuantity / marketPrice / symbolInfo['precisionStep']) * symbolInfo['precisionStep']
+
+        if quantity < symbolInfo['minQuantity']:
+            raise ValueError('Quantity is lower than minimum quantity allowed.')
+
+        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'MARKET', quantity=quantity,
+                                                   extraParams={'leverage': leverage})
+
+        tpSlSide = 'sell' if orderSide.upper() == 'BUY' else 'buy'
+
+        slExtraParams = {
+            'stop': 'down' if orderSide.upper() == 'BUY' else 'up',
+            'stopPriceType': 'TP'
+        }
+        stopLossOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
+                                                       stopPrice=stopLoss, closePosition=True,
+                                                       timeInForce='GTC', extraParams=slExtraParams)
+
+        tpExtraParams = {
+            'stop': 'up' if orderSide.upper() == 'BUY' else 'down',
+            'stopPriceType': 'TP'
+        }
+        takeProfitOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
+                                                         stopPrice=takeProfit, closePosition=True,
+                                                         timeInForce='GTC', extraParams=tpExtraParams)
+
+        mainOrderRes = self.makeFuturesOrder(mainOrder)
+        slOrderRes = self.makeFuturesOrder(stopLossOrder)
+        tpOrderRes = self.makeFuturesOrder(takeProfitOrder)
+
+        orderIds = {
+            'mainOrder': mainOrderRes['orderId'],
+            'stopLoss': slOrderRes['orderId'],
+            'takeProfit': tpOrderRes['orderId']
+        }
+
+        return orderIds
+
     def getSymbol24hChanges(self, futures=False):
         changesList = []
         if futures:

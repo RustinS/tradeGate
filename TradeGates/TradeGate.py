@@ -138,9 +138,6 @@ class TradeGate:
     def changePositionMargin(self, symbol, amount, marginType):
         return self.exchange.changePositionMargin(symbol, amount, marginType)
 
-    def getPosition(self):
-        return self.exchange.getPosition()
-
     def spotBestBidAsks(self, symbol=None):
         """ Returns best bid and best ask price with their quantities
 
