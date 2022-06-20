@@ -133,6 +133,29 @@ class TradeGate:
         return self.exchange.changeInitialLeverage(symbol, leverage)
 
     def changeMarginType(self, symbol, marginType, params=None):
+        """ Change position margin of a symbol
+
+        :param symbol: Symbol of the position
+        :type symbol: str
+        :param marginType: Type of the margin. Either '**ISOLATED**' or '**CROSSED**'.
+        :type marginType: str
+        :param params: Extra data needed for some exchanges.
+        :type params: dict , optional
+        :return: True if changing was successful or False if unsuccessful
+        :rtype: bool
+        :Output:
+
+            .. code-block:: python
+
+                True
+
+        :Notes:
+
+            * For **KuCoin**, '**CROSSED**' means enabling '**auto_add_margin**', and '**ISOLATED**' means disabling it.
+            * For **ByBit**, you must specify '**buyLeverage**' and '**sellLeverage**' inside params. If switching from \
+            '**CROSSED**' to '**ISOLATED**', theses two numbers must be equal.
+
+        """
         return self.exchange.changeMarginType(symbol, marginType, params)
 
     def changePositionMargin(self, symbol, amount):

@@ -524,7 +524,11 @@ class BybitExchange(BaseExchange):
         return True
 
     def changePositionMargin(self, symbol, amount):
-        return self.futuresSession.change_margin(symbol=symbol, margin=amount)['result']
+        result = self.futuresSession.change_margin(symbol=symbol, margin=amount)
+        if result['ret_code'] == 0:
+            return True
+        else:
+            return False
 
     def getPosition(self):
         return self.futuresSession.my_position()['result']

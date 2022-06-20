@@ -633,13 +633,16 @@ class KuCoinExchange(BaseExchange):
     def changeInitialLeverage(self, symbol, leverage):
         raise NotImplementedError(self.unavailableErrorText)
 
-    def changeMarginType(self, symbol, marginType, params):
-        return self.futuresTrade.modify_auto_deposit_margin(symbol, True)
+    def changeMarginType(self, symbol, marginType, params=None):
+        if marginType.upper() == 'CROSSED':
+            autoAdd = True
+        elif marginType.upper() == 'ISOLATED':
+            autoAdd = False
+        else:
+            raise ValueError('Invalid value specified for \'marginType\'. Must be either \'ISOLATED\' or \'CROSSED\'.')
+        return self.futuresTrade.modify_auto_deposit_margin(symbol, autoAdd)['data']
 
     def changePositionMargin(self, symbol, amount):
-        enResult = self.futuresTrade.modify_auto_deposit_margin(symbol, True)
-        if not enResult['data']:
-            raise RuntimeError('Could not modify margin.')
         newPosition = self.futuresTrade.add_margin_manually(symbol=symbol, margin=amount, bizNo=str(time.time()))
 
         return True

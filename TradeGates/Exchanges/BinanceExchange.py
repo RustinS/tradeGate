@@ -413,7 +413,11 @@ class BinanceExchange(BaseExchange):
         if marginType not in ['ISOLATED', 'CROSSED']:
             raise ValueError('Margin type specified is not acceptable')
         try:
-            return self.futuresClient.change_margin_type(symbol=symbol, marginType=marginType)
+            result = self.futuresClient.change_margin_type(symbol=symbol, marginType=marginType)
+            if result['code'] == 200:
+                return True
+            else:
+                return False
         except BinanceApiException:
             pass
 
