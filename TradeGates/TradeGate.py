@@ -124,9 +124,122 @@ class TradeGate:
                                                        quoteQuantity=quoteQuantity)
 
     def makeFuturesOrder(self, futuresOrderData):
+        """ Change initial leverage for a symbol
+
+        :param futuresOrderData: OrderData created using :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
+        :type futuresOrderData: OrderData
+        :return: submitted order information
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'symbol': 'BTCUSDT',
+                    'orderId': 3049327900,
+                    'clientOrderId': 'aLHt4lEJzO2Xeh21GebGCz0',
+                    'transactTime': 1655704960910,
+                    'price': 0.0,
+                    'origQty': 0.003,
+                    'executedQty': 0.0,
+                    'cummulativeQuoteQty': 0.0,
+                    'status': 'NEW',
+                    'timeInForce': 'GTC',
+                    'type': 'MARKET',
+                    'side': 'BUY',
+                    'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType':
+                            'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'MARKET',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    }
+
+        """
         return self.exchange.makeFuturesOrder(futuresOrderData)
 
     def makeBatchFuturesOrder(self, batchOrders):
+        """ Change initial leverage for a symbol
+
+        :param batchOrders: list of OrderDatas created using :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
+        :type batchOrders: list(OrderData)
+        :return: List of order information submitted
+        :rtype: list(dict)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 3049327900,
+                        'clientOrderId': 'aLHt4lEJzO2Xeh21GebGCz0',
+                        'transactTime': 1655704960910,
+                        'price': 0.0,
+                        'origQty': 0.003,
+                        'executedQty': 0.0,
+                        'cummulativeQuoteQty': 0.0,
+                        'status': 'NEW',
+                        'timeInForce': 'GTC',
+                        'type': 'MARKET',
+                        'side': 'BUY',
+                        'extraData':
+                            {
+                                'reduceOnly': False,
+                                'stopPrice': 0.0,
+                                'workingType':
+                                'CONTRACT_PRICE',
+                                'avgPrice': 0.0,
+                                'origType': 'MARKET',
+                                'positionSide': 'BOTH',
+                                'activatePrice': None,
+                                'priceRate': None,
+                                'closePosition': False
+                            }
+                        },
+                        {
+                            'symbol': 'BTCUSDT',
+                            'orderId': 3049327901,
+                            'clientOrderId': 'hUacgz6xW3Vp71sc8yztxK1',
+                            'transactTime': 1655704960910,
+                            'price': 0.0,
+                            'origQty': 0.005,
+                            'executedQty': 0.0,
+                            'cummulativeQuoteQty': 0.0,
+                            'status': 'NEW',
+                            'timeInForce': 'GTC',
+                            'type': 'MARKET',
+                            'side': 'BUY',
+                            'extraData':
+                                {
+                                    'reduceOnly': False,
+                                    'stopPrice': 0.0,
+                                    'workingType':
+                                    'CONTRACT_PRICE',
+                                    'avgPrice': 0.0,
+                                    'origType': 'MARKET',
+                                    'positionSide': 'BOTH',
+                                    'activatePrice': None,
+                                    'priceRate': None,
+                                    'closePosition': False
+                                }
+                            }
+                        ]
+
+        :Notes:
+
+            * Not available for **KuCoin** exchange.
+            * The execution of orders in the batch are not dependent on each other, so be careful if orders depend on \
+            one another.
+
+        """
         return self.exchange.makeBatchFuturesOrder(batchOrders)
 
     def changeInitialLeverage(self, symbol, leverage):
