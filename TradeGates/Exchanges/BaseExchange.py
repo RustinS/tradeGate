@@ -98,7 +98,7 @@ class BaseExchange(ABC):
         pass
 
     @abstractmethod
-    def changePositionMargin(self, symbol, amount, marginType=None):
+    def changePositionMargin(self, symbol, amount):
         pass
 
     @abstractmethod

@@ -523,7 +523,7 @@ class BybitExchange(BaseExchange):
                                                          buy_leverage=buyLeverage, sell_leverage=sellLeverage)
         return True
 
-    def changePositionMargin(self, symbol, amount, marginType=None):
+    def changePositionMargin(self, symbol, amount):
         return self.futuresSession.change_margin(symbol=symbol, margin=amount)['result']
 
     def getPosition(self):

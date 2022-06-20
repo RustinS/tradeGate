@@ -135,8 +135,28 @@ class TradeGate:
     def changeMarginType(self, symbol, marginType, params=None):
         return self.exchange.changeMarginType(symbol, marginType, params)
 
-    def changePositionMargin(self, symbol, amount, marginType):
-        return self.exchange.changePositionMargin(symbol, amount, marginType)
+    def changePositionMargin(self, symbol, amount):
+        """ Change position margin of a symbol
+
+        :param symbol: Symbol of the position
+        :type symbol: str
+        :param amount: Amount to be added (or subtracted)
+        :type amount: float
+        :return: True if changing was successful or False if unsuccessful
+        :rtype: bool
+        :Output:
+
+            .. code-block:: python
+
+                True
+
+        :Notes:
+
+            * The amount can be positive or negative for **Binance** exchange but it must be positive for other exchanges.
+            * Use :func:`changeMarginType() <TradeGate.TradeGate.changeMarginType>` to make current position available for changing amount.
+
+        """
+        return self.exchange.changePositionMargin(symbol, amount)
 
     def spotBestBidAsks(self, symbol=None):
         """ Returns best bid and best ask price with their quantities

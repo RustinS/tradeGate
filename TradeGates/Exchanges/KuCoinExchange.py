@@ -634,15 +634,15 @@ class KuCoinExchange(BaseExchange):
         raise NotImplementedError(self.unavailableErrorText)
 
     def changeMarginType(self, symbol, marginType, params):
-        raise NotImplementedError(self.unavailableErrorText)
+        return self.futuresTrade.modify_auto_deposit_margin(symbol, True)
 
-    def changePositionMargin(self, symbol, amount, marginType=None):
+    def changePositionMargin(self, symbol, amount):
         enResult = self.futuresTrade.modify_auto_deposit_margin(symbol, True)
         if not enResult['data']:
             raise RuntimeError('Could not modify margin.')
         newPosition = self.futuresTrade.add_margin_manually(symbol=symbol, margin=amount, bizNo=str(time.time()))
 
-        return KuCoinHelpers.unifyGetPositionInfo(newPosition)
+        return True
 
     def getPosition(self):
         return self.futuresTrade.get_all_position()

@@ -417,11 +417,16 @@ class BinanceExchange(BaseExchange):
         except BinanceApiException:
             pass
 
-    def changePositionMargin(self, symbol, amount, marginType=None):
-        if marginType not in ['ISOLATED', 'CROSSED']:
-            raise ValueError('marginType was not correctly specified, should be either ISOLATED or CROSSED')
-
-        return self.futuresClient.change_margin_type(symbol, marginType)
+    def changePositionMargin(self, symbol, amount):
+        if amount >= 0:
+            addOrSub = 1
+        else:
+            addOrSub = 2
+        result = self.futuresClient.change_position_margin(symbol=symbol, amount=amount, type=addOrSub)
+        if result['code'] == 200:
+            return True
+        else:
+            return False
 
     def getPosition(self):
         return self.futuresClient.get_position()
