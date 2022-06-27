@@ -92,6 +92,79 @@ class TradeGate:
         return self.exchange.getOrder(symbol, orderId, localOrderId, futures=futures)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
+        """ Cancel all active order of a symbol
+
+        :param symbol: The symbol
+        :type symbol: str
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: Order datas of the cancelled orders
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 3051990476,
+                        'clientOrderId': 'sDAclHSkWaO5R3fHYwI9IQ',
+                        'transactTime': 1656335835113,
+                        'price': 20000.0,
+                        'origQty': 0.002,
+                        'executedQty': 0.0,
+                        'cummulativeQuoteQty': 0.0,
+                        'status': 'CANCELED',
+                        'timeInForce': 'GTC',
+                        'type': 'LIMIT',
+                        'side': 'BUY',
+                        'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType': 'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'LIMIT',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 3051990465,
+                        'clientOrderId': 'SxyPikUE9ysMSZ8jbKGQAZ',
+                        'transactTime': 1656335835113,
+                        'price': 20000.0,
+                        'origQty': 0.002,
+                        'executedQty': 0.0,
+                        'cummulativeQuoteQty': 0.0,
+                        'status': 'CANCELED',
+                        'timeInForce': 'GTC',
+                        'type': 'LIMIT',
+                        'side': 'BUY',
+                        'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType': 'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'LIMIT',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    }
+                ]
+
+
+        :Notes:
+
+            * Must specify either '**orderId**' or '**localOrderId**'
+
+        """
         return self.exchange.cancelAllSymbolOpenOrders(symbol, futures)
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
@@ -105,7 +178,7 @@ class TradeGate:
         :type localOrderId: long, optional
         :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
-        :return: The fee structure of the exchange
+        :return: The order data of the canceled order
         :rtype: dict
         :Output:
 
@@ -125,18 +198,18 @@ class TradeGate:
                     'type': 'LIMIT',
                     'side': 'BUY',
                     'extraData':
-                        {
-                            'reduceOnly': False,
-                            'stopPrice': 0.0,
-                            'workingType': 'CONTRACT_PRICE',
-                            'avgPrice': 0.0,
-                            'origType': 'LIMIT',
-                            'positionSide': 'BOTH',
-                            'activatePrice': None,
-                            'priceRate': None,
-                            'closePosition': False
-                        }
+                    {
+                        'reduceOnly': False,
+                        'stopPrice': 0.0,
+                        'workingType': 'CONTRACT_PRICE',
+                        'avgPrice': 0.0,
+                        'origType': 'LIMIT',
+                        'positionSide': 'BOTH',
+                        'activatePrice': None,
+                        'priceRate': None,
+                        'closePosition': False
                     }
+                }
 
         :Notes:
 
@@ -481,47 +554,47 @@ class TradeGate:
                         'type': 'MARKET',
                         'side': 'BUY',
                         'extraData':
-                            {
-                                'reduceOnly': False,
-                                'stopPrice': 0.0,
-                                'workingType':
-                                'CONTRACT_PRICE',
-                                'avgPrice': 0.0,
-                                'origType': 'MARKET',
-                                'positionSide': 'BOTH',
-                                'activatePrice': None,
-                                'priceRate': None,
-                                'closePosition': False
-                            }
-                        },
                         {
-                            'symbol': 'BTCUSDT',
-                            'orderId': 3049327901,
-                            'clientOrderId': 'hUacgz6xW3Vp71sc8yztxK1',
-                            'transactTime': 1655704960910,
-                            'price': 0.0,
-                            'origQty': 0.005,
-                            'executedQty': 0.0,
-                            'cummulativeQuoteQty': 0.0,
-                            'status': 'NEW',
-                            'timeInForce': 'GTC',
-                            'type': 'MARKET',
-                            'side': 'BUY',
-                            'extraData':
-                                {
-                                    'reduceOnly': False,
-                                    'stopPrice': 0.0,
-                                    'workingType':
-                                    'CONTRACT_PRICE',
-                                    'avgPrice': 0.0,
-                                    'origType': 'MARKET',
-                                    'positionSide': 'BOTH',
-                                    'activatePrice': None,
-                                    'priceRate': None,
-                                    'closePosition': False
-                                }
-                            }
-                        ]
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType':
+                            'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'MARKET',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 3049327901,
+                        'clientOrderId': 'hUacgz6xW3Vp71sc8yztxK1',
+                        'transactTime': 1655704960910,
+                        'price': 0.0,
+                        'origQty': 0.005,
+                        'executedQty': 0.0,
+                        'cummulativeQuoteQty': 0.0,
+                        'status': 'NEW',
+                        'timeInForce': 'GTC',
+                        'type': 'MARKET',
+                        'side': 'BUY',
+                        'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType':
+                            'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'MARKET',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    }
+                ]
 
         :Notes:
 
