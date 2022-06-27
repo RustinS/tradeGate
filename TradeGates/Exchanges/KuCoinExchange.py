@@ -376,14 +376,20 @@ class KuCoinExchange(BaseExchange):
             contractInfo = self.futuresMarket.get_contract_detail(symbol=symbol)
             return {
                 'symbol': contractInfo['symbol'],
-                'takerFeeRate': contractInfo['takerFeeRate'],
-                'makerFeeRate': contractInfo['makerFeeRate']
+                'takerCommission': contractInfo['takerFeeRate'],
+                'makerCommission': contractInfo['makerFeeRate']
             }
         else:
             if symbol is None:
-                return self.spotUser.get_base_fee()['data']
+                return self.spotUser.get_base_fee()
             else:
-                return self.spotUser.get_actual_fee(symbols=[symbol])['data']
+                feeData = self.spotUser.get_actual_fee(symbols=symbol)[0]
+
+                return {
+                    'symbol': feeData['symbol'],
+                    'takerCommission': feeData['takerFeeRate'],
+                    'makerCommission': feeData['makerFeeRate']
+                }
 
     def getSymbolTickerPrice(self, symbol, futures=False):
         if futures:

@@ -303,8 +303,11 @@ class BinanceExchange(BaseExchange):
             else:
                 raise ValueError(errorMessage)
 
-    def getTradingFees(self, futures=False):
-        return self.client.trade_fee()
+    def getTradingFees(self, symbol=None, futures=False):
+        if symbol:
+            return self.client.trade_fee(symbol=symbol)[0]
+        else:
+            return self.client.trade_fee(symbol=symbol)
 
     def getSymbolTickerPrice(self, symbol, futures=False):
         if futures:

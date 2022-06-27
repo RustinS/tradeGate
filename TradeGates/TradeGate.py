@@ -97,14 +97,133 @@ class TradeGate:
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         return self.exchange.cancelOrder(symbol, orderId, localOrderId, futures)
 
-    def getTradingFees(self):
-        return self.exchange.getTradingFees()
+    def getTradingFees(self, symbol=None, futures=None):
+        """ Get the fee structure of the exchange
+
+        :param symbol: Trading fee for a specific symbol
+        :type symbol: str, optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: The fee structure of the exchange
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'symbol': 'BTCUSDT',
+                    'makerCommission': '0.001',
+                    'takerCommission': '0.001'
+                }
+
+        :Notes:
+
+            * Specify the symbol for better output.
+        """
+        return self.exchange.getTradingFees(symbol=symbol, futures=futures)
 
     def getSymbolTickerPrice(self, symbol, futures=False):
+        """ Get the latest price of a symbol
+
+        :param symbol: Symbol
+        :type symbol: str
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: The latest price of the symbol specified as a float number
+        :rtype: float
+        :Output:
+
+            .. code-block:: python
+
+                21275.84
+
+        """
         return self.exchange.getSymbolTickerPrice(symbol, futures)
 
     def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
                         convertDateTime=False, doClean=False, toCleanDataframe=False):
+        """ Get a symbol's Klines (candlestick) data
+
+        :param symbol: The symbol to fetch the klines
+        :type symbol: str
+        :param interval: The interval of klines data
+        :type interval: str
+        :param startTime: Timestamp for the start time of the data
+        :type startTime: long , optional
+        :param endTime: Timestamp for the end time of the data
+        :type endTime: long , optional
+        :param limit: Number of klines data (candlesticks) to be returned
+        :type limit: int , optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :param blvtnav: Only for **Binance**. Return the blvtnav data.
+        :type blvtnav: bool , optional
+        :param convertDateTime: Convert the timestamps to datetime objects in the returned data
+        :type convertDateTime: bool , optional
+        :param doClean: Only return desired columns of the data
+        :type doClean: bool , optional
+        :param toCleanDataframe: Returned Pandas dataframe object of the data with desired columns
+        :type toCleanDataframe: bool , optional
+        :return: Either a 2D array containing the data or a pandas dataframe object of the data
+        :rtype: list(list)) or pandas.DataFrame
+        :Output as list:
+
+            .. code-block:: python
+
+                [
+                    [
+                        1656327600000,
+                        21437.18,
+                        21445.56,
+                        21380.02,
+                        21428.66,
+                        525.2881,
+                        1656328499999,
+                        11246729.6314567,
+                        9626.0, 277.31647,
+                        5936870.8288083,
+                        0.0
+                    ],
+                    [
+                        1656328500000,
+                        21428.66,
+                        21450.0,
+                        21339.83,
+                        21376.49,
+                        477.24441,
+                        1656329399999,
+                        10206890.129678,
+                        9503.0, 208.56099,
+                        4459849.0304778,
+                        0.0
+                    ]
+                ]
+
+        :Output as DataFrame:
+
+            .. code-block:: python
+
+                                         open      high       low     close   \
+
+                date
+                2022-06-27 16:15:00  21367.67  21376.00  21285.48  21304.55
+                2022-06-27 16:30:00  21304.56  21329.91  21301.24  21308.73
+
+                                        volume            closeDate  tradesNum
+                date
+                2022-06-27 16:15:00  470.24040  2022-06-27 16:29:59     8980.0
+                2022-06-27 16:30:00  113.05128  2022-06-27 16:44:59     2693.0
+
+        :Notes:
+
+            * '**startTime**' and '**endTime**' variables must be timestamps. If neither are sent, will return the \
+            latest data.
+            * '**limit**' parameter has a maximum value (usually 1000). if the given limit number is bigger than that, \
+            only the maximum number will be fetched.
+            * Desired columns are: **open** - **high** - **low** - **close** - **volume** - **closeDate** \
+            - **tradesNum**
+
+        """
         return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, blvtnav,
                                              convertDateTime, doClean, toCleanDataframe)
 

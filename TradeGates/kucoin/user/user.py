@@ -28,6 +28,7 @@ class UserData(KucoinBaseRestApi):
         params = {
             "symbols": symbols
         }
+        
         return self._request('GET', '/api/v1/trade-fees', params=params)
 
     def get_base_fee(self):
