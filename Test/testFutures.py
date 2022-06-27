@@ -99,7 +99,8 @@ def testFuturesOrder(getGatesAndSymbolNames):
             futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002,
                                                               extraParams=extraParams)
         else:
-            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002)
+            futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'LIMIT', timeInForce='GTC',
+                                                              price=20000, quantity=0.002)
         result = gate.makeFuturesOrder(futuresOrderData)
         print('\nFuture ordering in {} exchange: {}'.format(gate.exchangeName, result))
         assert result is not None, 'Problem in submitting futures order in {} exchange.'.format(gate.exchangeName)

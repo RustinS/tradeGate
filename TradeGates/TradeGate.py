@@ -86,6 +86,75 @@ class TradeGate:
                                              endTime=endTime, limit=limit)
 
     def getOpenOrders(self, symbol, futures=False):
+        """ Get order datas of all open orders for a symbol
+
+        :param symbol: The symbol
+        :type symbol: str
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: Order datas of the open orders
+        :rtype: list(dict)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 3051997664,
+                        'clientOrderId': 'VhxN3SezOKgpvACYe2qhO6',
+                        'transactTime': 1656337589565,
+                        'price': 20000.0,
+                        'origQty': 0.002,
+                        'executedQty': 0.0,
+                        'cummulativeQuoteQty': 0.0,
+                        'status': 'NEW',
+                        'timeInForce': 'GTC',
+                        'type': 'LIMIT',
+                        'side': 'BUY',
+                        'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType': 'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'LIMIT',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 3051997723,
+                        'clientOrderId': 'v1nT9fQjDGVRqHBtDYotTh',
+                        'transactTime': 1656337600701,
+                        'price': 20000.0,
+                        'origQty': 0.002,
+                        'executedQty': 0.0,
+                        'cummulativeQuoteQty': 0.0,
+                        'status': 'NEW',
+                        'timeInForce': 'GTC',
+                        'type': 'LIMIT',
+                        'side': 'BUY',
+                        'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType':
+                            'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'LIMIT',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    }
+                ]
+
+        """
         return self.exchange.getOpenOrders(symbol, futures)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
@@ -140,7 +209,7 @@ class TradeGate:
         return self.exchange.getOrder(symbol, orderId, localOrderId, futures=futures)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
-        """ Cancel all active order of a symbol
+        """ Cancel all active orders of a symbol
 
         :param symbol: The symbol
         :type symbol: str
@@ -206,11 +275,6 @@ class TradeGate:
                         }
                     }
                 ]
-
-
-        :Notes:
-
-            * Must specify either '**orderId**' or '**localOrderId**'
 
         """
         return self.exchange.cancelAllSymbolOpenOrders(symbol, futures)
