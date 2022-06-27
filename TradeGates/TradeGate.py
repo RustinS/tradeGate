@@ -140,7 +140,8 @@ class TradeGate:
 
         :Notes:
 
-            * Must specify either '**orderId**' or '**localOrderId
+            * Must specify either '**orderId**' or '**localOrderId**'
+
         """
         return self.exchange.cancelOrder(symbol, orderId, localOrderId, futures)
 
