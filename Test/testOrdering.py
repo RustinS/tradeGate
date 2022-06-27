@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 def getGatesAndSymbolNames():
     gates = []
     symbolNames = {}
-    with open('./config.json') as f:
+    with open('../../config.json') as f:
         config = json.load(f)
 
     for key in config.keys():
@@ -34,7 +34,7 @@ def testNewTestOrder(getGatesAndSymbolNames):
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
             res = gate.createAndTestSpotOrder(symbolName, 'SELL', 'LIMIT', timeInForce='GTC', quantity=0.002,
-                                              price=49500)
+                                              price=20000)
             assert res is not None, 'Problem in testing making order from {} exchange'.format(gate.exchangeName)
         except Exception as e:
             assert False, 'From {} exchange : {}'.format(gate.exchangeName, str(e))
@@ -58,9 +58,10 @@ def testNewOrder(getGatesAndSymbolNames):
     for gate in gates:
         symbolName = symbolNamesDict[gate.exchangeName]
         try:
-            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=30000,
+            verifiedOrder = gate.createAndTestSpotOrder(symbolName, 'BUY', 'LIMIT', quantity=0.002, price=20000,
                                                         timeInForce='GTC')
             result = gate.makeSpotOrder(verifiedOrder)
+            print(result)
             assert result is not None, 'Problem in making new order in {} exchange'.format(gate.exchangeName)
         except Exception:
             assert False, 'Problem in making new order in {} exchange'.format(gate.exchangeName)

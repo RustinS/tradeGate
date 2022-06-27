@@ -79,6 +79,35 @@ class TradeGate:
                                                     icebergQty, newOrderRespType, recvWindow, newClientOrderId)
 
     def makeSpotOrder(self, orderData):
+        """ Make a spot order
+
+        :param orderData: OrderData created using :func:`makeSpotOrder() <TradeGate.TradeGate.makeSpotOrder>`
+        :type orderData: OrderData
+        :return: submitted order information
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'symbol': 'BTCUSDT',
+                    'orderId': 7048832,
+                    'orderListId': -1,
+                    'clientOrderId': 'Jes2sprMLHxEUXHyJOUEAr',
+                    'transactTime': 1656343106986,
+                    'price': '20000.00000000',
+                    'origQty': '0.00200000',
+                    'executedQty': '0.00000000',
+                    'cummulativeQuoteQty': '0.00000000',
+                    'status': 'NEW',
+                    'timeInForce': 'GTC',
+                    'type': 'LIMIT',
+                    'side': 'BUY',
+                    'fills': []
+                }
+
+
+        """
         return self.exchange.makeSpotOrder(orderData)
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
