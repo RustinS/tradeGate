@@ -389,7 +389,7 @@ class BinanceExchange(BaseExchange):
                                   recvWindow=None, extraParams=None, quoteQuantity=None):
         currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
                                                     newClientOrderId, newOrderRespType, orderType, positionSide, price,
-                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    priceProtect, quantity, reduceOnly, side, stopPrice,
                                                     symbol, timeInForce, workingType, quoteQuantity)
 
         self.testFuturesOrder(currOrder)

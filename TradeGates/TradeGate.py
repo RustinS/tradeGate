@@ -115,12 +115,122 @@ class TradeGate:
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None, quoteQuantity=None):
+                                  extraParams=None, quoteQuantity=None):
+        """ Create a futuresOrderData object and test the given parameters for validity. The object returned is then used \
+        to send an order to the exchange by :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
 
+        :param symbol: Symbol of the order
+        :type symbol: str
+        :param side: Side of the order. Either '**BUY**' or '**SELL**'
+        :type side: str
+        :param orderType: Type of the order. can be '**MARKET**', '**LIMIT**' or others (Check exchange's API documentation)
+        :type orderType: str
+        :param positionSide: Only for binance. '**BOTH**' for One-way Mode and '**LONG**' or '**SHORT**' for Hedge Mode.\
+         It must be sent in Hedge Mode.
+        :type positionSide: str , optional
+        :param timeInForce: Order's time in force. Can be '**GTC**', '**IOC**', '**FOK**' or specific to the exchange. \
+        Check the exchange's API documentation for more options.
+        :type timeInForce: str , optional
+        :param quantity: The amount of base asset of the order.
+        :type quantity: float , optional
+        :param reduceOnly: A flag to reduce the position size only.
+        :type reduceOnly: bool , optional
+        :param price: Order price
+        :type price: float , optional
+        :param newClientOrderId: Custom string to identify your order for yourself.
+        :type newClientOrderId: str , optional
+        :param stopPrice: Price condition to trigger the order. Only for stop order type.
+        :type stopPrice: float , optional
+        :param closePosition: Whether to close the current open position or not.
+        :type closePosition: bool , optional
+        :param activationPrice: Only for Binance. Used with '**TRAILING_STOP_MARKET**' order type.
+        :type activationPrice: float , optional
+        :param callbackRate: Only for Binance. Used with TRAILING_STOP_MARKET orders and specifies callback percentage.
+        :type callbackRate: float , optional
+        :param workingType: With what price the stop order is triggered: '**MARK_PRICE**' or '**CONTRACT_PRICE**'
+        :type workingType: str , optional
+        :param priceProtect: Only for Binance. Whether to protect the stop order from large difference of mark price \
+        and contract price.
+        :type priceProtect: bool , optional
+        :param newOrderRespType: Only for Binance. Response of the order, either '**ACK**' or '**RESULT**'.
+        :type newOrderRespType: str , optional
+        :param extraParams: Extra parameters for other exchanges than Binance.
+        :type extraParams: dict , optional
+        :param quoteQuantity: The amount of quote asset of the order.
+        :type quoteQuantity: float , optional
+        :return: submitted order information
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'symbol': 'BTCUSDT',
+                    'orderId': 3049327900,
+                    'clientOrderId': 'aLHt4lEJzO2Xeh21GebGCz0',
+                    'transactTime': 1655704960910,
+                    'price': 0.0,
+                    'origQty': 0.003,
+                    'executedQty': 0.0,
+                    'cummulativeQuoteQty': 0.0,
+                    'status': 'NEW',
+                    'timeInForce': 'GTC',
+                    'type': 'MARKET',
+                    'side': 'BUY',
+                    'extraData':
+                        {
+                            'reduceOnly': False,
+                            'stopPrice': 0.0,
+                            'workingType':
+                            'CONTRACT_PRICE',
+                            'avgPrice': 0.0,
+                            'origType': 'MARKET',
+                            'positionSide': 'BOTH',
+                            'activatePrice': None,
+                            'priceRate': None,
+                            'closePosition': False
+                        }
+                    }
+        :Notes:
+
+            * Input parameters are based on Binance API. We map the appropriate parameters from input to the exchange \
+            requirements, but other parameters must be inside the '**extraParams**' dictionary.
+            * Preferably use '**quantity**' instead of '**quoteQuantity**'. Some exchanges don't accept this parameter \
+            and we convert it to the quantity based on the price (if provided) or current market price.
+            * Some parameters have values that are only valid for some exchanges. See each exchange's documentation for\
+             these values.
+            * ValueError exception is raised when wrong combination of parameters are sent. Check the exception's \
+            message for guidance.
+            * Do not send '**price**' with '**MARKET**' orders.
+            * You must specify '**price**' for '**LIMIT**' orders.
+            * Other than **ByBit**, \
+            use :func:`makeSlTpLimitFuturesOrder() <TradeGate.TradeGate.makeSlTpLimitFuturesOrder>` or \
+            :func:`makeSlTpMarketFuturesOrder() <TradeGate.TradeGate.makeSlTpMarketFuturesOrder>` to send take profit \
+            and stop loss.
+            * if '**closePosition**' is used, do not specify '**quantity**' or '**quoteQuantity**'.
+            * For **ByBit**:
+
+                * You can send take profit by specifying '**take_profit**' (price) and '**tp_trigger_by**' \
+                ('**LastPrice**', '**IndexPrice**' or '**MarkPrice**') in '**extraParams**'.
+                * You can send take profit by specifying '**stop_loss**' (price) and '**sl_trigger_by**' \
+                ('**LastPrice**', '**IndexPrice**' or '**MarkPrice**') in '**extraParams**'.
+
+            * For **KuCoin**:
+
+                * You must send '**leverage**' parameter inside '**extraParams**' for the **KuCoin** exchange.
+                * Send '**stop**' (either '**down**' or '**up**') and '**stopPriceType**' (either '**TP**', '**IP**' \
+                or '**MP**') in the '**extraParams**' when specifying '**stopPrice**'.
+                * You can send '**postOnly**', '**hidden**', '**iceberg**' and '**visibleSize**' parameters inside \
+                '**extraParams**'.
+                * There are two values for the '**timeInForce**' variable: '**GTC**' (Good Till Cancel) and '**IOC**' \
+                (Immediate Or Cancel)
+
+
+        """
         return self.exchange.createAndTestFuturesOrder(symbol, side, orderType, positionSide, timeInForce,
                                                        quantity, reduceOnly, price, newClientOrderId, stopPrice,
                                                        closePosition, activationPrice, callbackRate, workingType,
-                                                       priceProtect, newOrderRespType, recvWindow, extraParams,
+                                                       priceProtect, newOrderRespType, extraParams,
                                                        quoteQuantity=quoteQuantity)
 
     def makeFuturesOrder(self, futuresOrderData):
@@ -308,7 +418,8 @@ class TradeGate:
         :Notes:
 
             * The amount can be positive or negative for **Binance** exchange but it must be positive for other exchanges.
-            * Use :func:`changeMarginType() <TradeGate.TradeGate.changeMarginType>` to make current position available for changing amount.
+            * Use :func:`changeMarginType() <TradeGate.TradeGate.changeMarginType>` to make current position available \
+            for changing amount.
 
         """
         return self.exchange.changePositionMargin(symbol, amount)
@@ -493,6 +604,7 @@ class TradeGate:
             * The **leverage** parameter is mandatory for the following exchanges:
 
                 * KuCoin
+
             * The **marginType** is currently only valid for **Binance** exchange.
             * Be careful with the **takeProfit** and **stopLoss** prices, if they would trigger immidietly, there will be an error.
             * Use with a try catch block preferably.

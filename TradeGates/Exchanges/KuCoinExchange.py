@@ -613,10 +613,10 @@ class KuCoinExchange(BaseExchange):
                                   reduceOnly=None, price=None, newClientOrderId=None,
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
-                                  recvWindow=None, extraParams=None, quoteQuantity=None):
+                                  extraParams=None, quoteQuantity=None):
         currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
                                                     newClientOrderId, newOrderRespType, orderType, positionSide, price,
-                                                    priceProtect, quantity, recvWindow, reduceOnly, side, stopPrice,
+                                                    priceProtect, quantity, reduceOnly, side, stopPrice,
                                                     symbol, timeInForce, workingType, quoteQuantity)
 
         lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
