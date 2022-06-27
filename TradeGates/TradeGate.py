@@ -89,6 +89,54 @@ class TradeGate:
         return self.exchange.getOpenOrders(symbol, futures)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
+        """ Get an order's data
+
+        :param symbol: The Order's symbol
+        :type symbol: str
+        :param orderId: Exchange assigned '**orderId**' of the order.
+        :type orderId: long, optional
+        :param localOrderId: User assigned '**clientOrderId**' of the order.
+        :type localOrderId: long, optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: The order data
+        :rtype: dict
+        :Output:
+
+            .. code-block:: python
+
+                {
+                    'symbol': 'BTCUSDT',
+                    'orderId': 3051988035,
+                    'clientOrderId': '1656335100',
+                    'transactTime': 1656335103251,
+                    'price': 20000.0,
+                    'origQty': 0.002,
+                    'executedQty': 0.0,
+                    'cummulativeQuoteQty': 0.0,
+                    'status': 'CANCELED',
+                    'timeInForce': 'GTC',
+                    'type': 'LIMIT',
+                    'side': 'BUY',
+                    'extraData':
+                    {
+                        'reduceOnly': False,
+                        'stopPrice': 0.0,
+                        'workingType': 'CONTRACT_PRICE',
+                        'avgPrice': 0.0,
+                        'origType': 'LIMIT',
+                        'positionSide': 'BOTH',
+                        'activatePrice': None,
+                        'priceRate': None,
+                        'closePosition': False
+                    }
+                }
+
+        :Notes:
+
+            * Must specify either '**orderId**' or '**localOrderId**'
+
+        """
         return self.exchange.getOrder(symbol, orderId, localOrderId, futures=futures)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
@@ -99,7 +147,7 @@ class TradeGate:
         :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
         :return: Order datas of the cancelled orders
-        :rtype: dict
+        :rtype: list(dict)
         :Output:
 
             .. code-block:: python
