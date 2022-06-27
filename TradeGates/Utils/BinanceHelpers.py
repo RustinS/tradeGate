@@ -84,9 +84,6 @@ def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData, allStr=False):
     if order.newOrderRespType is not None:
         params['newOrderRespType'] = order.newOrderRespType
 
-    if order.recvWindow is not None:
-        params['recvWindow'] = order.recvWindow
-
     if allStr:
         for key, value in params.items():
             params[key] = str(value)
