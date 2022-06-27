@@ -111,6 +111,74 @@ class TradeGate:
         return self.exchange.makeSpotOrder(orderData)
 
     def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
+        """ Get History of orders submitted
+
+        :param symbol: The order's symbol
+        :type symbol: str
+        :param orderId: Only return orders from the order with this orderId onwards.
+        :type orderId: long, optional
+        :param startTime: Timestamp for the start of the data
+        :type startTime: long, optional
+        :param endTime: Timestamp for the end of the data
+        :type endTime: long, optional
+        :param limit: Maximum number of order datas to return
+        :type limit: int, optional
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: A list of orders datas
+        :rtype: list(dict)
+        :Output:
+
+            .. code-block:: python
+
+                [
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 7020578,
+                        'orderListId': -1,
+                        'clientOrderId': 'tI8wxMsbaUk6hcf5QpC8zx',
+                        'price': '20000.00000000',
+                        'origQty': '0.00200000',
+                        'executedQty': '0.00000000',
+                        'cummulativeQuoteQty': '0.00000000',
+                        'status': 'NEW',
+                        'timeInForce': 'GTC',
+                        'type': 'LIMIT',
+                        'side': 'BUY',
+                        'stopPrice': '0.00000000',
+                        'icebergQty': '0.00000000',
+                        'time': 1656338254295,
+                        'updateTime': 1656338254295,
+                        'isWorking': True,
+                        'origQuoteOrderQty': '0.00000000'
+                    },
+                    {
+                        'symbol': 'BTCUSDT',
+                        'orderId': 7048832,
+                        'orderListId': -1,
+                        'clientOrderId': 'Jes2sprMLHxEUXHyJOUEAr',
+                        'price': '20000.00000000',
+                        'origQty': '0.00200000',
+                        'executedQty': '0.00000000',
+                        'cummulativeQuoteQty': '0.00000000',
+                        'status': 'NEW',
+                        'timeInForce': 'GTC',
+                        'type': 'LIMIT',
+                        'side': 'BUY',
+                        'stopPrice': '0.00000000',
+                        'icebergQty': '0.00000000',
+                        'time': 1656343106986,
+                        'updateTime': 1656343106986,
+                        'isWorking': True,
+                        'origQuoteOrderQty': '0.00000000'
+                    }
+                ]
+
+        :Notes:
+
+            * Specify the symbol for better output.
+
+            """
         return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime,
                                              endTime=endTime, limit=limit)
 
