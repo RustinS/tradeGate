@@ -85,7 +85,7 @@ def testCreatingFuturesOrder(getGatesAndSymbolNames):
                                                               extraParams=extraParams)
         else:
             futuresOrderData = gate.createAndTestFuturesOrder(symbolName, 'BUY', 'MARKET', quantity=0.002)
-        # print('\nTest creating futures order in {} exchange: {}'.format(gate.exchangeName, futuresOrderData))
+        # print('\nTest creating futures order in {} exchange: {}'.format(gate.exchangeName, FuturesOrderData))
         assert futuresOrderData is not None, 'Problem in creating futures order in {} exchange.'.format(
             gate.exchangeName)
 

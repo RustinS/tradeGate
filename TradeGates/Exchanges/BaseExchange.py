@@ -24,8 +24,8 @@ class BaseExchange(ABC):
 
     @abstractmethod
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
-                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
-                               newClientOrderId=None):
+                               stopPrice=None, icebergQty=None, newOrderRespType=None,
+                               newClientOrderId=None, extraParams=None):
         pass
 
     @abstractmethod

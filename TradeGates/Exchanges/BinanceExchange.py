@@ -67,7 +67,7 @@ def isOrderDataValid(order: DataHelpers.OrderData):
     return False
 
 
-def isFuturesOrderDataValid(order: DataHelpers.futuresOrderData):
+def isFuturesOrderDataValid(order: DataHelpers.FuturesOrderData):
     if order.side not in ['BUY', 'SELL']:
         return False
 
@@ -215,11 +215,11 @@ class BinanceExchange(BaseExchange):
         return response
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
-                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
-                               newClientOrderId=None):
+                               stopPrice=None, icebergQty=None, newOrderRespType=None,
+                               newClientOrderId=None, extraParams=None):
 
         currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
-                                                 quantity, recvWindow, side, stopPrice, symbol, timeInForce)
+                                                 quantity, side, stopPrice, symbol, timeInForce, extraParams)
 
         self.testSpotOrder(currOrder)
 

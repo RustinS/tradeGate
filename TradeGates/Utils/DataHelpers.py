@@ -15,7 +15,6 @@ class OrderData():
         self.stopPrice = None
         self.icebergQty = None
         self.newOrderRespType = None
-        self.recvWindow = None
         self.timestamp = None
         self.extraParams = None
 
@@ -43,9 +42,6 @@ class OrderData():
     def setNewOrderRespType(self, newOrderRespType):
         self.newOrderRespType = newOrderRespType
 
-    def setRecvWindow(self, recvWindow):
-        self.recvWindow = recvWindow
-
     def setTimestamp(self):
         self.timestamp = time.time()
 
@@ -53,7 +49,7 @@ class OrderData():
         self.extraParams = extraParams
 
 
-class futuresOrderData():
+class FuturesOrderData():
     def __init__(self, symbol, side=None, orderType=None):
         self.symbol = symbol
         self.side = side
@@ -128,7 +124,7 @@ class futuresOrderData():
         self.quoteQuantity = quoteQuantity
 
 
-def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, recvWindow, side,
+def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price, quantity, side,
                      stopPrice, symbol, timeInForce, extraParams=None):
     currOrder = OrderData(symbol.upper(), side.upper(), orderType.upper())
     if quantity is not None:
@@ -143,8 +139,6 @@ def setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, 
         currOrder.setIcebergQty(icebergQty)
     if newOrderRespType is not None:
         currOrder.setNewOrderRespType(newOrderRespType)
-    if recvWindow is not None:
-        currOrder.setRecvWindow(recvWindow)
     if newClientOrderId is not None:
         currOrder.setNewClientOrderId(newClientOrderId)
     if extraParams is not None:
@@ -157,7 +151,7 @@ def setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParam
                         reduceOnly, side, stopPrice, symbol, timeInForce, workingType, quoteQuantity):
     if extraParams is None:
         extraParams = {}
-    currOrder = futuresOrderData(symbol=symbol.upper(), orderType=orderType.upper())
+    currOrder = FuturesOrderData(symbol=symbol.upper(), orderType=orderType.upper())
     if side is not None:
         currOrder.setOrderSide(side)
     if positionSide is not None:

@@ -29,7 +29,7 @@ def isOrderDataValid(orderData: DataHelpers.OrderData):
         raise ValueError('Price must be specified for limit orders.')
 
 
-def isFuturesOrderDataValid(orderData: DataHelpers.futuresOrderData):
+def isFuturesOrderDataValid(orderData: DataHelpers.FuturesOrderData):
     if orderData.symbol is None:
         raise ValueError('Specify symbol.')
     if orderData.quantity is None:
@@ -194,12 +194,11 @@ class BybitExchange(BaseExchange):
         return BybitHelpers.getMakeSpotOrderOut(self.spotSession.place_active_order(**orderParams)['result'])
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
-                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
-                               newClientOrderId=None):
+                               stopPrice=None, icebergQty=None, newOrderRespType=None,
+                               newClientOrderId=None, extraParams=None):
 
         currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
-                                                 quantity,
-                                                 recvWindow, side, stopPrice, symbol, timeInForce)
+                                                 quantity, side, stopPrice, symbol, timeInForce, extraParams)
 
         self.testSpotOrder(currOrder)
 
@@ -456,7 +455,7 @@ class BybitExchange(BaseExchange):
 
         return futuresOrderData
 
-    def makeFuturesOrder(self, futuresOrderData: DataHelpers.futuresOrderData):
+    def makeFuturesOrder(self, futuresOrderData: DataHelpers.FuturesOrderData):
         orderParams = BybitHelpers.getFuturesOrderAsDict(futuresOrderData, self.futuresTimeInForces)
 
         if 'STOP' in futuresOrderData.orderType:

@@ -72,11 +72,11 @@ class TradeGate:
         return self.exchange.getBalance(asset, futures)
 
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
-                               stopPrice=None, icebergQty=None, newOrderRespType=None, recvWindow=None,
-                               newClientOrderId=None):
+                               stopPrice=None, icebergQty=None, newOrderRespType=None,
+                               newClientOrderId=None, extraParams=None):
 
         return self.exchange.createAndTestSpotOrder(symbol, side, orderType, quantity, price, timeInForce, stopPrice,
-                                                    icebergQty, newOrderRespType, recvWindow, newClientOrderId)
+                                                    icebergQty, newOrderRespType, newClientOrderId, extraParams)
 
     def makeSpotOrder(self, orderData):
         """ Make a spot order
@@ -510,7 +510,7 @@ class TradeGate:
                                   stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
                                   workingType=None, priceProtect=None, newOrderRespType=None,
                                   extraParams=None, quoteQuantity=None):
-        """ Create a futuresOrderData object and test the given parameters for validity. The object returned is then used \
+        """ Create a FuturesOrderData object and test the given parameters for validity. The object returned is then used \
         to send an order to the exchange by :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
 
         :param symbol: Symbol of the order

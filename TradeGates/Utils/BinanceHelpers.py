@@ -42,7 +42,7 @@ def getSpotOrderAsDict(order: DataHelpers.OrderData):
     return params
 
 
-def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData, allStr=False):
+def getFuturesOrderAsDict(order: DataHelpers.FuturesOrderData, allStr=False):
     params = {'symbol': order.symbol, 'side': order.side, 'ordertype': order.orderType}
 
     if order.positionSide is not None:

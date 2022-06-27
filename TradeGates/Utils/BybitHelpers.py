@@ -239,7 +239,7 @@ def getSpotOrderAsDict(order: DataHelpers.OrderData):
     return params
 
 
-def getFuturesOrderAsDict(order: DataHelpers.futuresOrderData, timeInForceTranslate):
+def getFuturesOrderAsDict(order: DataHelpers.FuturesOrderData, timeInForceTranslate):
     if 'STOP' in order.orderType:
         params = {
             'side': order.side.lower().title(),
