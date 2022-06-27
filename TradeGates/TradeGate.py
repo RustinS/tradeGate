@@ -109,6 +109,19 @@ class TradeGate:
                                              convertDateTime, doClean, toCleanDataframe)
 
     def getExchangeTime(self, futures=False):
+        """ Get time of the exchange
+
+        :param futures: False for spot market and True for futures market, defaults to False
+        :type futures: bool , optional
+        :return: Timestamp of the current time on the server
+        :rtype: int
+        :Output:
+
+            .. code-block:: python
+
+                1656330049381
+
+        """
         return self.exchange.getExchangeTime(futures)
 
     def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
