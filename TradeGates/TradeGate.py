@@ -120,8 +120,8 @@ class TradeGate:
 
             * For **KuCoin**:
 
-                * Send '**stop**' (either '**down**' or '**up**') and '**stopPriceType**' (either '**TP**', '**IP**' \
-                or '**MP**') in the '**extraParams**' when specifying '**stopPrice**'.
+                * To send a stop order, set '**orderType**' to **STOP_MARKET** or **STOP_LIMIT**.
+                * Send '**stop**' (either **loss** or **entry**) in the '**extraParams**' when specifying '**stopPrice**'.
                 * You can send '**cancelAfter**' parameter inside '**extraParams**' to cancel order after **n** seconds \
                 only if '**timeInForce**' value is **GTT**
                 * You can send '**postOnly**', '**hidden**', '**iceberg**' (bool) and '**visibleSize**' parameters inside \

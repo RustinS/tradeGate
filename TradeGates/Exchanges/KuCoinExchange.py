@@ -35,10 +35,10 @@ def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
     if orderData.orderType == 'market':
         checkOrderSize(orderData)
     else:
-        if orderData.orderType == 'limit':
+        if 'limit' in orderData.orderType:
             checkOrderPrice(orderData)
             checkOrderSize(orderData)
-        elif orderData.orderType == 'stop':
+        elif 'stop' in orderData.orderType:
             checkStopOrderDatas(orderData)
 
         checkOrderTimeInForce(orderData)
@@ -132,8 +132,8 @@ def checkStopOrderDatas(orderData, futures=False):
             raise ValueError('Specify \'stopPriceType\' inside \'extraParams\'. Either \'TP\', \'IP\' or \'MP\'.')
     else:
         if orderData.extraParams is not None:
-            if 'stopPrice' not in orderData.extraParams.keys():
-                raise ValueError('Specify \'stopPrice\' in \'extraParams\' for stop order.')
+            if 'stop' not in orderData.extraParams.keys():
+                raise ValueError('Specify \'stop\' in \'extraParams\' for stop order.')
         else:
             raise ValueError('Specify \'stopPrice\' in \'extraParams\' for stop order.')
 
@@ -158,7 +158,8 @@ def checkOrderType(orderData, futures=False):
     if futures:
         validTypes = ['limit', 'market', 'LIMIT', 'MARKET', 'Limit', 'Market']
     else:
-        validTypes = ['limit', 'market', 'stop', 'LIMIT', 'MARKET', 'STOP', 'Limit', 'Market', 'Stop']
+        validTypes = ['limit', 'market', 'stop_market', 'LIMIT', 'MARKET', 'STOP_MARKET', 'Limit', 'Market',
+                      'Stop_Market']
 
     if orderData.orderType is None or orderData.orderType not in validTypes:
         raise ValueError('Missing \'type\' field.')
@@ -272,9 +273,11 @@ class KuCoinExchange(BaseExchange):
             response = self.spotTrade.create_market_order(**params)
         if params['type'] == 'limit':
             response = self.spotTrade.create_limit_order(**params)
-        if params['type'] == 'stop' and 'price' in params.keys():
+        if params['type'] == 'stop_limit':
+            params['type'] = 'limit'
             response = self.spotTrade.create_limit_stop_order(**params)
-        if params['type'] == 'stop' and 'price' not in params.keys():
+        if params['type'] == 'stop_market':
+            params['type'] = 'market'
             response = self.spotTrade.create_market_stop_order(**params)
 
         return self.getOrder(params['symbol'], orderId=response['orderId'], futures=False)
