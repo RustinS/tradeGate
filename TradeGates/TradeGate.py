@@ -74,7 +74,62 @@ class TradeGate:
     def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
                                stopPrice=None, icebergQty=None, newOrderRespType=None,
                                newClientOrderId=None, extraParams=None):
+        """ Create a OrderData object and test the given parameters for validity. The object returned is then used \
+        to send an order to the exchange by :func:`makeSpotOrder() <TradeGate.TradeGate.makeSpotOrder>`
 
+        :param symbol: Symbol of the order
+        :type symbol: str
+        :param side: Side of the order. Either '**BUY**' or '**SELL**'
+        :type side: str
+        :param orderType: Type of the order. can be '**MARKET**', '**LIMIT**' or others (Check exchange's API documentation)
+        :type orderType: str
+        :param quantity: The amount of base asset of the order.
+        :type quantity: float , optional
+        :param price: Order price
+        :type price: float , optional
+        :param timeInForce: Order's time in force. Can be '**GTC**', '**IOC**', '**FOK**' or specific to the exchange. \
+        Check the exchange's API documentation for more options.
+        :type timeInForce: str , optional
+        :param stopPrice: Price condition to trigger the order. Only for stop order type.
+        :type stopPrice: float , optional
+        :param icebergQty: Only for Binance. Amount of the base asset to be hide on the exchange.
+        :type icebergQty: float , optional
+        :param newOrderRespType: Only for Binance. Response of the order, either '**ACK**' or '**RESULT**'.
+        :type newOrderRespType: str , optional
+        :param newClientOrderId: Custom string to identify your order for yourself.
+        :type newClientOrderId: str , optional
+        :param extraParams: Extra parameters for other exchanges than Binance.
+        :type extraParams: dict , optional
+        :return: An orderData object of the created order, ready to be submitted using \
+        :func:`makeSpotOrder() <TradeGate.TradeGate.makeSpotOrder>`
+        :rtype: OrderData
+
+        :Notes:
+
+            * Input parameters are based on Binance API. We map the appropriate parameters from input to the exchange \
+            requirements, but other parameters must be inside the '**extraParams**' dictionary.
+            * Some parameters have values that are only valid for some exchanges. See each exchange's documentation for\
+             these values.
+            * ValueError exception is raised when wrong combination of parameters are sent. Check the exception's \
+            message for guidance.
+            * Do not send '**price**' with '**MARKET**' orders.
+            * You must specify '**price**' for '**LIMIT**' orders.
+            * For **ByBit**:
+
+                * Order type can only be '**MARKET**', '**LIMIT**' or '**LIMIT_MAKER**'
+
+            * For **KuCoin**:
+
+                * Send '**stop**' (either '**down**' or '**up**') and '**stopPriceType**' (either '**TP**', '**IP**' \
+                or '**MP**') in the '**extraParams**' when specifying '**stopPrice**'.
+                * You can send '**cancelAfter**' parameter inside '**extraParams**' to cancel order after **n** seconds \
+                only if '**timeInForce**' value is **GTT**
+                * You can send '**postOnly**', '**hidden**', '**iceberg**' (bool) and '**visibleSize**' parameters inside \
+                '**extraParams**'.
+                * Valid values for the '**timeInForce**' variable: **GTC** (Good Till Cancel), **IOC** \
+                (Immediate Or Cancel), **GTT** (Good Till Time) and **FOK** (Fill Or Kill)
+
+        """
         return self.exchange.createAndTestSpotOrder(symbol, side, orderType, quantity, price, timeInForce, stopPrice,
                                                     icebergQty, newOrderRespType, newClientOrderId, extraParams)
 
@@ -105,7 +160,6 @@ class TradeGate:
                     'side': 'BUY',
                     'fills': []
                 }
-
 
         """
         return self.exchange.makeSpotOrder(orderData)
@@ -620,39 +674,10 @@ class TradeGate:
         :type extraParams: dict , optional
         :param quoteQuantity: The amount of quote asset of the order.
         :type quoteQuantity: float , optional
-        :return: submitted order information
-        :rtype: dict
-        :Output:
+        :return: An orderData object of the created order, ready to be submitted using \
+        :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
+        :rtype: OrderData
 
-            .. code-block:: python
-
-                {
-                    'symbol': 'BTCUSDT',
-                    'orderId': 3049327900,
-                    'clientOrderId': 'aLHt4lEJzO2Xeh21GebGCz0',
-                    'transactTime': 1655704960910,
-                    'price': 0.0,
-                    'origQty': 0.003,
-                    'executedQty': 0.0,
-                    'cummulativeQuoteQty': 0.0,
-                    'status': 'NEW',
-                    'timeInForce': 'GTC',
-                    'type': 'MARKET',
-                    'side': 'BUY',
-                    'extraData':
-                        {
-                            'reduceOnly': False,
-                            'stopPrice': 0.0,
-                            'workingType':
-                            'CONTRACT_PRICE',
-                            'avgPrice': 0.0,
-                            'origType': 'MARKET',
-                            'positionSide': 'BOTH',
-                            'activatePrice': None,
-                            'priceRate': None,
-                            'closePosition': False
-                        }
-                    }
         :Notes:
 
             * Input parameters are based on Binance API. We map the appropriate parameters from input to the exchange \
