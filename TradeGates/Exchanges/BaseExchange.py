@@ -129,3 +129,7 @@ class BaseExchange(ABC):
     def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
         pass
+
+    @abstractmethod
+    def getLongShortRatios(self, symbol, period, limit=None, startTime=None, endTime=None):
+        pass

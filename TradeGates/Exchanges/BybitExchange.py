@@ -671,3 +671,6 @@ class BybitExchange(BaseExchange):
         args = {k: v for k, v in args.items() if v is not None}
 
         return self.futuresSession.wallet_fund_records(**args)
+
+    def getLongShortRatios(self, symbol, period, limit=None, startTime=None, endTime=None):
+        pass

@@ -13,14 +13,14 @@ def is_symbol_status_valid(symbolName, symbolDatas, futures=False):
     if futures:
         for symbolData in symbolDatas:
             if symbolData.symbol == symbolName:
-                if symbolData.status == 'TRADING':
+                if symbolData.status == "TRADING":
                     return True
                 else:
                     return False
     else:
         for symbolData in symbolDatas:
-            if symbolData['symbol'] == symbolName:
-                if symbolData['enableTrading']:
+            if symbolData["symbol"] == symbolName:
+                if symbolData["enableTrading"]:
                     return True
                 else:
                     return False
@@ -32,13 +32,13 @@ def checkSpotOrderDataValid(orderData: DataHelpers.OrderData):
     checkOrderSymbol(orderData)
     checkOrderType(orderData, futures=False)
 
-    if orderData.orderType == 'market':
+    if orderData.orderType == "market":
         checkOrderSize(orderData)
     else:
-        if 'limit' in orderData.orderType:
+        if "limit" in orderData.orderType:
             checkOrderPrice(orderData)
             checkOrderSize(orderData)
-        elif 'stop' in orderData.orderType:
+        elif "stop" in orderData.orderType:
             checkStopOrderDatas(orderData)
 
         checkOrderTimeInForce(orderData)
@@ -50,9 +50,9 @@ def checkFuturesOrderDataValid(orderData):
     checkOrderSymbol(orderData)
     checkOrderType(orderData, futures=True)
 
-    if orderData.orderType == 'market':
+    if orderData.orderType == "market":
         checkOrderSize(orderData, futures=True)
-    elif orderData.orderType == 'limit':
+    elif orderData.orderType == "limit":
         checkOrderPrice(orderData)
         checkOrderSize(orderData, futures=True)
         checkOrderTimeInForce(orderData, futures=True)
@@ -73,47 +73,52 @@ def checkExtraParams(orderData, futures=False):
 
 
 def checkCancelAfterOrder(orderData):
-    if 'cancelAfter' in orderData.extraParams.keys():
-        if orderData.timeInForce != 'GTT':
-            raise ValueError('\'cancelAfter\' field can only be used with \'GTT\' as \'timeInForce\' field.')
+    if "cancelAfter" in orderData.extraParams.keys():
+        if orderData.timeInForce != "GTT":
+            raise ValueError(
+                "'cancelAfter' field can only be used with 'GTT' as 'timeInForce' field."
+            )
 
 
 def checkOrderLeverage(orderData):
-    if 'leverage' not in orderData.extraParams.keys():
+    if "leverage" not in orderData.extraParams.keys():
         if orderData.closePosition is None:
-            raise ValueError('Missing \'leverage\' field.')
+            raise ValueError("Missing 'leverage' field.")
         if not orderData.closePosition:
-            raise ValueError('Missing \'leverage\' field.')
+            raise ValueError("Missing 'leverage' field.")
 
 
 def checkIceBergOrder(orderData):
-    if 'iceberg' in orderData.extraParams.keys():
-        if 'visibleSize' not in orderData.extraParams.keys():
-            raise ValueError('Specify \'visibleSize\' with \'iceberg\' set as true')
+    if "iceberg" in orderData.extraParams.keys():
+        if "visibleSize" not in orderData.extraParams.keys():
+            raise ValueError("Specify 'visibleSize' with 'iceberg' set as true")
 
 
 def checkPostOnlyOrder(orderData, futures=False):
-    if 'postOnly' in orderData.extraParams.keys():
+    if "postOnly" in orderData.extraParams.keys():
         if futures:
-            if orderData.timeInForce in ['FOK']:
-                raise ValueError('\'postOnly\' field can not be used with \'IOC\' as \'timeInForce\' field.')
-            if 'hidden' in orderData.extraParams.keys():
-                raise ValueError('Can\'t use \'hidden\' with \'postOnly\'')
-            if 'iceberg' in orderData.extraParams.keys():
-                raise ValueError('Can\'t use \'iceberg\' with \'postOnly\'')
-        else:
-            if orderData.timeInForce in ['IOC', 'FOK']:
+            if orderData.timeInForce in ["FOK"]:
                 raise ValueError(
-                    '\'postOnly\' field can not be used with \'IOC\' or \'FOK\' as \'timeInForce\' field.')
+                    "'postOnly' field can not be used with 'IOC' as 'timeInForce' field."
+                )
+            if "hidden" in orderData.extraParams.keys():
+                raise ValueError("Can't use 'hidden' with 'postOnly'")
+            if "iceberg" in orderData.extraParams.keys():
+                raise ValueError("Can't use 'iceberg' with 'postOnly'")
+        else:
+            if orderData.timeInForce in ["IOC", "FOK"]:
+                raise ValueError(
+                    "'postOnly' field can not be used with 'IOC' or 'FOK' as 'timeInForce' field."
+                )
 
 
 def checkOrderTimeInForce(orderData, futures=False):
-    errorString = 'Invalid value for \'timeInForce\' specified'
+    errorString = "Invalid value for 'timeInForce' specified"
 
     if futures:
-        validValues = ['GTC', 'IOC']
+        validValues = ["GTC", "IOC"]
     else:
-        validValues = ['GTC', 'GTT', 'IOC', 'FOK']
+        validValues = ["GTC", "GTT", "IOC", "FOK"]
 
     if orderData.timeInForce not in validValues:
         raise ValueError(errorString)
@@ -121,28 +126,32 @@ def checkOrderTimeInForce(orderData, futures=False):
 
 def checkOrderPrice(orderData):
     if orderData.price is None:
-        raise ValueError('Missing \'price\' field for limit order type.')
+        raise ValueError("Missing 'price' field for limit order type.")
 
 
 def checkStopOrderDatas(orderData, futures=False):
     if futures:
-        if 'stop' not in orderData.extraParams.keys():
-            raise ValueError('Specify \'stop\' inside \'extraParams\'. Either \'down\' or \'up\'.')
-        if 'stopPriceType' not in orderData.extraParams.keys():
-            raise ValueError('Specify \'stopPriceType\' inside \'extraParams\'. Either \'TP\', \'IP\' or \'MP\'.')
+        if "stop" not in orderData.extraParams.keys():
+            raise ValueError(
+                "Specify 'stop' inside 'extraParams'. Either 'down' or 'up'."
+            )
+        if "stopPriceType" not in orderData.extraParams.keys():
+            raise ValueError(
+                "Specify 'stopPriceType' inside 'extraParams'. Either 'TP', 'IP' or 'MP'."
+            )
     else:
         if orderData.extraParams is not None:
-            if 'stop' not in orderData.extraParams.keys():
-                raise ValueError('Specify \'stop\' in \'extraParams\' for stop order.')
+            if "stop" not in orderData.extraParams.keys():
+                raise ValueError("Specify 'stop' in 'extraParams' for stop order.")
         else:
-            raise ValueError('Specify \'stopPrice\' in \'extraParams\' for stop order.')
+            raise ValueError("Specify 'stopPrice' in 'extraParams' for stop order.")
 
         if orderData.quantity is None:
-            raise ValueError('Missing \'quantity\' field for stop order type.')
+            raise ValueError("Missing 'quantity' field for stop order type.")
 
 
 def checkOrderSize(orderData, futures=False):
-    errorString = 'Provide either \'quantity\' or \'quoteOrderQty\'.'
+    errorString = "Provide either 'quantity' or 'quoteOrderQty'."
     if futures:
         if orderData.quantity is None and orderData.quoteQuantity is None:
             if orderData.closePosition is None:
@@ -156,25 +165,41 @@ def checkOrderSize(orderData, futures=False):
 
 def checkOrderType(orderData, futures=False):
     if futures:
-        validTypes = ['limit', 'market', 'LIMIT', 'MARKET', 'Limit', 'Market']
+        validTypes = ["limit", "market", "LIMIT", "MARKET", "Limit", "Market"]
     else:
-        validTypes = ['limit', 'market', 'stop_market', 'LIMIT', 'MARKET', 'STOP_MARKET', 'Limit', 'Market',
-                      'Stop_Market']
+        validTypes = [
+            "limit",
+            "market",
+            "stop_market",
+            "LIMIT",
+            "MARKET",
+            "STOP_MARKET",
+            "Limit",
+            "Market",
+            "Stop_Market",
+        ]
 
     if orderData.orderType is None or orderData.orderType not in validTypes:
-        raise ValueError('Missing \'type\' field.')
+        raise ValueError("Missing 'type' field.")
     orderData.orderType = orderData.orderType.lower()
 
 
 def checkOrderSymbol(orderData):
     if orderData.symbol is None:
-        raise ValueError('Missing \'symbol\' field.')
+        raise ValueError("Missing 'symbol' field.")
 
 
 def checkOrderSide(orderData, futures=False):
-    errorString = 'Missing or incorrect \'side\' field.'
+    errorString = "Missing or incorrect 'side' field."
     if futures:
-        if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
+        if orderData.side is None or orderData.side not in [
+            "buy",
+            "sell",
+            "BUY",
+            "SELL",
+            "Buy",
+            "Sell",
+        ]:
             if orderData.closePosition is None:
                 raise ValueError(errorString)
             if not orderData.closePosition:
@@ -182,84 +207,175 @@ def checkOrderSide(orderData, futures=False):
         if orderData.side is not None:
             orderData.side = orderData.side.lower()
     else:
-        if orderData.side is None or orderData.side not in ['buy', 'sell', 'BUY', 'SELL', 'Buy', 'Sell']:
+        if orderData.side is None or orderData.side not in [
+            "buy",
+            "sell",
+            "BUY",
+            "SELL",
+            "Buy",
+            "Sell",
+        ]:
             raise ValueError(errorString)
         orderData.side = orderData.side.lower()
 
 
 class KuCoinExchange(BaseExchange):
-    timeIntervals = ['1min', '3min', '5min', '15min', '30min', '1hour', '2hour', '4hour', '6hour', '8hour', '12hour',
-                     '1day', '1week']
+    timeIntervals = [
+        "1min",
+        "3min",
+        "5min",
+        "15min",
+        "30min",
+        "1hour",
+        "2hour",
+        "4hour",
+        "6hour",
+        "8hour",
+        "12hour",
+        "1day",
+        "1week",
+    ]
 
-    timeIntervalTranslate = {'1m': '1min', '3m': '3min', '5m': '5min', '15m': '15min', '30m': '30min', '1h': '1hour',
-                             '2h': '2hour', '4h': '4hour', '6h': '6hour', '8h': '8hour', '12h': '12hour', '1d': '1day',
-                             '1w': '1week'}
+    timeIntervalTranslate = {
+        "1m": "1min",
+        "3m": "3min",
+        "5m": "5min",
+        "15m": "15min",
+        "30m": "30min",
+        "1h": "1hour",
+        "2h": "2hour",
+        "4h": "4hour",
+        "6h": "6hour",
+        "8h": "8hour",
+        "12h": "12hour",
+        "1d": "1day",
+        "1w": "1week",
+    }
 
-    noOrderIdsErrorString = 'Specify either \'orderId\' or \'localOrderId\' (only for active orders)'
+    noOrderIdsErrorString = (
+        "Specify either 'orderId' or 'localOrderId' (only for active orders)"
+    )
 
     def __init__(self, credentials, sandbox=False, unifiedInOuts=True):
-        self.spotApiKey = credentials['spot']['key']
-        self.spotSecret = credentials['spot']['secret']
-        self.spotPassphrase = credentials['spot']['passphrase']
+        self.spotApiKey = credentials["spot"]["key"]
+        self.spotSecret = credentials["spot"]["secret"]
+        self.spotPassphrase = credentials["spot"]["passphrase"]
 
-        self.futuresApiKey = credentials['futures']['key']
-        self.futuresSecret = credentials['futures']['secret']
-        self.futuresPassphrase = credentials['futures']['passphrase']
+        self.futuresApiKey = credentials["futures"]["key"]
+        self.futuresSecret = credentials["futures"]["secret"]
+        self.futuresPassphrase = credentials["futures"]["passphrase"]
 
         self.sandbox = sandbox
         self.unifiedInOuts = unifiedInOuts
 
-        self.unavailableErrorText = 'This method is unavailable in KuCoin exchange'
+        self.unavailableErrorText = "This method is unavailable in KuCoin exchange"
 
         if sandbox:
-            self.spotUser = User(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
-                                 is_sandbox=True)
-            self.spotTrade = Trade(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
-                                   is_sandbox=True)
-            self.spotMarket = Market(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase,
-                                     is_sandbox=True)
+            self.spotUser = User(
+                key=self.spotApiKey,
+                secret=self.spotSecret,
+                passphrase=self.spotPassphrase,
+                is_sandbox=True,
+            )
+            self.spotTrade = Trade(
+                key=self.spotApiKey,
+                secret=self.spotSecret,
+                passphrase=self.spotPassphrase,
+                is_sandbox=True,
+            )
+            self.spotMarket = Market(
+                key=self.spotApiKey,
+                secret=self.spotSecret,
+                passphrase=self.spotPassphrase,
+                is_sandbox=True,
+            )
 
-            self.futuresUser = FuturesUser(key=self.futuresApiKey, secret=self.futuresSecret,
-                                           passphrase=self.futuresPassphrase, is_sandbox=True)
-            self.futuresTrade = FuturesTrade(key=self.futuresApiKey, secret=self.futuresSecret,
-                                             passphrase=self.futuresPassphrase, is_sandbox=True)
-            self.futuresMarket = FuturesMarket(key=self.futuresApiKey, secret=self.futuresSecret,
-                                               passphrase=self.futuresPassphrase, is_sandbox=True)
+            self.futuresUser = FuturesUser(
+                key=self.futuresApiKey,
+                secret=self.futuresSecret,
+                passphrase=self.futuresPassphrase,
+                is_sandbox=True,
+            )
+            self.futuresTrade = FuturesTrade(
+                key=self.futuresApiKey,
+                secret=self.futuresSecret,
+                passphrase=self.futuresPassphrase,
+                is_sandbox=True,
+            )
+            self.futuresMarket = FuturesMarket(
+                key=self.futuresApiKey,
+                secret=self.futuresSecret,
+                passphrase=self.futuresPassphrase,
+                is_sandbox=True,
+            )
         else:
-            self.spotUser = User(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase)
-            self.spotTrade = Trade(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase)
-            self.spotMarket = Market(key=self.spotApiKey, secret=self.spotSecret, passphrase=self.spotPassphrase)
+            self.spotUser = User(
+                key=self.spotApiKey,
+                secret=self.spotSecret,
+                passphrase=self.spotPassphrase,
+            )
+            self.spotTrade = Trade(
+                key=self.spotApiKey,
+                secret=self.spotSecret,
+                passphrase=self.spotPassphrase,
+            )
+            self.spotMarket = Market(
+                key=self.spotApiKey,
+                secret=self.spotSecret,
+                passphrase=self.spotPassphrase,
+            )
 
-            self.futuresUser = FuturesUser(key=self.futuresApiKey, secret=self.futuresSecret,
-                                           passphrase=self.futuresPassphrase)
-            self.futuresTrade = FuturesTrade(key=self.futuresApiKey, secret=self.futuresSecret,
-                                             passphrase=self.futuresPassphrase)
-            self.futuresMarket = FuturesMarket(key=self.futuresApiKey, secret=self.futuresSecret,
-                                               passphrase=self.futuresPassphrase)
+            self.futuresUser = FuturesUser(
+                key=self.futuresApiKey,
+                secret=self.futuresSecret,
+                passphrase=self.futuresPassphrase,
+            )
+            self.futuresTrade = FuturesTrade(
+                key=self.futuresApiKey,
+                secret=self.futuresSecret,
+                passphrase=self.futuresPassphrase,
+            )
+            self.futuresMarket = FuturesMarket(
+                key=self.futuresApiKey,
+                secret=self.futuresSecret,
+                passphrase=self.futuresPassphrase,
+            )
 
     def getBalance(self, asset=None, futures=False):
         if futures:
             if asset is None:
-                return KuCoinHelpers.unifyGetBalanceFuturesOut([self.futuresUser.get_account_overview(),
-                                                                self.futuresUser.get_account_overview(currency='USDT')])
+                return KuCoinHelpers.unifyGetBalanceFuturesOut(
+                    [
+                        self.futuresUser.get_account_overview(),
+                        self.futuresUser.get_account_overview(currency="USDT"),
+                    ]
+                )
             else:
                 return KuCoinHelpers.unifyGetBalanceFuturesOut(
-                    self.futuresUser.get_account_overview(currency=asset), isSingle=True)
+                    self.futuresUser.get_account_overview(currency=asset), isSingle=True
+                )
 
         else:
             if asset is None:
-                return KuCoinHelpers.unifyGetBalanceSpotOut(self.spotUser.get_account_list(currency=asset))
+                return KuCoinHelpers.unifyGetBalanceSpotOut(
+                    self.spotUser.get_account_list(currency=asset)
+                )
             else:
-                return KuCoinHelpers.unifyGetBalanceSpotOut(self.spotUser.get_account_list(currency=asset),
-                                                            isSingle=True)
+                return KuCoinHelpers.unifyGetBalanceSpotOut(
+                    self.spotUser.get_account_list(currency=asset), isSingle=True
+                )
 
     def symbolAccountTradeHistory(self, symbol, futures=False, fromId=None, limit=None):
         if futures:
-            return KuCoinHelpers.unifyTradeHistory(self.futuresTrade.get_fills_details(symbol=symbol)['items'],
-                                                   futures=True)
+            return KuCoinHelpers.unifyTradeHistory(
+                self.futuresTrade.get_fills_details(symbol=symbol)["items"],
+                futures=True,
+            )
         else:
 
-            return KuCoinHelpers.unifyTradeHistory(self.spotTrade.get_fill_list(tradeType='TRADE')['items'])
+            return KuCoinHelpers.unifyTradeHistory(
+                self.spotTrade.get_fill_list(tradeType="TRADE")["items"]
+            )
 
     def testSpotOrder(self, orderData):
         checkSpotOrderDataValid(orderData)
@@ -269,84 +385,134 @@ class KuCoinExchange(BaseExchange):
         params = KuCoinHelpers.getSpotOrderAsDict(orderData)
         response = None
 
-        if params['type'] == 'market':
+        if params["type"] == "market":
             response = self.spotTrade.create_market_order(**params)
-        if params['type'] == 'limit':
+        if params["type"] == "limit":
             response = self.spotTrade.create_limit_order(**params)
-        if params['type'] == 'stop_limit':
-            params['type'] = 'limit'
+        if params["type"] == "stop_limit":
+            params["type"] = "limit"
             response = self.spotTrade.create_limit_stop_order(**params)
-        if params['type'] == 'stop_market':
-            params['type'] = 'market'
+        if params["type"] == "stop_market":
+            params["type"] = "market"
             response = self.spotTrade.create_market_stop_order(**params)
 
-        return self.getOrder(params['symbol'], orderId=response['orderId'], futures=False)
+        return self.getOrder(
+            params["symbol"], orderId=response["orderId"], futures=False
+        )
 
-    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
-                               stopPrice=None, icebergQty=None, newOrderRespType=None,
-                               newClientOrderId=None, extraParams=None):
-        currOrder = DataHelpers.setSpotOrderData(icebergQty, newClientOrderId, newOrderRespType, orderType, price,
-                                                 quantity, side, stopPrice, symbol, timeInForce, extraParams)
+    def createAndTestSpotOrder(
+        self,
+        symbol,
+        side,
+        orderType,
+        quantity=None,
+        price=None,
+        timeInForce=None,
+        stopPrice=None,
+        icebergQty=None,
+        newOrderRespType=None,
+        newClientOrderId=None,
+        extraParams=None,
+    ):
+        currOrder = DataHelpers.setSpotOrderData(
+            icebergQty,
+            newClientOrderId,
+            newOrderRespType,
+            orderType,
+            price,
+            quantity,
+            side,
+            stopPrice,
+            symbol,
+            timeInForce,
+            extraParams,
+        )
 
         self.testSpotOrder(currOrder)
 
         return currOrder
 
-    def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
+    def getSymbolOrders(
+        self,
+        symbol,
+        futures=False,
+        orderId=None,
+        startTime=None,
+        endTime=None,
+        limit=None,
+    ):
         if futures:
             args = {}
             if startTime is not None:
-                args['startAt'] = startTime
+                args["startAt"] = startTime
             if endTime is not None:
-                args['endAt'] = endTime
-            args['symbol'] = symbol
-            orderList = self.futuresTrade.get_order_list(**args)['items']
+                args["endAt"] = endTime
+            args["symbol"] = symbol
+            orderList = self.futuresTrade.get_order_list(**args)["items"]
             return KuCoinHelpers.unifyGetSymbolOrders(orderList, futures=True)
         else:
             args = {}
             if startTime is not None:
-                args['startAt'] = startTime
+                args["startAt"] = startTime
             if endTime is not None:
-                args['endAt'] = endTime
-            args['symbol'] = symbol
-            orderList = self.spotTrade.get_order_list(**args)['items']
+                args["endAt"] = endTime
+            args["symbol"] = symbol
+            orderList = self.spotTrade.get_order_list(**args)["items"]
             return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
     def getOpenOrders(self, symbol, futures=False):
-        args = {'symbol': symbol, 'status': 'active'}
+        args = {"symbol": symbol, "status": "active"}
         if futures:
-            lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
-            orderList = self.futuresTrade.get_order_list(**args)['items']
-            return KuCoinHelpers.unifyGetSymbolOrders(orderList, futures=True, lotSize=lotSize)
+            lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)[
+                "precisionStep"
+            ]
+            orderList = self.futuresTrade.get_order_list(**args)["items"]
+            return KuCoinHelpers.unifyGetSymbolOrders(
+                orderList, futures=True, lotSize=lotSize
+            )
         else:
-            orderList = self.spotTrade.get_order_list(**args)['items']
+            orderList = self.spotTrade.get_order_list(**args)["items"]
             return KuCoinHelpers.unifyGetSymbolOrders(orderList)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
         if futures:
-            result = self.futuresTrade.cancel_all_limit_order(symbol)['cancelledOrderIds']
-            result.append(self.futuresTrade.cancel_all_stop_order(symbol)['cancelledOrderIds'])
+            result = self.futuresTrade.cancel_all_limit_order(symbol)[
+                "cancelledOrderIds"
+            ]
+            result.append(
+                self.futuresTrade.cancel_all_stop_order(symbol)["cancelledOrderIds"]
+            )
             return result
         else:
-            args = {'symbol': symbol}
+            args = {"symbol": symbol}
             result = self.spotTrade.cancel_all_orders(**args)
-            return result['cancelledOrderIds']
+            return result["cancelledOrderIds"]
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
         if futures:
             if orderId is not None:
-                cancelledOrderId = self.futuresTrade.cancel_order(orderId)['cancelledOrderIds'][0]
+                cancelledOrderId = self.futuresTrade.cancel_order(orderId)[
+                    "cancelledOrderIds"
+                ][0]
             elif localOrderId is not None:
-                orderData = self.getOrder(symbol=symbol, localOrderId=localOrderId, futures=True)
-                cancelledOrderId = self.futuresTrade.cancel_order(orderId=orderData['orderId'])['cancelledOrderIds'][0]
+                orderData = self.getOrder(
+                    symbol=symbol, localOrderId=localOrderId, futures=True
+                )
+                cancelledOrderId = self.futuresTrade.cancel_order(
+                    orderId=orderData["orderId"]
+                )["cancelledOrderIds"][0]
             else:
                 raise ValueError(self.noOrderIdsErrorString)
             return self.getOrder(symbol, orderId=cancelledOrderId, futures=True)
         else:
             if orderId is not None:
-                cancelledOrderId = self.spotTrade.cancel_order(orderId)['cancelledOrderIds'][0]
+                cancelledOrderId = self.spotTrade.cancel_order(orderId)[
+                    "cancelledOrderIds"
+                ][0]
             elif localOrderId is not None:
-                cancelledOrderId = self.spotTrade.cancel_client_order(localOrderId)['cancelledOrderId']
+                cancelledOrderId = self.spotTrade.cancel_client_order(localOrderId)[
+                    "cancelledOrderId"
+                ]
             else:
                 raise ValueError(self.noOrderIdsErrorString)
             return self.getOrder(symbol, orderId=cancelledOrderId, futures=False)
@@ -360,7 +526,9 @@ class KuCoinExchange(BaseExchange):
             else:
                 raise ValueError(self.noOrderIdsErrorString)
 
-            lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
+            lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)[
+                "precisionStep"
+            ]
             return KuCoinHelpers.unifyGetOrder(orderData, futures=True, lotSize=lotSize)
         else:
             if orderId is not None:
@@ -375,12 +543,12 @@ class KuCoinExchange(BaseExchange):
     def getTradingFees(self, symbol=None, futures=False):
         if futures:
             if symbol is None:
-                raise ValueError('Must specify futures contract symbol name.')
+                raise ValueError("Must specify futures contract symbol name.")
             contractInfo = self.futuresMarket.get_contract_detail(symbol=symbol)
             return {
-                'symbol': contractInfo['symbol'],
-                'takerCommission': contractInfo['takerFeeRate'],
-                'makerCommission': contractInfo['makerFeeRate']
+                "symbol": contractInfo["symbol"],
+                "takerCommission": contractInfo["takerFeeRate"],
+                "makerCommission": contractInfo["makerFeeRate"],
             }
         else:
             if symbol is None:
@@ -389,36 +557,61 @@ class KuCoinExchange(BaseExchange):
                 feeData = self.spotUser.get_actual_fee(symbols=symbol)[0]
 
                 return {
-                    'symbol': feeData['symbol'],
-                    'takerCommission': feeData['takerFeeRate'],
-                    'makerCommission': feeData['makerFeeRate']
+                    "symbol": feeData["symbol"],
+                    "takerCommission": feeData["takerFeeRate"],
+                    "makerCommission": feeData["makerFeeRate"],
                 }
 
     def getSymbolTickerPrice(self, symbol, futures=False):
         if futures:
-            return float(self.futuresMarket.get_ticker(symbol=symbol)['price'])
+            return float(self.futuresMarket.get_ticker(symbol=symbol)["price"])
         else:
-            return float(self.spotMarket.get_ticker(symbol=symbol)['price'])
+            return float(self.spotMarket.get_ticker(symbol=symbol)["price"])
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=500, futures=False, blvtnav=False,
-                        convertDateTime=False, doClean=False, toCleanDataframe=False):
+    def getSymbolKlines(
+        self,
+        symbol,
+        interval,
+        startTime=None,
+        endTime=None,
+        limit=500,
+        futures=False,
+        blvtnav=False,
+        convertDateTime=False,
+        doClean=False,
+        toCleanDataframe=False,
+    ):
         if interval not in KuCoinExchange.timeIntervals:
             if interval in KuCoinExchange.timeIntervalTranslate.keys():
                 timeInterval = KuCoinExchange.timeIntervalTranslate[interval]
             else:
-                raise ValueError('Time interval is not valid.')
+                raise ValueError("Time interval is not valid.")
         else:
             timeInterval = interval
 
         if startTime is not None and not isinstance(startTime, int):
-            startTime = int(datetime.timestamp(datetime.strptime(startTime, '%Y-%m-%d %H:%M:%S')))
+            startTime = int(
+                datetime.timestamp(datetime.strptime(startTime, "%Y-%m-%d %H:%M:%S"))
+            )
         if endTime is not None and not isinstance(endTime, int):
-            endTime = int(datetime.timestamp(datetime.strptime(endTime, '%Y-%m-%d %H:%M:%S')))
+            endTime = int(
+                datetime.timestamp(datetime.strptime(endTime, "%Y-%m-%d %H:%M:%S"))
+            )
 
         if futures:
-            data = self._getFuturesSymbolKlines(endTime, timeInterval, limit, startTime, symbol)
+            data = self._getFuturesSymbolKlines(
+                endTime, timeInterval, limit, startTime, symbol
+            )
         else:
-            data = self._getSpotSymbolKlines(endTime, timeInterval, limit, startTime, symbol)
+            if startTime is not None:
+                startTime = int(str(startTime)[:-3])
+
+            if endTime is not None:
+                endTime = int(str(endTime)[:-3])
+
+            data = self._getSpotSymbolKlines(
+                endTime, timeInterval, limit, startTime, symbol
+            )
 
         if convertDateTime or toCleanDataframe:
             if futures:
@@ -435,13 +628,41 @@ class KuCoinExchange(BaseExchange):
 
         if doClean or toCleanDataframe:
             if toCleanDataframe:
-                cleanDataFrame = pd.DataFrame(data, columns=['date', 'open', 'close', 'high', 'low', 'volume',
-                                                             'closeDate', 'tradesNum'])
-                cleanDataFrame.set_index('date', inplace=True)
-                cleanDataFrame[cleanDataFrame.columns[:5]] = cleanDataFrame[cleanDataFrame.columns[:5]].apply(
-                    pd.to_numeric, errors='coerce')
-                cleanDataFrame[cleanDataFrame.columns[-1]] = cleanDataFrame[cleanDataFrame.columns[-1]].apply(
-                    pd.to_numeric, errors='coerce')
+                if futures:
+                    cleanDataFrame = pd.DataFrame(
+                        data,
+                        columns=[
+                            "date",
+                            "open",
+                            "high",
+                            "low",
+                            "close",
+                            "volume",
+                            "closeDate",
+                            "tradesNum",
+                        ],
+                    )
+                else:
+                    cleanDataFrame = pd.DataFrame(
+                        data,
+                        columns=[
+                            "date",
+                            "open",
+                            "close",
+                            "high",
+                            "low",
+                            "volume",
+                            "closeDate",
+                            "tradesNum",
+                        ],
+                    )
+                cleanDataFrame.set_index("date", inplace=True)
+                cleanDataFrame[cleanDataFrame.columns[:5]] = cleanDataFrame[
+                    cleanDataFrame.columns[:5]
+                ].apply(pd.to_numeric, errors="coerce")
+                cleanDataFrame[cleanDataFrame.columns[-1]] = cleanDataFrame[
+                    cleanDataFrame.columns[-1]
+                ].apply(pd.to_numeric, errors="coerce")
                 return cleanDataFrame
             return data
         else:
@@ -451,33 +672,63 @@ class KuCoinExchange(BaseExchange):
         if limit is None:
             if startTime is None:
                 if endTime is None:
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval)
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol, kline_type=timeInterval
+                    )
                 else:
-                    raise ValueError('Can\'t use endTime without limit.')
+                    raise ValueError("Can't use endTime without limit.")
             else:
                 if endTime is None:
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime)
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol, kline_type=timeInterval, startAt=startTime
+                    )
                 else:
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime,
-                                                     endAt=endTime)
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol,
+                        kline_type=timeInterval,
+                        startAt=startTime,
+                        endAt=endTime,
+                    )
         else:
             if startTime is None:
                 if endTime is None:
-                    startAt = int(time.time()) - limit * self._getTimeIntervalInSeconds(timeInterval)
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startAt,
-                                                     endAt=int(time.time()))
+                    startAt = int(time.time()) - limit * self._getTimeIntervalInSeconds(
+                        timeInterval
+                    )
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol,
+                        kline_type=timeInterval,
+                        startAt=startAt,
+                        endAt=int(time.time()),
+                    )
                 else:
-                    startAt = endTime - limit * self._getTimeIntervalInSeconds(timeInterval)
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startAt,
-                                                     endAt=endTime)
+                    startAt = endTime - limit * self._getTimeIntervalInSeconds(
+                        timeInterval
+                    )
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol,
+                        kline_type=timeInterval,
+                        startAt=startAt,
+                        endAt=endTime,
+                    )
             else:
                 if endTime is None:
-                    endAt = startTime + limit * self._getTimeIntervalInSeconds(timeInterval)
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime,
-                                                     endAt=endAt)
+                    endAt = startTime + limit * self._getTimeIntervalInSeconds(
+                        timeInterval
+                    )
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol,
+                        kline_type=timeInterval,
+                        startAt=startTime,
+                        endAt=endAt,
+                    )
                 else:
-                    data = self.spotMarket.get_kline(symbol=symbol, kline_type=timeInterval, startAt=startTime,
-                                                     endAt=endTime)
+                    data = self.spotMarket.get_kline(
+                        symbol=symbol,
+                        kline_type=timeInterval,
+                        startAt=startTime,
+                        endAt=endTime,
+                    )
         return data[::-1]
 
     def _getFuturesSymbolKlines(self, endTime, timeInterval, limit, startTime, symbol):
@@ -485,22 +736,30 @@ class KuCoinExchange(BaseExchange):
         if limit is None:
             if startTime is None:
                 if endTime is None:
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol, granularity=granularity
+                    )
                 else:
                     endTime = endTime - endTime % (granularity * 60)
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             end_t=endTime * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol, granularity=granularity, end_t=endTime * 1000
+                    )
             else:
                 if endTime is None:
                     startTime = startTime - startTime % (granularity * 60)
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             begin_t=startTime * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol, granularity=granularity, begin_t=startTime * 1000
+                    )
                 else:
                     endTime = endTime - endTime % (granularity * 60)
                     startTime = startTime - startTime % (granularity * 60)
 
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol,
+                        granularity=granularity,
+                        begin_t=startTime * 1000,
+                        end_t=endTime * 1000,
+                    )
         else:
             if startTime is None:
                 if endTime is None:
@@ -510,16 +769,21 @@ class KuCoinExchange(BaseExchange):
                     startAt = endTime - limit * granularity * 60
                     startAt = startAt - startAt % (granularity * 60)
 
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             begin_t=startAt * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol, granularity=granularity, begin_t=startAt * 1000
+                    )
                 else:
                     endTime = endTime - endTime % (granularity * 60)
 
                     startTime = endTime - limit * granularity * 60
                     startTime = startTime - startTime % (granularity * 60)
 
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol,
+                        granularity=granularity,
+                        begin_t=startTime * 1000,
+                        end_t=endTime * 1000,
+                    )
             else:
                 if endTime is None:
                     startTime = startTime - startTime % (granularity * 60)
@@ -527,45 +791,53 @@ class KuCoinExchange(BaseExchange):
                     endTime = startTime + limit * granularity * 60
                     endTime = endTime - endTime % (granularity * 60)
 
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol,
+                        granularity=granularity,
+                        begin_t=startTime * 1000,
+                        end_t=endTime * 1000,
+                    )
                 else:
                     startTime = startTime - startTime % (granularity * 60)
                     endTime = endTime - endTime % (granularity * 60)
 
-                    data = self.futuresMarket.get_kline_data(symbol=symbol, granularity=granularity,
-                                                             begin_t=startTime * 1000, end_t=endTime * 1000)
+                    data = self.futuresMarket.get_kline_data(
+                        symbol=symbol,
+                        granularity=granularity,
+                        begin_t=startTime * 1000,
+                        end_t=endTime * 1000,
+                    )
         return data
 
     def _getTimeIntervalInSeconds(self, timeInterval):
         if timeInterval not in self.timeIntervals:
-            raise ValueError('Time interval is not valid.')
+            raise ValueError("Time interval is not valid.")
 
-        if timeInterval == '1min':
+        if timeInterval == "1min":
             return 60
-        elif timeInterval == '3min':
+        elif timeInterval == "3min":
             return 3 * 60
-        elif timeInterval == '5min':
+        elif timeInterval == "5min":
             return 5 * 60
-        elif timeInterval == '15min':
+        elif timeInterval == "15min":
             return 15 * 60
-        elif timeInterval == '30min':
+        elif timeInterval == "30min":
             return 40 * 60
-        elif timeInterval == '1hour':
+        elif timeInterval == "1hour":
             return 3600
-        elif timeInterval == '2hour':
+        elif timeInterval == "2hour":
             return 2 * 3600
-        elif timeInterval == '4hour':
+        elif timeInterval == "4hour":
             return 4 * 3600
-        elif timeInterval == '6hour':
+        elif timeInterval == "6hour":
             return 6 * 3600
-        elif timeInterval == '8hour':
+        elif timeInterval == "8hour":
             return 8 * 3600
-        elif timeInterval == '12hour':
+        elif timeInterval == "12hour":
             return 12 * 3600
-        elif timeInterval == '1day':
+        elif timeInterval == "1day":
             return 24 * 3600
-        elif timeInterval == '1week':
+        elif timeInterval == "1week":
             return 7 * 24 * 3600
 
     def getExchangeTime(self, futures=False):
@@ -583,52 +855,99 @@ class KuCoinExchange(BaseExchange):
     def makeFuturesOrder(self, futuresOrderData):
         if futuresOrderData.quantity is None:
             if futuresOrderData.quoteQuantity is not None:
-                lotSize = self.getSymbolMinTrade(symbol=futuresOrderData.symbol, futures=True)['precisionStep']
+                lotSize = self.getSymbolMinTrade(
+                    symbol=futuresOrderData.symbol, futures=True
+                )["precisionStep"]
                 if futuresOrderData.price is None:
-                    currPrice = self.getSymbolTickerPrice(futuresOrderData.symbol, futures=True)
-                    futuresOrderData.quantity = int(round(futuresOrderData.quoteQuantity / currPrice / lotSize))
+                    currPrice = self.getSymbolTickerPrice(
+                        futuresOrderData.symbol, futures=True
+                    )
+                    futuresOrderData.quantity = int(
+                        round(futuresOrderData.quoteQuantity / currPrice / lotSize)
+                    )
                 else:
                     futuresOrderData.quantity = int(
-                        round(futuresOrderData.quoteQuantity / futuresOrderData.price / lotSize))
+                        round(
+                            futuresOrderData.quoteQuantity
+                            / futuresOrderData.price
+                            / lotSize
+                        )
+                    )
 
         params = KuCoinHelpers.getFuturesOrderAsDict(futuresOrderData)
 
-        symbol = params['symbol']
-        del params['symbol']
+        symbol = params["symbol"]
+        del params["symbol"]
 
-        side = params['side']
-        del params['side']
+        side = params["side"]
+        del params["side"]
 
-        if 'leverage' in params.keys():
-            leverage = params['leverage']
-            del params['leverage']
+        if "leverage" in params.keys():
+            leverage = params["leverage"]
+            del params["leverage"]
         else:
             leverage = None
-        if params['type'] == 'market':
-            result = self.futuresTrade.create_market_order(symbol, side, leverage, **params)
-        elif params['type'] == 'limit':
-            size = params['size']
-            del params['size']
+        if params["type"] == "market":
+            result = self.futuresTrade.create_market_order(
+                symbol, side, leverage, **params
+            )
+        elif params["type"] == "limit":
+            size = params["size"]
+            del params["size"]
 
-            price = params['price']
-            del params['price']
+            price = params["price"]
+            del params["price"]
 
-            result = self.futuresTrade.create_limit_order(symbol, side, leverage, size, price, **params)
+            result = self.futuresTrade.create_limit_order(
+                symbol, side, leverage, size, price, **params
+            )
         else:
             result = None
-        return self.getOrder(symbol, orderId=result['orderId'], futures=True)
+        return self.getOrder(symbol, orderId=result["orderId"], futures=True)
 
-    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
-                                  reduceOnly=None, price=None, newClientOrderId=None,
-                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
-                                  workingType=None, priceProtect=None, newOrderRespType=None,
-                                  extraParams=None, quoteQuantity=None):
-        currOrder = DataHelpers.setFuturesOrderData(activationPrice, callbackRate, closePosition, extraParams,
-                                                    newClientOrderId, newOrderRespType, orderType, positionSide, price,
-                                                    priceProtect, quantity, reduceOnly, side, stopPrice,
-                                                    symbol, timeInForce, workingType, quoteQuantity)
+    def createAndTestFuturesOrder(
+        self,
+        symbol,
+        side,
+        orderType,
+        positionSide=None,
+        timeInForce=None,
+        quantity=None,
+        reduceOnly=None,
+        price=None,
+        newClientOrderId=None,
+        stopPrice=None,
+        closePosition=None,
+        activationPrice=None,
+        callbackRate=None,
+        workingType=None,
+        priceProtect=None,
+        newOrderRespType=None,
+        extraParams=None,
+        quoteQuantity=None,
+    ):
+        currOrder = DataHelpers.setFuturesOrderData(
+            activationPrice,
+            callbackRate,
+            closePosition,
+            extraParams,
+            newClientOrderId,
+            newOrderRespType,
+            orderType,
+            positionSide,
+            price,
+            priceProtect,
+            quantity,
+            reduceOnly,
+            side,
+            stopPrice,
+            symbol,
+            timeInForce,
+            workingType,
+            quoteQuantity,
+        )
 
-        lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)['precisionStep']
+        lotSize = self.getSymbolMinTrade(symbol=symbol, futures=True)["precisionStep"]
         if currOrder.quantity is not None:
             currOrder.quantity /= lotSize
 
@@ -643,16 +962,20 @@ class KuCoinExchange(BaseExchange):
         raise NotImplementedError(self.unavailableErrorText)
 
     def changeMarginType(self, symbol, marginType, params=None):
-        if marginType.upper() == 'CROSSED':
+        if marginType.upper() == "CROSSED":
             autoAdd = True
-        elif marginType.upper() == 'ISOLATED':
+        elif marginType.upper() == "ISOLATED":
             autoAdd = False
         else:
-            raise ValueError('Invalid value specified for \'marginType\'. Must be either \'ISOLATED\' or \'CROSSED\'.')
-        return self.futuresTrade.modify_auto_deposit_margin(symbol, autoAdd)['data']
+            raise ValueError(
+                "Invalid value specified for 'marginType'. Must be either 'ISOLATED' or 'CROSSED'."
+            )
+        return self.futuresTrade.modify_auto_deposit_margin(symbol, autoAdd)["data"]
 
     def changePositionMargin(self, symbol, amount):
-        newPosition = self.futuresTrade.add_margin_manually(symbol=symbol, margin=amount, bizNo=str(time.time()))
+        newPosition = self.futuresTrade.add_margin_manually(
+            symbol=symbol, margin=amount, bizNo=str(time.time())
+        )
 
         return True
 
@@ -674,7 +997,9 @@ class KuCoinExchange(BaseExchange):
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
         if futures:
             tradeHistory = self.futuresMarket.get_trade_history(symbol=symbol)
-            return pd.DataFrame(KuCoinHelpers.unifyRecentTrades(tradeHistory, futures=True))
+            return pd.DataFrame(
+                KuCoinHelpers.unifyRecentTrades(tradeHistory, futures=True)
+            )
         else:
             tradeHistory = self.spotMarket.get_trade_histories(symbol=symbol)
             return pd.DataFrame(KuCoinHelpers.unifyRecentTrades(tradeHistory))
@@ -696,101 +1021,161 @@ class KuCoinExchange(BaseExchange):
 
             symbolInfo = None
             for info in symbolInfoList:
-                if info['symbol'] == symbol:
+                if info["symbol"] == symbol:
                     symbolInfo = info
             return KuCoinHelpers.unifyMinTrade(symbolInfo)
 
-    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, enterPrice=None,
-                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
+    def makeSlTpLimitFuturesOrder(
+        self,
+        symbol,
+        orderSide,
+        quantity=None,
+        quoteQuantity=None,
+        enterPrice=None,
+        takeProfit=None,
+        stopLoss=None,
+        leverage=None,
+        marginType=None,
+    ):
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
 
         if quantity is None:
             if quoteQuantity is None:
-                raise ValueError('Specify either quantity or quoteQuantity')
-            quantity = int(quoteQuantity / enterPrice / symbolInfo['precisionStep']) * symbolInfo['precisionStep']
+                raise ValueError("Specify either quantity or quoteQuantity")
+            quantity = (
+                int(quoteQuantity / enterPrice / symbolInfo["precisionStep"])
+                * symbolInfo["precisionStep"]
+            )
 
-        if quantity < symbolInfo['minQuantity']:
-            raise ValueError('Quantity is lower than minimum quantity allowed.')
+        if quantity < symbolInfo["minQuantity"]:
+            raise ValueError("Quantity is lower than minimum quantity allowed.")
 
-        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'LIMIT', quantity=quantity,
-                                                   price=enterPrice, timeInForce='GTC',
-                                                   extraParams={'leverage': leverage})
+        mainOrder = self.createAndTestFuturesOrder(
+            symbol,
+            orderSide.upper(),
+            "LIMIT",
+            quantity=quantity,
+            price=enterPrice,
+            timeInForce="GTC",
+            extraParams={"leverage": leverage},
+        )
 
-        tpSlSide = 'sell' if orderSide.upper() == 'BUY' else 'buy'
+        tpSlSide = "sell" if orderSide.upper() == "BUY" else "buy"
 
         slExtraParams = {
-            'stop': 'down' if orderSide.upper() == 'BUY' else 'up',
-            'stopPriceType': 'TP'
+            "stop": "down" if orderSide.upper() == "BUY" else "up",
+            "stopPriceType": "TP",
         }
-        stopLossOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
-                                                       stopPrice=stopLoss, closePosition=True,
-                                                       timeInForce='GTC', extraParams=slExtraParams)
+        stopLossOrder = self.createAndTestFuturesOrder(
+            symbol=symbol,
+            side=tpSlSide,
+            orderType="MARKET",
+            stopPrice=stopLoss,
+            closePosition=True,
+            timeInForce="GTC",
+            extraParams=slExtraParams,
+        )
 
         tpExtraParams = {
-            'stop': 'up' if orderSide.upper() == 'BUY' else 'down',
-            'stopPriceType': 'TP'
+            "stop": "up" if orderSide.upper() == "BUY" else "down",
+            "stopPriceType": "TP",
         }
-        takeProfitOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
-                                                         stopPrice=takeProfit, closePosition=True,
-                                                         timeInForce='GTC', extraParams=tpExtraParams)
+        takeProfitOrder = self.createAndTestFuturesOrder(
+            symbol=symbol,
+            side=tpSlSide,
+            orderType="MARKET",
+            stopPrice=takeProfit,
+            closePosition=True,
+            timeInForce="GTC",
+            extraParams=tpExtraParams,
+        )
 
         mainOrderRes = self.makeFuturesOrder(mainOrder)
         slOrderRes = self.makeFuturesOrder(stopLossOrder)
         tpOrderRes = self.makeFuturesOrder(takeProfitOrder)
 
         orderIds = {
-            'mainOrder': mainOrderRes['orderId'],
-            'stopLoss': slOrderRes['orderId'],
-            'takeProfit': tpOrderRes['orderId']
+            "mainOrder": mainOrderRes["orderId"],
+            "stopLoss": slOrderRes["orderId"],
+            "takeProfit": tpOrderRes["orderId"],
         }
 
         return orderIds
 
-    def makeSlTpMarketFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None, takeProfit=None,
-                                   stopLoss=None, leverage=None, marginType=None):
+    def makeSlTpMarketFuturesOrder(
+        self,
+        symbol,
+        orderSide,
+        quantity=None,
+        quoteQuantity=None,
+        takeProfit=None,
+        stopLoss=None,
+        leverage=None,
+        marginType=None,
+    ):
         symbolInfo = self.getSymbolMinTrade(symbol=symbol, futures=True)
         marketPrice = self.getSymbolTickerPrice(symbol=symbol, futures=True)
 
         if leverage is None:
-            raise ValueError('Must specify \'leverage\' parameter for KuCoin orders.')
+            raise ValueError("Must specify 'leverage' parameter for KuCoin orders.")
 
         if quantity is None:
             if quoteQuantity is None:
-                raise ValueError('Specify either quantity or quoteQuantity')
-            quantity = int(quoteQuantity / marketPrice / symbolInfo['precisionStep']) * symbolInfo['precisionStep']
+                raise ValueError("Specify either quantity or quoteQuantity")
+            quantity = (
+                int(quoteQuantity / marketPrice / symbolInfo["precisionStep"])
+                * symbolInfo["precisionStep"]
+            )
 
-        if quantity < symbolInfo['minQuantity']:
-            raise ValueError('Quantity is lower than minimum quantity allowed.')
+        if quantity < symbolInfo["minQuantity"]:
+            raise ValueError("Quantity is lower than minimum quantity allowed.")
 
-        mainOrder = self.createAndTestFuturesOrder(symbol, orderSide.upper(), 'MARKET', quantity=quantity,
-                                                   extraParams={'leverage': leverage})
+        mainOrder = self.createAndTestFuturesOrder(
+            symbol,
+            orderSide.upper(),
+            "MARKET",
+            quantity=quantity,
+            extraParams={"leverage": leverage},
+        )
 
-        tpSlSide = 'sell' if orderSide.upper() == 'BUY' else 'buy'
+        tpSlSide = "sell" if orderSide.upper() == "BUY" else "buy"
 
         slExtraParams = {
-            'stop': 'down' if orderSide.upper() == 'BUY' else 'up',
-            'stopPriceType': 'TP'
+            "stop": "down" if orderSide.upper() == "BUY" else "up",
+            "stopPriceType": "TP",
         }
-        stopLossOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
-                                                       stopPrice=stopLoss, closePosition=True,
-                                                       timeInForce='GTC', extraParams=slExtraParams)
+        stopLossOrder = self.createAndTestFuturesOrder(
+            symbol=symbol,
+            side=tpSlSide,
+            orderType="MARKET",
+            stopPrice=stopLoss,
+            closePosition=True,
+            timeInForce="GTC",
+            extraParams=slExtraParams,
+        )
 
         tpExtraParams = {
-            'stop': 'up' if orderSide.upper() == 'BUY' else 'down',
-            'stopPriceType': 'TP'
+            "stop": "up" if orderSide.upper() == "BUY" else "down",
+            "stopPriceType": "TP",
         }
-        takeProfitOrder = self.createAndTestFuturesOrder(symbol=symbol, side=tpSlSide, orderType='MARKET',
-                                                         stopPrice=takeProfit, closePosition=True,
-                                                         timeInForce='GTC', extraParams=tpExtraParams)
+        takeProfitOrder = self.createAndTestFuturesOrder(
+            symbol=symbol,
+            side=tpSlSide,
+            orderType="MARKET",
+            stopPrice=takeProfit,
+            closePosition=True,
+            timeInForce="GTC",
+            extraParams=tpExtraParams,
+        )
 
         mainOrderRes = self.makeFuturesOrder(mainOrder)
         slOrderRes = self.makeFuturesOrder(stopLossOrder)
         tpOrderRes = self.makeFuturesOrder(takeProfitOrder)
 
         orderIds = {
-            'mainOrder': mainOrderRes['orderId'],
-            'stopLoss': slOrderRes['orderId'],
-            'takeProfit': tpOrderRes['orderId']
+            "mainOrder": mainOrderRes["orderId"],
+            "stopLoss": slOrderRes["orderId"],
+            "takeProfit": tpOrderRes["orderId"],
         }
 
         return orderIds
@@ -799,13 +1184,17 @@ class KuCoinExchange(BaseExchange):
         changesList = []
         if futures:
             for ticker in self.futuresMarket.get_contracts_list():
-                if ticker['status'] == 'Open':
-                    changesList.append((ticker['symbol'], float(ticker['priceChgPct']) * 100))
+                if ticker["status"] == "Open":
+                    changesList.append(
+                        (ticker["symbol"], float(ticker["priceChgPct"]) * 100)
+                    )
         else:
             symbolInfos = self.spotMarket.get_symbol_list()
-            for ticker in self.spotMarket.get_all_tickers()['ticker']:
-                if is_symbol_status_valid(ticker['symbol'], symbolInfos, futures=False):
-                    changesList.append((ticker['symbol'], float(ticker['changeRate']) * 100))
+            for ticker in self.spotMarket.get_all_tickers()["ticker"]:
+                if is_symbol_status_valid(ticker["symbol"], symbolInfos, futures=False):
+                    changesList.append(
+                        (ticker["symbol"], float(ticker["changeRate"]) * 100)
+                    )
 
         return sorted(changesList, key=lambda x: x[1], reverse=True)
 
@@ -813,10 +1202,10 @@ class KuCoinExchange(BaseExchange):
         symbolNames = []
         if futures:
             for ticker in self.futuresMarket.get_contracts_list():
-                symbolNames.append(ticker['symbol'])
+                symbolNames.append(ticker["symbol"])
         else:
-            for ticker in self.spotMarket.get_all_tickers()['ticker']:
-                symbolNames.append(ticker['symbol'])
+            for ticker in self.spotMarket.get_all_tickers()["ticker"]:
+                symbolNames.append(ticker["symbol"])
 
         return symbolNames
 
@@ -825,7 +1214,13 @@ class KuCoinExchange(BaseExchange):
         if futures:
             for symbolInfo in self.futuresMarket.get_contracts_list():
                 symbolDatas.append(
-                    (symbolInfo['symbol'], datetime.fromtimestamp(float(symbolInfo['firstOpenDate']) / 1000)))
+                    (
+                        symbolInfo["symbol"],
+                        datetime.fromtimestamp(
+                            float(symbolInfo["firstOpenDate"]) / 1000
+                        ),
+                    )
+                )
                 symbolDatas.sort(key=lambda x: x[1], reverse=True)
             if numOfSymbols is not None and numOfSymbols > len(symbolDatas):
                 numOfSymbols = len(symbolDatas)
@@ -833,14 +1228,23 @@ class KuCoinExchange(BaseExchange):
             raise NotImplementedError()
         return symbolDatas[:numOfSymbols]
 
-    def getIncomeHistory(self, currency, incomeType=None, startTime=None, endTime=None, limit=None):
+    def getIncomeHistory(
+        self, currency, incomeType=None, startTime=None, endTime=None, limit=None
+    ):
         args = {
-            'beginAt': startTime,
-            'endAt': endTime,
-            'type': incomeType,
-            'maxCount': limit,
-            'currency': currency
+            "beginAt": startTime,
+            "endAt": endTime,
+            "type": incomeType,
+            "maxCount": limit,
+            "currency": currency,
         }
         args = {k: v for k, v in args.items() if v is not None}
 
-        return KuCoinHelpers.unifyGetIncome(self.futuresUser.get_transaction_history(**args)['dataList'])
+        return KuCoinHelpers.unifyGetIncome(
+            self.futuresUser.get_transaction_history(**args)["dataList"]
+        )
+
+    def getLongShortRatios(
+        self, symbol, period, limit=None, startTime=None, endTime=None
+    ):
+        pass

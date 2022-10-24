@@ -8,31 +8,35 @@ from Exchanges import BinanceExchange, BybitExchange, KuCoinExchange
 
 
 def getCorrectExchange(exchangeName):
-    if exchangeName.lower() == 'binance':
+    if exchangeName.lower() == "binance":
         return BinanceExchange.BinanceExchange
-    if exchangeName.lower() == 'bybit':
+    if exchangeName.lower() == "bybit":
         return BybitExchange.BybitExchange
-    if exchangeName.lower() == 'kucoin':
+    if exchangeName.lower() == "kucoin":
         return KuCoinExchange.KuCoinExchange
 
 
 class TradeGate:
     def __init__(self, configDict, sandbox=False):
-        self.exchangeName = configDict['exchangeName']
+        self.exchangeName = configDict["exchangeName"]
         exchangeClass = getCorrectExchange(self.exchangeName)
         if sandbox:
-            self.apiKey = configDict['credentials']['test']['spot']['key']
-            self.apiSecret = configDict['credentials']['test']['spot']['secret']
+            self.apiKey = configDict["credentials"]["test"]["spot"]["key"]
+            self.apiSecret = configDict["credentials"]["test"]["spot"]["secret"]
 
-            self.exchange = exchangeClass(configDict['credentials']['test'], sandbox=True)
+            self.exchange = exchangeClass(
+                configDict["credentials"]["test"], sandbox=True
+            )
         else:
-            self.apiKey = configDict['credentials']['main']['spot']['key']
-            self.apiSecret = configDict['credentials']['main']['spot']['secret']
+            self.apiKey = configDict["credentials"]["main"]["spot"]["key"]
+            self.apiSecret = configDict["credentials"]["main"]["spot"]["secret"]
 
-            self.exchange = exchangeClass(configDict['credentials']['main'], sandbox=False)
+            self.exchange = exchangeClass(
+                configDict["credentials"]["main"], sandbox=False
+            )
 
     def getBalance(self, asset=None, futures=False):
-        """ Returns account balance of all assets or a single asset
+        """Returns account balance of all assets or a single asset
 
         :param asset: a valid asset name, defaults to None
         :type asset: str , optional
@@ -71,9 +75,20 @@ class TradeGate:
         """
         return self.exchange.getBalance(asset, futures)
 
-    def createAndTestSpotOrder(self, symbol, side, orderType, quantity=None, price=None, timeInForce=None,
-                               stopPrice=None, icebergQty=None, newOrderRespType=None,
-                               newClientOrderId=None, extraParams=None):
+    def createAndTestSpotOrder(
+        self,
+        symbol,
+        side,
+        orderType,
+        quantity=None,
+        price=None,
+        timeInForce=None,
+        stopPrice=None,
+        icebergQty=None,
+        newOrderRespType=None,
+        newClientOrderId=None,
+        extraParams=None,
+    ):
         """ Create a OrderData object and test the given parameters for validity. The object returned is then used \
         to send an order to the exchange by :func:`makeSpotOrder() <TradeGate.TradeGate.makeSpotOrder>`
 
@@ -130,11 +145,22 @@ class TradeGate:
                 (Immediate Or Cancel), **GTT** (Good Till Time) and **FOK** (Fill Or Kill)
 
         """
-        return self.exchange.createAndTestSpotOrder(symbol, side, orderType, quantity, price, timeInForce, stopPrice,
-                                                    icebergQty, newOrderRespType, newClientOrderId, extraParams)
+        return self.exchange.createAndTestSpotOrder(
+            symbol,
+            side,
+            orderType,
+            quantity,
+            price,
+            timeInForce,
+            stopPrice,
+            icebergQty,
+            newOrderRespType,
+            newClientOrderId,
+            extraParams,
+        )
 
     def makeSpotOrder(self, orderData):
-        """ Make a spot order
+        """Make a spot order
 
         :param orderData: OrderData created using :func:`makeSpotOrder() <TradeGate.TradeGate.makeSpotOrder>`
         :type orderData: OrderData
@@ -164,8 +190,16 @@ class TradeGate:
         """
         return self.exchange.makeSpotOrder(orderData)
 
-    def getSymbolOrders(self, symbol, futures=False, orderId=None, startTime=None, endTime=None, limit=None):
-        """ Get History of orders submitted
+    def getSymbolOrders(
+        self,
+        symbol,
+        futures=False,
+        orderId=None,
+        startTime=None,
+        endTime=None,
+        limit=None,
+    ):
+        """Get History of orders submitted
 
         :param symbol: The order's symbol
         :type symbol: str
@@ -232,12 +266,18 @@ class TradeGate:
 
             * Specify the symbol for better output.
 
-            """
-        return self.exchange.getSymbolOrders(symbol=symbol, futures=futures, orderId=orderId, startTime=startTime,
-                                             endTime=endTime, limit=limit)
+        """
+        return self.exchange.getSymbolOrders(
+            symbol=symbol,
+            futures=futures,
+            orderId=orderId,
+            startTime=startTime,
+            endTime=endTime,
+            limit=limit,
+        )
 
     def getOpenOrders(self, symbol, futures=False):
-        """ Get order datas of all open orders for a symbol
+        """Get order datas of all open orders for a symbol
 
         :param symbol: The symbol
         :type symbol: str
@@ -309,7 +349,7 @@ class TradeGate:
         return self.exchange.getOpenOrders(symbol, futures)
 
     def getOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
-        """ Get an order's data
+        """Get an order's data
 
         :param symbol: The Order's symbol
         :type symbol: str
@@ -360,7 +400,7 @@ class TradeGate:
         return self.exchange.getOrder(symbol, orderId, localOrderId, futures=futures)
 
     def cancelAllSymbolOpenOrders(self, symbol, futures=False):
-        """ Cancel all active orders of a symbol
+        """Cancel all active orders of a symbol
 
         :param symbol: The symbol
         :type symbol: str
@@ -431,7 +471,7 @@ class TradeGate:
         return self.exchange.cancelAllSymbolOpenOrders(symbol, futures)
 
     def cancelOrder(self, symbol, orderId=None, localOrderId=None, futures=False):
-        """ Cancel an active order
+        """Cancel an active order
 
         :param symbol: The Order's symbol
         :type symbol: str
@@ -482,7 +522,7 @@ class TradeGate:
         return self.exchange.cancelOrder(symbol, orderId, localOrderId, futures)
 
     def getTradingFees(self, symbol=None, futures=None):
-        """ Get the fee structure of the exchange
+        """Get the fee structure of the exchange
 
         :param symbol: Trading fee for a specific symbol
         :type symbol: str, optional
@@ -507,7 +547,7 @@ class TradeGate:
         return self.exchange.getTradingFees(symbol=symbol, futures=futures)
 
     def getSymbolTickerPrice(self, symbol, futures=False):
-        """ Get the latest price of a symbol
+        """Get the latest price of a symbol
 
         :param symbol: Symbol
         :type symbol: str
@@ -524,8 +564,19 @@ class TradeGate:
         """
         return self.exchange.getSymbolTickerPrice(symbol, futures)
 
-    def getSymbolKlines(self, symbol, interval, startTime=None, endTime=None, limit=None, futures=False, blvtnav=False,
-                        convertDateTime=False, doClean=False, toCleanDataframe=False):
+    def getSymbolKlines(
+        self,
+        symbol,
+        interval,
+        startTime=None,
+        endTime=None,
+        limit=None,
+        futures=False,
+        blvtnav=False,
+        convertDateTime=False,
+        doClean=False,
+        toCleanDataframe=False,
+    ):
         """ Get a symbol's Klines (candlestick) data
 
         :param symbol: The symbol to fetch the klines
@@ -608,11 +659,21 @@ class TradeGate:
             - **tradesNum**
 
         """
-        return self.exchange.getSymbolKlines(symbol, interval, startTime, endTime, limit, futures, blvtnav,
-                                             convertDateTime, doClean, toCleanDataframe)
+        return self.exchange.getSymbolKlines(
+            symbol,
+            interval,
+            startTime,
+            endTime,
+            limit,
+            futures,
+            blvtnav,
+            convertDateTime,
+            doClean,
+            toCleanDataframe,
+        )
 
     def getExchangeTime(self, futures=False):
-        """ Get time of the exchange
+        """Get time of the exchange
 
         :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
@@ -627,11 +688,27 @@ class TradeGate:
         """
         return self.exchange.getExchangeTime(futures)
 
-    def createAndTestFuturesOrder(self, symbol, side, orderType, positionSide=None, timeInForce=None, quantity=None,
-                                  reduceOnly=None, price=None, newClientOrderId=None,
-                                  stopPrice=None, closePosition=None, activationPrice=None, callbackRate=None,
-                                  workingType=None, priceProtect=None, newOrderRespType=None,
-                                  extraParams=None, quoteQuantity=None):
+    def createAndTestFuturesOrder(
+        self,
+        symbol,
+        side,
+        orderType,
+        positionSide=None,
+        timeInForce=None,
+        quantity=None,
+        reduceOnly=None,
+        price=None,
+        newClientOrderId=None,
+        stopPrice=None,
+        closePosition=None,
+        activationPrice=None,
+        callbackRate=None,
+        workingType=None,
+        priceProtect=None,
+        newOrderRespType=None,
+        extraParams=None,
+        quoteQuantity=None,
+    ):
         """ Create a FuturesOrderData object and test the given parameters for validity. The object returned is then used \
         to send an order to the exchange by :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
 
@@ -714,14 +791,28 @@ class TradeGate:
 
 
         """
-        return self.exchange.createAndTestFuturesOrder(symbol, side, orderType, positionSide, timeInForce,
-                                                       quantity, reduceOnly, price, newClientOrderId, stopPrice,
-                                                       closePosition, activationPrice, callbackRate, workingType,
-                                                       priceProtect, newOrderRespType, extraParams,
-                                                       quoteQuantity=quoteQuantity)
+        return self.exchange.createAndTestFuturesOrder(
+            symbol,
+            side,
+            orderType,
+            positionSide,
+            timeInForce,
+            quantity,
+            reduceOnly,
+            price,
+            newClientOrderId,
+            stopPrice,
+            closePosition,
+            activationPrice,
+            callbackRate,
+            workingType,
+            priceProtect,
+            newOrderRespType,
+            extraParams,
+        )
 
     def makeFuturesOrder(self, futuresOrderData):
-        """ Make a futures order
+        """Make a futures order
 
         :param futuresOrderData: OrderData created using :func:`makeFuturesOrder() <TradeGate.TradeGate.makeFuturesOrder>`
         :type futuresOrderData: OrderData
@@ -840,7 +931,7 @@ class TradeGate:
         return self.exchange.makeBatchFuturesOrder(batchOrders)
 
     def changeInitialLeverage(self, symbol, leverage):
-        """ Change initial leverage for a symbol
+        """Change initial leverage for a symbol
 
         :param symbol: Futures symbol
         :type symbol: str
@@ -912,7 +1003,7 @@ class TradeGate:
         return self.exchange.changePositionMargin(symbol, amount)
 
     def spotBestBidAsks(self, symbol=None):
-        """ Returns best bid and best ask price with their quantities
+        """Returns best bid and best ask price with their quantities
 
         :param symbol: Symbol name of the orders
         :type symbol: str
@@ -934,7 +1025,7 @@ class TradeGate:
         return self.exchange.spotBestBidAsks(symbol)
 
     def getSymbolOrderBook(self, symbol, limit=None, futures=False):
-        """ Returns list of current orders in the orderbook of the exchange
+        """Returns list of current orders in the orderbook of the exchange
 
         :param symbol: Symbol name of the orders
         :type symbol: str
@@ -970,7 +1061,7 @@ class TradeGate:
         return self.exchange.getSymbolOrderBook(symbol, limit, futures)
 
     def getSymbolRecentTrades(self, symbol, limit=None, futures=False):
-        """ Returns list of the recent trades for a symbol
+        """Returns list of the recent trades for a symbol
 
         :param symbol: Symbol name of the trades
         :type symbol: str
@@ -993,7 +1084,7 @@ class TradeGate:
         return self.exchange.getSymbolRecentTrades(symbol, limit, futures)
 
     def symbolAccountTradeHistory(self, symbol, fromId=None, limit=None, futures=False):
-        """ Returns list of the trade history for user orders
+        """Returns list of the trade history for user orders
 
         :param symbol: Symbol name of the trades
         :type symbol: str
@@ -1048,11 +1139,23 @@ class TradeGate:
             * The **orderListId** returned parameter is either None or -1 if order was made with API.
             * The **isBestMatch** returned parameter is not reliable and not available on most of the exchanges.
         """
-        return self.exchange.symbolAccountTradeHistory(symbol=symbol, futures=futures, fromId=fromId, limit=limit)
+        return self.exchange.symbolAccountTradeHistory(
+            symbol=symbol, futures=futures, fromId=fromId, limit=limit
+        )
 
-    def makeSlTpLimitFuturesOrder(self, symbol, orderSide, enterPrice, quantity=None, quoteQuantity=None,
-                                  takeProfit=None, stopLoss=None, leverage=None, marginType=None):
-        """ Make market price futures order with take profit and stop loss.
+    def makeSlTpLimitFuturesOrder(
+        self,
+        symbol,
+        orderSide,
+        enterPrice,
+        quantity=None,
+        quoteQuantity=None,
+        takeProfit=None,
+        stopLoss=None,
+        leverage=None,
+        marginType=None,
+    ):
+        """Make market price futures order with take profit and stop loss.
 
         :param symbol: Name of the symbol
         :type symbol: str
@@ -1097,12 +1200,30 @@ class TradeGate:
             * Use with a try catch block preferably.
 
         """
-        return self.exchange.makeSlTpLimitFuturesOrder(symbol, orderSide, quantity, quoteQuantity, enterPrice,
-                                                       takeProfit, stopLoss, leverage, marginType)
+        return self.exchange.makeSlTpLimitFuturesOrder(
+            symbol,
+            orderSide,
+            quantity,
+            quoteQuantity,
+            enterPrice,
+            takeProfit,
+            stopLoss,
+            leverage,
+            marginType,
+        )
 
-    def makeSlTpMarketFuturesOrder(self, symbol, orderSide, quantity=None, quoteQuantity=None,
-                                   takeProfit=None, stopLoss=None, leverage=None, marginType=None):
-        """ Make market price futures order with take profit and stop loss.
+    def makeSlTpMarketFuturesOrder(
+        self,
+        symbol,
+        orderSide,
+        quantity=None,
+        quoteQuantity=None,
+        takeProfit=None,
+        stopLoss=None,
+        leverage=None,
+        marginType=None,
+    ):
+        """Make market price futures order with take profit and stop loss.
 
         :param symbol: Name of the symbol
         :type symbol: str
@@ -1137,18 +1258,26 @@ class TradeGate:
             * The **orderSide** parameter can either be **BUY** or **SELL**.
             * Should specify either **quantity** or **quoteQuantity**.
             * The **leverage** parameter is mandatory for the following exchanges:
-            
+
                 * KuCoin
             * The **marginType** is currently only valid for **Binance** exchange.
             * Be careful with the **takeProfit** and **stopLoss** prices, if they would trigger immidietly, there will be an error.
             * Use with a try catch block preferably.
 
         """
-        return self.exchange.makeSlTpMarketFuturesOrder(symbol, orderSide, quantity, quoteQuantity, takeProfit,
-                                                        stopLoss, leverage, marginType)
+        return self.exchange.makeSlTpMarketFuturesOrder(
+            symbol,
+            orderSide,
+            quantity,
+            quoteQuantity,
+            takeProfit,
+            stopLoss,
+            leverage,
+            marginType,
+        )
 
     def getPositionInfo(self, symbol=None):
-        """ Returns information of  position or positions. (Only for futures accounts)
+        """Returns information of  position or positions. (Only for futures accounts)
 
         :param symbol: The symbol of the position
         :type symbol: str , optional
@@ -1215,7 +1344,7 @@ class TradeGate:
         return self.exchange.getPositionInfo(symbol)
 
     def getSymbolMinTrade(self, symbol, futures=False):
-        """ Returns information of valid minimum quantity, quote quantity and price precision.
+        """Returns information of valid minimum quantity, quote quantity and price precision.
 
         :param symbol: The symbol which the information is for.
         :type symbol: str
@@ -1252,8 +1381,10 @@ class TradeGate:
         """
         return self.exchange.getSymbolMinTrade(symbol, futures)
 
-    def getIncomeHistory(self, symbol, incomeType=None, startTime=None, endTime=None, limit=None):
-        """ Returns list of changes to the account balance. (Only for futures accounts)
+    def getIncomeHistory(
+        self, symbol, incomeType=None, startTime=None, endTime=None, limit=None
+    ):
+        """Returns list of changes to the account balance. (Only for futures accounts)
 
         :param symbol: The symbol which the incomes are related to
         :type symbol: str
@@ -1298,10 +1429,12 @@ class TradeGate:
 
         """
 
-        return self.exchange.getIncomeHistory(symbol, incomeType, startTime, endTime, limit)
+        return self.exchange.getIncomeHistory(
+            symbol, incomeType, startTime, endTime, limit
+        )
 
     def getSymbolList(self, futures=False):
-        """ Returns list of symbol names available for trade
+        """Returns list of symbol names available for trade
 
         :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
@@ -1326,7 +1459,7 @@ class TradeGate:
         return self.exchange.getSymbolList(futures=futures)
 
     def getSymbol24hChanges(self, futures=False):
-        """ Returns all symbols 24-hour change percentages
+        """Returns all symbols 24-hour change percentages
 
         :param futures: False for spot market and True for futures market, defaults to False
         :type futures: bool , optional
@@ -1353,7 +1486,7 @@ class TradeGate:
         return self.exchange.getSymbol24hChanges(futures=futures)
 
     def getLatestSymbolNames(self, numOfSymbols=None, futures=True):
-        """ Returns list of newly added symbols to the exchange. Currently, only working for futures market.
+        """Returns list of newly added symbols to the exchange. Currently, only working for futures market.
 
         :param numOfSymbols: Number of symbols returned, sorted for the newest to oldest.
         :type numOfSymbols: int, optional
@@ -1379,4 +1512,14 @@ class TradeGate:
                 ]
 
         """
-        return self.exchange.getLatestSymbolNames(numOfSymbols=numOfSymbols, futures=futures)
+        return self.exchange.getLatestSymbolNames(
+            numOfSymbols=numOfSymbols, futures=futures
+        )
+
+    def getLongShortRatios(
+        self, symbol, period, limit=None, startTime=None, endTime=None
+    ):
+        print(self.exchange)
+        return self.exchange.getLongShortRatios(
+            symbol, period, limit, startTime, endTime
+        )
