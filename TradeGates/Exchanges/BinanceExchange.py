@@ -822,7 +822,14 @@ class BinanceExchange(BaseExchange):
 
     def _setLeverage(self, leverage, symbol):
         setLeverageResult = self.changeInitialLeverage(symbol, leverage)
-        if setLeverageResult["leverage"] != leverage:
+        print("Leverage changed.")
+        if isinstance(setLeverageResult, dict):
+            if setLeverageResult["leverage"] != leverage:
+                raise ConnectionError("Could not change leverage.")
+        elif isinstance(setLeverageResult, float):
+            if setLeverageResult != leverage:
+                raise ConnectionError("Could not change leverage.")
+        else:
             raise ConnectionError("Could not change leverage.")
 
     def getSymbolList(self, futures=False):

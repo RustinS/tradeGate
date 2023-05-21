@@ -742,13 +742,13 @@ class KuCoinExchange(BaseExchange):
                 else:
                     endTime = endTime - endTime % (granularity * 60)
                     data = self.futuresMarket.get_kline_data(
-                        symbol=symbol, granularity=granularity, end_t=endTime * 1000
+                        symbol=symbol, granularity=granularity, end_t=endTime
                     )
             else:
                 if endTime is None:
                     startTime = startTime - startTime % (granularity * 60)
                     data = self.futuresMarket.get_kline_data(
-                        symbol=symbol, granularity=granularity, begin_t=startTime * 1000
+                        symbol=symbol, granularity=granularity, begin_t=startTime
                     )
                 else:
                     endTime = endTime - endTime % (granularity * 60)
@@ -757,55 +757,56 @@ class KuCoinExchange(BaseExchange):
                     data = self.futuresMarket.get_kline_data(
                         symbol=symbol,
                         granularity=granularity,
-                        begin_t=startTime * 1000,
-                        end_t=endTime * 1000,
+                        begin_t=startTime,
+                        end_t=endTime,
                     )
         else:
             if startTime is None:
                 if endTime is None:
-                    endTime = int(time.time())
-                    endTime = endTime - endTime % (granularity * 60)
+                    endTime = int(time.time()) * 1000
+                    endTime = endTime - endTime % (granularity * 60 * 1000)
 
-                    startAt = endTime - limit * granularity * 60
-                    startAt = startAt - startAt % (granularity * 60)
+                    startAt = endTime - limit * granularity * 60 * 1000
+                    startAt = startAt - startAt % (granularity * 60 * 1000)
 
                     data = self.futuresMarket.get_kline_data(
-                        symbol=symbol, granularity=granularity, begin_t=startAt * 1000
+                        symbol=symbol, granularity=granularity, begin_t=startAt
                     )
                 else:
-                    endTime = endTime - endTime % (granularity * 60)
+                    endTime = endTime - endTime % (granularity * 60 * 1000)
 
-                    startTime = endTime - limit * granularity * 60
-                    startTime = startTime - startTime % (granularity * 60)
+                    startTime = endTime - limit * granularity * 60 * 1000
+                    startTime = startTime - startTime % (granularity * 60 * 1000)
 
                     data = self.futuresMarket.get_kline_data(
                         symbol=symbol,
                         granularity=granularity,
-                        begin_t=startTime * 1000,
-                        end_t=endTime * 1000,
+                        begin_t=startTime,
+                        end_t=endTime,
                     )
             else:
                 if endTime is None:
-                    startTime = startTime - startTime % (granularity * 60)
+                    startTime = startTime - startTime % (granularity * 60 * 1000)
 
-                    endTime = startTime + limit * granularity * 60
-                    endTime = endTime - endTime % (granularity * 60)
+                    endTime = startTime + limit * granularity * 60 * 1000
+                    endTime = endTime - endTime % (granularity * 60 * 1000)
 
                     data = self.futuresMarket.get_kline_data(
                         symbol=symbol,
                         granularity=granularity,
-                        begin_t=startTime * 1000,
-                        end_t=endTime * 1000,
+                        begin_t=startTime,
+                        end_t=endTime,
                     )
                 else:
-                    startTime = startTime - startTime % (granularity * 60)
-                    endTime = endTime - endTime % (granularity * 60)
+
+                    startTime = startTime - startTime % (granularity * 60 * 1000)
+                    endTime = endTime - endTime % (granularity * 60 * 1000)
 
                     data = self.futuresMarket.get_kline_data(
                         symbol=symbol,
                         granularity=granularity,
-                        begin_t=startTime * 1000,
-                        end_t=endTime * 1000,
+                        begin_t=startTime,
+                        end_t=endTime,
                     )
         return data
 
